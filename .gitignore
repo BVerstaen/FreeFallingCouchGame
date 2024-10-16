@@ -72,3 +72,14 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+!Binaries
+Binaries/*
+!Binaries/Win64
+Binaries/Win64/*
+!Binaries/Win64/FreeFallingCouchGameEditor.target
+!Binaries/Win64/UnrealEditor.modules
+!Binaries/Win64/UnrealEditor-FreeFallingCouchGameEditor.dll
+!Binaries/Win64/UnrealEditor-LocalMultiplayer.dll
+!Binaries/Win64/UnrealEditor-FreeFallingCouchGameEditor_Tools_Toolbar.dll
+!Binaries/Win64/UnrealEditor-LocalMultiplayer-Win64-DebugGame.dll
