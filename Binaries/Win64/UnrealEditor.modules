@@ -2,6 +2,7 @@
 	"BuildId": "27405482",
 	"Modules": 
 	{
-		"FreeFallingCouchGame": "UnrealEditor-FreeFallingCouchGame.dll"
+		"FreeFallingCouchGame": "UnrealEditor-FreeFallingCouchGame.dll",
+		"LocalMultiplayer": "UnrealEditor-LocalMultiplayer.dll"
 	}
 }
