@@ -4,7 +4,6 @@
 #include "LocalMultiplayerSubsystem.h"
 
 #include "EnhancedInputSubsystems.h"
-#include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 
 void ULocalMultiplayerSubsystem::CreateAndInitPlayers(ELocalMultiplayerInputMappingType MappingType)
@@ -12,14 +11,8 @@ void ULocalMultiplayerSubsystem::CreateAndInitPlayers(ELocalMultiplayerInputMapp
 	const ULocalMultiplayerSettings* LocalMultiplayerSettings = GetDefault<ULocalMultiplayerSettings>();
 	int NumberOfControllers = LocalMultiplayerSettings->GetNbKeyboardProfiles() + LocalMultiplayerSettings->NbMaxGamepad;
 	
-	//Create PC keyboard
-	for(int i=0; i < LocalMultiplayerSettings->GetNbKeyboardProfiles(); i++)
-	{
-		UGameplayStatics::CreatePlayer(GetWorld(),-1);
-	}
-	
-	//Create PC gamepad
-	for(int i=0; i < LocalMultiplayerSettings->NbMaxGamepad; i++)
+	//Create PC keyboard & gamepad
+	for(int i=0; i < NumberOfControllers; i++)
 	{
 		UGameplayStatics::CreatePlayer(GetWorld(),-1);
 	}

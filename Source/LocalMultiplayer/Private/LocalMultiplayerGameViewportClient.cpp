@@ -9,6 +9,9 @@
 void ULocalMultiplayerGameViewportClient::PostInitProperties()
 {
 	Super::PostInitProperties();
+	//Deactivate split screen
+	ActiveSplitscreenType = ESplitScreenType::Type::None;
+	//Setup max number of PC (num players * 2)
 	MaxSplitscreenPlayers = 8;
 }
 
