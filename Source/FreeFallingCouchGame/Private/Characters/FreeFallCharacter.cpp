@@ -3,7 +3,11 @@
 
 #include "Characters/FreeFallCharacter.h"
 
+#include "EnhancedInputSubsystems.h"
+#include "EnhancedInputComponent.h"
+#include "Characters/FreeFallCharacterInputData.h"
 #include "Characters/FreeFallCharacterStateMachine.h"
+
 
 
 // Sets default values
@@ -18,7 +22,6 @@ void AFreeFallCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	CreateStateMachine();
-
 	InitStateMachine();
 }
 
@@ -33,6 +36,13 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 void AFreeFallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	SetupMappingContextIntoController();
+
+	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent);
+	if (EnhancedInputComponent == nullptr) return;
+
+	BindInputMoveAxisAndActions(EnhancedInputComponent);
 }
 
 void AFreeFallCharacter::CreateStateMachine()
@@ -50,5 +60,63 @@ void AFreeFallCharacter::TickStateMachine(float DeltaTime) const
 {
 	if (StateMachine == nullptr) return;
 	StateMachine->Tick(DeltaTime);
+}
+
+void AFreeFallCharacter::SetupMappingContextIntoController() const
+{
+	APlayerController* PlayerController = Cast<APlayerController>(Controller);
+	if (PlayerController == nullptr) return;
+
+	ULocalPlayer* Player = PlayerController->GetLocalPlayer();
+	if (Player == nullptr) return;
+
+	UEnhancedInputLocalPlayerSubsystem* InputSystem = Player->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	if (InputSystem == nullptr) return;
+
+	InputSystem->AddMappingContext(InputMappingContext,0);
+}
+
+FVector2D AFreeFallCharacter::GetInputMove() const
+{
+	return InputMove;
+}
+
+void AFreeFallCharacter::BindInputMoveAxisAndActions(UEnhancedInputComponent* EnhancedInputComponent)
+{
+
+	if (InputData == nullptr)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, TEXT("InputData est nullptr pour " + GetFName().ToString()));
+		return;
+	};
+
+	if (InputData->InputActionMove)
+	{
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionMove,
+			ETriggerEvent::Started,
+			this,
+			&AFreeFallCharacter::OnInputMove
+			);
+
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionMove,
+			ETriggerEvent::Triggered,
+			this,
+			&AFreeFallCharacter::OnInputMove
+			);
+
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionMove,
+			ETriggerEvent::Completed,
+			this,
+			&AFreeFallCharacter::OnInputMove
+			);
+	}
+}
+
+void AFreeFallCharacter::OnInputMove(const FInputActionValue& Value)
+{
+	InputMove = Value.Get<FVector2D>();
 }
 

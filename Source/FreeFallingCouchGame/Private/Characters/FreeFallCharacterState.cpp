@@ -8,6 +8,7 @@
 
 UFreeFallCharacterState::UFreeFallCharacterState()
 {
+	CharactersSettings = GetDefault<UCharactersSettings>();
 }
 
 EFreeFallCharacterStateID UFreeFallCharacterState::GetStateID()

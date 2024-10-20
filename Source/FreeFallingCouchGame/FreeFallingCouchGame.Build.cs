@@ -8,7 +8,7 @@ public class FreeFallingCouchGame : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "DeveloperSettings" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "DeveloperSettings", "EnhancedInput" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "LocalMultiplayer" });
 

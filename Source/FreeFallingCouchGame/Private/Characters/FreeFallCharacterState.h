@@ -3,10 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Settings/CharactersSettings.h"
 #include "UObject/Object.h"
 #include "FreeFallCharacterState.generated.h"
 
-class UCharactersSettings;
 class UFreeFallCharacterStateMachine;
 class AFreeFallCharacter;
 enum class EFreeFallCharacterStateID : uint8;

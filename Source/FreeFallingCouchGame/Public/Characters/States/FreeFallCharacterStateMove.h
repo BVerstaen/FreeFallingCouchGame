@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Characters/FreeFallCharacterState.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "FreeFallCharacterStateMove.generated.h"
 
 /**

@@ -6,6 +6,9 @@
 #include "GameFramework/Character.h"
 #include "FreeFallCharacter.generated.h"
 
+struct FInputActionValue;
+class UInputMappingContext;
+class UFreeFallCharacterInputData;
 class UFreeFallCharacterState;
 enum class EFreeFallCharacterStateID : uint8;
 class UFreeFallCharacterStateMachine;
@@ -48,5 +51,34 @@ protected:
 public:
 	TMap<EFreeFallCharacterStateID, TSubclassOf<UFreeFallCharacterState>> FreeFallCharacterStatesOverride;
 
+#pragma endregion
+
+#pragma region Input Data / Mapping Context
+
+public:
+	UPROPERTY()
+	TObjectPtr<UFreeFallCharacterInputData> InputData;
+
+	UPROPERTY()
+	TObjectPtr<UInputMappingContext> InputMappingContext;
+
+protected:
+	void SetupMappingContextIntoController() const;
+
+#pragma endregion
+
+#pragma region Input Move
+
+public:
+	FVector2D GetInputMove() const;
+
+protected:
+	UPROPERTY()
+	FVector2D InputMove = FVector2D::ZeroVector;
+private:
+	void BindInputMoveAxisAndActions(UEnhancedInputComponent* EnhancedInputComponent);
+
+	void OnInputMove(const FInputActionValue& Value);
+	
 #pragma endregion
 };

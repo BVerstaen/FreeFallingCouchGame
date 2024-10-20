@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InputMappingContext.h"
+#include "Characters/FreeFallCharacterInputData.h"
 #include "GameFramework/GameModeBase.h"
 #include "FreeFallGameMode.generated.h"
 
@@ -23,6 +25,10 @@ protected:
 
 private:
 	void CreateAndInitsPlayers() const;
+
+	UFreeFallCharacterInputData* LoadInputDataFromConfig();
+
+	UInputMappingContext* LoadInputMappingContextFromConfig();
 	
 	void FindPlayerStartActorsInMap(TArray<APlayerStart*>& ResultsActors);
 

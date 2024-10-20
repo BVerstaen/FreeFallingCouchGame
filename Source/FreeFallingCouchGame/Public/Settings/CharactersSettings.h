@@ -6,6 +6,8 @@
 #include "Engine/DeveloperSettings.h"
 #include "CharactersSettings.generated.h"
 
+class UInputMappingContext;
+class UFreeFallCharacterInputData;
 class UFreeFallCharacterState;
 enum class EFreeFallCharacterStateID : uint8;
 /**
@@ -22,4 +24,12 @@ public:
 
 	UPROPERTY(Config, EditAnywhere, Category="Inputs")
 	float InputMoveThreshold;
+
+	UPROPERTY(Config, EditAnywhere, Category="Inputs")
+	TSoftObjectPtr<UFreeFallCharacterInputData> InputData;
+
+	UPROPERTY(Config, EditAnywhere, Category="Inputs")
+	TSoftObjectPtr<UInputMappingContext> InputMappingContext;
+
+	
 };

@@ -5,6 +5,9 @@
 
 #include "Characters/FreeFallCharacter.h"
 #include "Characters/FreeFallCharacterStateID.h"
+#include "Characters/FreeFallCharacterStateMachine.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Settings/CharactersSettings.h"
 
 EFreeFallCharacterStateID UFreeFallCharacterStateMove::GetStateID()
 {
@@ -14,6 +17,8 @@ EFreeFallCharacterStateID UFreeFallCharacterStateMove::GetStateID()
 void UFreeFallCharacterStateMove::StateEnter(EFreeFallCharacterStateID PreviousStateID)
 {
 	Super::StateEnter(PreviousStateID);
+
+	Character->GetCharacterMovement()->MaxWalkSpeed = MaxMoveSpeed;
 
 	GEngine->AddOnScreenDebugMessage(
 		-1,
@@ -39,8 +44,17 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 {
 	Super::StateTick(DeltaTime);
 
-	Character->AddMovementInput(FVector::ForwardVector, 1);
-
+	const FVector2D InputMove = Character->GetInputMove();
+	
+	if (FMath::Abs(InputMove.Y) < CharactersSettings->InputMoveThreshold && FMath::Abs(InputMove.X) < CharactersSettings->InputMoveThreshold)
+	{
+		StateMachine->ChangeState(EFreeFallCharacterStateID::Idle);
+	}
+	else
+	{
+		Character->AddMovementInput(FVector::ForwardVector , InputMove.X);
+		Character->AddMovementInput(FVector::RightVector , InputMove.Y);
+	}
 	GEngine->AddOnScreenDebugMessage(
 		-1,
 		DeltaTime,

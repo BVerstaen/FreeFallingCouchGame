@@ -41,10 +41,15 @@ void UFreeFallCharacterStateIdle::StateTick(float DeltaTime)
 {
 	Super::StateTick(DeltaTime);
 
-	/*if (FMath::Abs(Character->GetInputMove()) > CharactersSettings->InputMoveXThreshold)
+	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Magenta, TEXT("Input Move is " + Character->GetInputMove().ToString()));
+	if (FMath::Abs(Character->GetInputMove().X) > CharactersSettings->InputMoveThreshold)
 	{
 		StateMachine->ChangeState(EFreeFallCharacterStateID::Move);
-	}*/
+	}
+	if (FMath::Abs(Character->GetInputMove().Y) > CharactersSettings->InputMoveThreshold)
+	{
+		StateMachine->ChangeState(EFreeFallCharacterStateID::Move);
+	}
 	
 	GEngine->AddOnScreenDebugMessage(
 		-1,
