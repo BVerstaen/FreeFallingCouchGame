@@ -24,14 +24,25 @@ protected:
 #pragma endregion
 
 #pragma region Parameters
-	
-public :
+
+public:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> Mesh;
 	
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UMaterial> Layer1Material;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UMaterial> Layer2Material;
+	
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UMaterial> Layer3Material;
+	
+	/*Sera modifiée par l'Obstacle Spawner*/
 	UPROPERTY(VisibleAnywhere)
 	float Speed;
 
+	/*Sera modifiée par l'Obstacle Spawner*/
 	UPROPERTY(VisibleAnywhere)
 	FVector Direction;
 

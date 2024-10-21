@@ -31,12 +31,12 @@ protected:
 	
 public :
 	
-	/* Liste des obstacles à faire spawn (NE METTRE QUE DES BP_) */
+	/* Liste des obstacles à faire spawn ( NE METTRE QUE DES "BP_" ) */
 	UPROPERTY(EditAnywhere)
 	TArray<TSubclassOf<AObstacle>> ObstaclesList;
 
 	/* Taille de la zone où les obstacles peuvent spawner (visible en play mode) */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector ObstacleSpawnExtant;
 	
 	/* La direction sera normalisé après donc mettre des nombres entre -1 & 1 */

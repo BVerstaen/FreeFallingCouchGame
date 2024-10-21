@@ -12,7 +12,6 @@ AObstacleSpawner::AObstacleSpawner()
 	ObstacleMaxSpeed = 1;
 	ObstacleMinTimer = 0;
 	ObstacleMaxTimer = 1;
-
 }
 
 void AObstacleSpawner::BeginPlay()
