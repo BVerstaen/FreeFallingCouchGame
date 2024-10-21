@@ -22,6 +22,9 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category="States")
 	TMap<EFreeFallCharacterStateID, TSubclassOf<UFreeFallCharacterState>> SmashCharacterStates;
 
+	UPROPERTY(Config, EditAnywhere, Category="Ejection")
+	float DelayAliveOffScreen;
+	
 	UPROPERTY(Config, EditAnywhere, Category="Inputs")
 	float InputMoveThreshold;
 
