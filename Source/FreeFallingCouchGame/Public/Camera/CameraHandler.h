@@ -7,7 +7,17 @@
 #include "GameFramework/Actor.h"
 #include "CameraHandler.generated.h"
 
-enum class ECameraStates;
+//BlueprintType permet d’exposer l’enum pour créer des variables blueprint avec l’enum déclaré en dessous.
+UENUM(BlueprintType)
+enum class ECameraStates : uint8
+{
+	Disabled = 0,
+	Base,
+	Menu,
+	Above,
+	Front,
+	Dynamic,
+};
 
 UCLASS()
 class FREEFALLINGCOUCHGAME_API ACameraHandler : public AActor
@@ -33,14 +43,3 @@ public:
 };
 
 
-//BlueprintType permet d’exposer l’enum pour créer des variables blueprint avec l’enum déclaré en dessous.
-UENUM(BlueprintType)
-enum class ECameraStates : uint8
-{
-	Disabled = 0,
-	Base,
-	Menu,
-	Above,
-	Front,
-	Dynamic,
-};
