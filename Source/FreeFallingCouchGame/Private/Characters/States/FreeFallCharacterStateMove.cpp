@@ -18,7 +18,9 @@ void UFreeFallCharacterStateMove::StateEnter(EFreeFallCharacterStateID PreviousS
 {
 	Super::StateEnter(PreviousStateID);
 
-	Character->GetCharacterMovement()->MaxWalkSpeed = MaxMoveSpeed;
+	Character->GetCharacterMovement()->MaxWalkSpeed = StartMoveSpeed;
+
+	AccelerationAlpha = 0;
 
 	GEngine->AddOnScreenDebugMessage(
 		-1,
@@ -44,6 +46,9 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 {
 	Super::StateTick(DeltaTime);
 
+	AccelerationAlpha += DeltaTime;
+	Character->GetCharacterMovement()->MaxWalkSpeed = FMath::Lerp(StartMoveSpeed,MaxMoveSpeed,FMath::Min(AccelerationAlpha/ReachMaxSpeedTime,1));
+
 	const FVector2D InputMove = Character->GetInputMove();
 	
 	if (FMath::Abs(InputMove.Y) < CharactersSettings->InputMoveThreshold && FMath::Abs(InputMove.X) < CharactersSettings->InputMoveThreshold)
@@ -52,6 +57,7 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 	}
 	else
 	{
+		//Character->GetCharacterMovement()->AddForce(FVector::ForwardVector * FVector(InputMove.X, InputMove.Y, 0) );
 		Character->AddMovementInput(FVector::ForwardVector , InputMove.X);
 		Character->AddMovementInput(FVector::RightVector , InputMove.Y);
 	}

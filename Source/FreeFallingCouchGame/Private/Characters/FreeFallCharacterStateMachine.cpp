@@ -53,6 +53,7 @@ UFreeFallCharacterState* UFreeFallCharacterStateMachine::GetState(EFreeFallChara
 {
 	for (UFreeFallCharacterState* State : AllStates)
 	{
+		if (State == nullptr) continue;
 		if (State->GetStateID() == StateID)
 			return State;
 	}
