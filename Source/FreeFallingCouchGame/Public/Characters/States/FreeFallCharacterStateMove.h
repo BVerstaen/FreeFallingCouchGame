@@ -27,4 +27,13 @@ public:
 protected:
 	UPROPERTY(EditAnywhere)
 	float MaxMoveSpeed;
+
+	UPROPERTY(EditAnywhere)
+	float StartMoveSpeed;
+
+	UPROPERTY(EditAnywhere)
+	float ReachMaxSpeedTime;
+
+private:
+	float AccelerationAlpha;
 };
