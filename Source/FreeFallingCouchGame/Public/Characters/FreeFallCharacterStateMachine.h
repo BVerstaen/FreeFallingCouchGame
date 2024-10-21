@@ -33,6 +33,7 @@ protected:
 	UPROPERTY()
 	TObjectPtr<AFreeFallCharacter> Character;
 
+	UPROPERTY()
 	TArray<UFreeFallCharacterState*> AllStates;
 
 	void CreateStates();
