@@ -4,18 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "Characters/FreeFallCharacterState.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "FreeFallCharacterStateMove.generated.h"
+#include "FreeFallCharacterStateDive.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class FREEFALLINGCOUCHGAME_API UFreeFallCharacterStateMove : public UFreeFallCharacterState
+class FREEFALLINGCOUCHGAME_API UFreeFallCharacterStateDive : public UFreeFallCharacterState
 {
 	GENERATED_BODY()
 
-public:
 	virtual EFreeFallCharacterStateID GetStateID() override;
 
 	virtual void StateEnter(EFreeFallCharacterStateID PreviousStateID) override;
@@ -25,16 +23,18 @@ public:
 	virtual void StateTick(float DeltaTime) override;
 
 protected:
+
+protected:
 	UPROPERTY(EditAnywhere)
-	float MaxMoveSpeed;
+	float MaxDiveSpeed;
 
 	UPROPERTY(EditAnywhere)
-	float StartMoveSpeed;
+	float StartDiveSpeed;
 
 	UPROPERTY(EditAnywhere)
 	float ReachMaxSpeedTime;
 
 private:
 	UPROPERTY()
-	float AccelerationAlpha;
+	float AccelerationAlpha;;
 };

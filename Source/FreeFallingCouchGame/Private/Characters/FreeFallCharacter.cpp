@@ -7,7 +7,7 @@
 #include "EnhancedInputComponent.h"
 #include "Characters/FreeFallCharacterInputData.h"
 #include "Characters/FreeFallCharacterStateMachine.h"
-
+#include "GameFramework/CharacterMovementComponent.h"
 
 
 // Sets default values
@@ -23,6 +23,10 @@ void AFreeFallCharacter::BeginPlay()
 	Super::BeginPlay();
 	CreateStateMachine();
 	InitStateMachine();
+
+	DefaultZPosition = GetActorLocation().Z;
+	
+	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 }
 
 // Called every frame
@@ -43,6 +47,7 @@ void AFreeFallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	if (EnhancedInputComponent == nullptr) return;
 
 	BindInputMoveAxisAndActions(EnhancedInputComponent);
+	BindInputDiveAxisAndActions(EnhancedInputComponent);
 }
 
 void AFreeFallCharacter::CreateStateMachine()
@@ -118,5 +123,50 @@ void AFreeFallCharacter::BindInputMoveAxisAndActions(UEnhancedInputComponent* En
 void AFreeFallCharacter::OnInputMove(const FInputActionValue& Value)
 {
 	InputMove = Value.Get<FVector2D>();
+}
+
+float AFreeFallCharacter::GetInputDive() const
+{
+	return InputDive;
+}
+
+float AFreeFallCharacter::GetDefaultZPosition() const
+{
+	return DefaultZPosition;
+}
+
+void AFreeFallCharacter::BindInputDiveAxisAndActions(UEnhancedInputComponent* EnhancedInputComponent)
+{
+
+	if (InputData == nullptr) return;
+	
+	if (InputData->InputActionDive)
+	{
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionDive,
+			ETriggerEvent::Started,
+			this,
+			&AFreeFallCharacter::OnInputDive
+			);
+
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionDive,
+			ETriggerEvent::Triggered,
+			this,
+			&AFreeFallCharacter::OnInputDive
+			);
+
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionDive,
+			ETriggerEvent::Completed,
+			this,
+			&AFreeFallCharacter::OnInputDive
+			);
+	}
+}
+
+void AFreeFallCharacter::OnInputDive(const FInputActionValue& Value)
+{
+	InputDive = Value.Get<float>();
 }
 

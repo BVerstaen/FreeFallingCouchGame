@@ -15,7 +15,10 @@ class FREEFALLINGCOUCHGAME_API UFreeFallCharacterInputData : public UDataAsset
 {
 	GENERATED_BODY()
 
-	public:
+public:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UInputAction> InputActionMove;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UInputAction> InputActionDive;
 };

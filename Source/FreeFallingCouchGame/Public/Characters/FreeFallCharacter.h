@@ -81,4 +81,25 @@ private:
 	void OnInputMove(const FInputActionValue& Value);
 	
 #pragma endregion
+
+#pragma region Input Dive
+
+public:
+	float GetInputDive() const;
+	float GetDefaultZPosition() const;
+
+protected:
+	UPROPERTY()
+	float InputDive = 0.f;
+
+	UPROPERTY()
+	float DefaultZPosition = 0.f;
+	
+private:
+	void BindInputDiveAxisAndActions(UEnhancedInputComponent* EnhancedInputComponent);
+
+	void OnInputDive(const FInputActionValue& Value);
+
+#pragma endregion
+	
 };

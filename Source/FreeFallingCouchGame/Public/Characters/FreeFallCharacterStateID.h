@@ -9,6 +9,7 @@ enum class EFreeFallCharacterStateID : uint8
 {
 	None = 0,
 	Idle,
-	Move
+	Move,
+	Dive
 };
 
