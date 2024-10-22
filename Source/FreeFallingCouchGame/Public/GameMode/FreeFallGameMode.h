@@ -18,8 +18,7 @@ class FREEFALLINGCOUCHGAME_API AFreeFallGameMode : public AGameModeBase
 
 public:
 	virtual void BeginPlay() override;
-
-protected:
+	
 	UPROPERTY(EditAnywhere)
 	TArray<AFreeFallCharacter*> CharactersInsideArena;
 
