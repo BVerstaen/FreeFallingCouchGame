@@ -13,10 +13,13 @@
 void AFreeFallGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+	//TODO Find way to receive player made modifications
+	SetupMatch(nullptr);
 	CreateAndInitsPlayers();
 
 	TArray<APlayerStart*> PlayerStartsPoints;
 	FindPlayerStartActorsInMap(PlayerStartsPoints);
+	StartRound();
 	SpawnCharacters(PlayerStartsPoints);
 }
 
@@ -112,3 +115,89 @@ void AFreeFallGameMode::SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints
 		CharactersInsideArena.Add(NewCharacter);
 	}
 }
+#pragma region Rounds
+
+void AFreeFallGameMode::EndRound()
+{
+	if(GetWorldTimerManager().IsTimerActive(RoundTimerHandle))
+	{
+		GetWorldTimerManager().ClearTimer(RoundTimerHandle);
+	}
+	
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "EndRound");
+	if(OnEndRound.IsBound())
+	{
+		OnEndRound.Broadcast();
+	}
+//	if(CurrentRound > CurrentParameters->getMaxRounds())
+	if(CurrentRound > 5)
+	{
+		ShowResults();
+	} else
+	{
+		StartRound();
+	}
+}
+
+void AFreeFallGameMode::ShowResults()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "ShowResults");
+	CurrentRound = 0;
+	if(OnResults.IsBound())
+	{
+		OnResults.Broadcast();
+	}
+}
+
+void AFreeFallGameMode::StartRound()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "StartRound");
+	if(OnStartRound.IsBound())
+	{
+		OnStartRound.Broadcast();
+		// void refGamemode->OnStartRound.AddDynamic(this, &UNameOfClassYouCallThisIn::NameOfFunctionToTrigger);
+	}
+	CurrentRound++;
+	if(CurrentParameters->getTimerDelay() > 0.f)
+	{
+		RoundEventTimer();	
+	}
+}
+
+void AFreeFallGameMode::RoundEventTimer()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "StartTimer");
+	GetWorld()->GetTimerManager().SetTimer(
+		RoundTimerHandle,
+		this,
+		&AFreeFallGameMode::StartEvent,
+		CurrentParameters->getTimerDelay(),
+		true
+		);
+}
+
+void AFreeFallGameMode::StartEvent()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "StartEvent");
+	if(OnCallEvent.IsBound()) OnCallEvent.Broadcast();
+	//Here can be implemented a random function to start random events
+}
+
+void AFreeFallGameMode::SetupMatch(TSubclassOf<UMatchParameters> UserParameters)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "SetupMatch");
+	// Get Values passed in selection screen
+	if(IsValid(UserParameters))
+	{
+		CurrentParameters = NewObject<UMatchParameters>(UserParameters);
+
+	} else
+	{
+		CurrentParameters = NewObject<UMatchParameters>(DefaultParameters);
+		CurrentParameters->Init(DefaultParameters);
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "Test: " + CurrentParameters->getEraChosen());
+
+	// Selection screen has a UMatchParameters variable and can call this when switching values
+}
+#pragma endregion
