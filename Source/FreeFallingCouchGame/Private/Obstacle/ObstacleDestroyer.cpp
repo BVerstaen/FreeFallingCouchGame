@@ -24,14 +24,14 @@ void AObstacleDestroyer::BeginPlay()
 	Super::BeginPlay();
 	DrawDebugBox(GetWorld(), GetTransform().GetLocation(), BoxCollision->GetScaledBoxExtent(), FColor::Red, true, -1, 0,1	);
 	
-	BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &AObstacleDestroyer::OnBeginOverlap);
+	BoxCollision->OnComponentEndOverlap.AddDynamic(this, &AObstacleDestroyer::OnOverlapEnd);
 	
 }
 
-void AObstacleDestroyer::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-                                        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AObstacleDestroyer::OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,
+	class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	AObstacle* Obstacle = (AObstacle*)OtherActor;
+	AObstacle* Obstacle = Cast<AObstacle>(OtherActor);
 	if(Obstacle == nullptr) return;
 
 	Obstacle->Destroy();

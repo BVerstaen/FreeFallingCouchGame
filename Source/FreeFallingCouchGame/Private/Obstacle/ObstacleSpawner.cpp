@@ -17,11 +17,16 @@ AObstacleSpawner::AObstacleSpawner()
 void AObstacleSpawner::BeginPlay()
 {
 	Super::BeginPlay();
-	DrawDebugBox(GetWorld(), GetTransform().GetLocation(), ObstacleSpawnExtant, FColor::Green, true, -1, 0,1	);
-
+	
 	//Set spawner timer
 	float SpawnDelay = FMath::RandRange(ObstacleMinTimer, ObstacleMaxTimer);
 	GetWorldTimerManager().SetTimer(SpawnTimer, this, &AObstacleSpawner::SpawnObstacle, SpawnDelay, false, SpawnDelay);
+}
+
+void AObstacleSpawner::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	DrawDebugBox(GetWorld(), GetTransform().GetLocation(), ObstacleSpawnExtant, FColor::Green, false, .1, 0,1);
 }
 
 FVector AObstacleSpawner::GetRandomLocationSpawnVector() const
@@ -36,6 +41,9 @@ FVector AObstacleSpawner::GetRandomLocationSpawnVector() const
 
 void AObstacleSpawner::SpawnObstacle()
 {
+	//Check if enough Obstacle
+	if(ObstaclesList.Num() <= 0) return;
+	
 	//Get random obstacle
 	TSubclassOf<AObstacle> ObstacleToSpawn = ObstaclesList[FMath::RandRange(0, ObstaclesList.Num() - 1)];
 
@@ -61,4 +69,18 @@ void AObstacleSpawner::SpawnObstacle()
 	float SpawnDelay = FMath::RandRange(ObstacleMinTimer, ObstacleMaxTimer);
 	GetWorldTimerManager().SetTimer(SpawnTimer, this, &AObstacleSpawner::SpawnObstacle, SpawnDelay, false, SpawnDelay);
 
+}
+
+void AObstacleSpawner::PauseSpawner()
+{
+	//Reset timer with new delay
+	SpawnTimer.Invalidate();
+}
+
+void AObstacleSpawner::ResumeSpawner()
+{
+	//Reset timer with new delay
+    SpawnTimer.Invalidate();
+    float SpawnDelay = FMath::RandRange(ObstacleMinTimer, ObstacleMaxTimer);
+    GetWorldTimerManager().SetTimer(SpawnTimer, this, &AObstacleSpawner::SpawnObstacle, SpawnDelay, false, SpawnDelay);
 }
