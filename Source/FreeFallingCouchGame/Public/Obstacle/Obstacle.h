@@ -47,4 +47,11 @@ public:
 	FVector Direction;
 
 #pragma endregion
+
+public:
+	UFUNCTION(BlueprintCallable)
+	UStaticMeshComponent* GetMesh();
+
+	UFUNCTION(BlueprintCallable)
+	void ResetLaunch();
 };

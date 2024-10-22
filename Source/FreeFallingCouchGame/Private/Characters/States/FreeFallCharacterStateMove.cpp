@@ -22,24 +22,24 @@ void UFreeFallCharacterStateMove::StateEnter(EFreeFallCharacterStateID PreviousS
 
 	AccelerationAlpha = 0;
 
-	GEngine->AddOnScreenDebugMessage(
-		-1,
-		3.f,
-		FColor::Green,
-		TEXT("Enter State Move")
-		);
+	// GEngine->AddOnScreenDebugMessage(
+	// 	-1,
+	// 	3.f,
+	// 	FColor::Green,
+	// 	TEXT("Enter State Move")
+	// 	);
 }
 
 void UFreeFallCharacterStateMove::StateExit(EFreeFallCharacterStateID NextStateID)
 {
 	Super::StateExit(NextStateID);
 
-	GEngine->AddOnScreenDebugMessage(
-		-1,
-		3.f,
-		FColor::Red,
-		TEXT("Exit State Move")
-		);
+	// GEngine->AddOnScreenDebugMessage(
+	// 	-1,
+	// 	3.f,
+	// 	FColor::Red,
+	// 	TEXT("Exit State Move")
+	// 	);
 }
 
 void UFreeFallCharacterStateMove::StateTick(float DeltaTime)

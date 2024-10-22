@@ -17,24 +17,24 @@ void UFreeFallCharacterStateIdle::StateEnter(EFreeFallCharacterStateID PreviousS
 {
 	Super::StateEnter(PreviousStateID);
 
-	GEngine->AddOnScreenDebugMessage(
-		-1,
-		3.f,
-		FColor::Green,
-		TEXT("Enter State Idle")
-		);
+	// GEngine->AddOnScreenDebugMessage(
+	// 	-1,
+	// 	3.f,
+	// 	FColor::Green,
+	// 	TEXT("Enter State Idle")
+	// 	);
 }
 
 void UFreeFallCharacterStateIdle::StateExit(EFreeFallCharacterStateID NextStateID)
 {
 	Super::StateExit(NextStateID);
 
-	GEngine->AddOnScreenDebugMessage(
-		-1,
-		3.f,
-		FColor::Red,
-		TEXT("Exit State Idle")
-		);
+	// GEngine->AddOnScreenDebugMessage(
+	// 	-1,
+	// 	3.f,
+	// 	FColor::Red,
+	// 	TEXT("Exit State Idle")
+	// 	);
 }
 
 void UFreeFallCharacterStateIdle::StateTick(float DeltaTime)
