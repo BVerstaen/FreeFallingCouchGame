@@ -13,9 +13,16 @@ int UMatchParameters::getMaxRounds() const
 	return MaxRounds;
 }
 
-void UMatchParameters::setValues(const UMatchParameters& UserParameters)
+void UMatchParameters::setValues(TObjectPtr<UMatchParameters> UserParameters)
 {
-	memcpy(ScoreValue,UserParameters.getScoreValues() , sizeof(int));
-	MaxRounds = UserParameters.getMaxRounds();
-	MatchType  = UserParameters.MatchType;
+	if(IsValid(UserParameters))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Valid data");
+		memcpy(ScoreValue,UserParameters->getScoreValues() , sizeof(int));
+		MaxRounds = UserParameters->getMaxRounds();
+		//MatchType  = UserParameters.MatchType;
+	} else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Data not valid");
+	}
 }

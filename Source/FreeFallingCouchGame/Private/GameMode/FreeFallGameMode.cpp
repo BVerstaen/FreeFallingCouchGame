@@ -13,8 +13,7 @@
 void AFreeFallGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	SetupMatch(CurrentParameters);
+	SetupMatch(DefaultParameters);
 	CreateAndInitsPlayers();
 
 	TArray<APlayerStart*> PlayerStartsPoints;
@@ -123,7 +122,8 @@ void AFreeFallGameMode::EndRound()
 	{
 		OnEndRound.Broadcast();
 	}
-	if(CurrentRound > CurrentParameters.getMaxRounds())
+//	if(CurrentRound > CurrentParameters->getMaxRounds())
+	if(CurrentRound > 5)
 	{
 		ShowResults();
 	} else
@@ -160,7 +160,8 @@ void AFreeFallGameMode::RoundEventTimer()
 		RoundTimerHandle,
 		this,
 		&AFreeFallGameMode::StartEvent,
-		CurrentParameters.getTimerDelay(),
+//		CurrentParameters->getTimerDelay(),
+		10.0f,
 		true
 		);
 }
@@ -171,11 +172,13 @@ void AFreeFallGameMode::StartEvent()
 	//Here can be implemented a random function to start random events
 }
 
-void AFreeFallGameMode::SetupMatch(const UMatchParameters& UserParameters)
+void AFreeFallGameMode::SetupMatch(TSubclassOf<UMatchParameters> UserParameters)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "SetupMatch");
 	// Get Values passed in selection screen
+	CurrentParameters = NewObject<UMatchParameters>(DefaultParameters);
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "Test: " + CurrentParameters->getEraChosen());
+
 	// Selection screen has a UMatchParameters variable and can call this when switching values
-	CurrentParameters.setValues(DefaultParameters);
 }
 #pragma endregion

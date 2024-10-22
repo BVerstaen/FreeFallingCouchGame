@@ -40,16 +40,15 @@ private:
 protected:
 	UPROPERTY(EditAnywhere)
 	uint8 CurrentRound = 0;
-	UMatchParameters DefaultParameters;
-	UMatchParameters CurrentParameters;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UMatchParameters> DefaultParameters = nullptr;
+	UPROPERTY()
+	UMatchParameters *CurrentParameters;
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDStartRound);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDEndRound);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDResults);
-	UPROPERTY(BlueprintCallable)
 	FDStartRound OnStartRound;
-	UPROPERTY(BlueprintCallable)
 	FDEndRound OnEndRound;
-	UPROPERTY(BlueprintCallable)
 	FDResults OnResults;
 
 	FTimerHandle RoundTimerHandle;
@@ -60,6 +59,6 @@ private:
 	void EndRound();
 	void ShowResults();
 	void StartEvent();
-	void SetupMatch(const UMatchParameters& UserParameters);
+	void SetupMatch(TSubclassOf<UMatchParameters> UserParameters);
 #pragma endregion
 };

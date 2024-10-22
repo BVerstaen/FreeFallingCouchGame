@@ -24,15 +24,16 @@ enum EWinConditions
 	Timed,
 };
 
-UCLASS()
+UCLASS(Blueprintable)
 class FREEFALLINGCOUCHGAME_API UMatchParameters : public UObject
 {
 	GENERATED_BODY()
 	public:
 	const int* getScoreValues() const;
 	int getMaxRounds() const;
-	float getTimerDelay() const {return EventDelay;};
-	void setValues(const UMatchParameters& UserParameters);
+	float getTimerDelay() const {return EventDelay;}
+	FString getEraChosen() const {return EraName;}
+	void setValues(TObjectPtr<UMatchParameters> UserParameters);
 protected:
 	// Scores based on your ranking (IN ORDER)
 	UPROPERTY(EditAnywhere)
@@ -47,5 +48,5 @@ protected:
 	UPROPERTY(EditAnywhere)
 	FString EraName = "Default";
 	// Current Match Type (Classic, Teams, etc...)
-	EMatchTypes MatchType;
+	//EMatchTypes MatchType;
 };
