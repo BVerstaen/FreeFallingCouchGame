@@ -42,6 +42,5 @@ void AObstacleRotatingPoint::Tick(float DeltaTime)
 	Direction = FVector(Direction.X,Direction.Y,0);
 	LinkedObstacle->ObstacleDirection = Direction;
 	
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, Direction.ToString());
 }
 

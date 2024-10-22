@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "InputMappingContext.h"
+#include "Arena/ArenaActor.h"
+#include "FreeFallingCouchGame/Public/Match/MatchParameters.h"
 #include "Characters/FreeFallCharacterInputData.h"
 #include "GameFramework/GameModeBase.h"
 #include "FreeFallGameMode.generated.h"
@@ -18,7 +20,8 @@ class FREEFALLINGCOUCHGAME_API AFreeFallGameMode : public AGameModeBase
 
 public:
 	virtual void BeginPlay() override;
-	
+	void StartMatch();
+
 	UPROPERTY(EditAnywhere)
 	TArray<AFreeFallCharacter*> CharactersInsideArena;
 
@@ -34,5 +37,50 @@ private:
 	TSubclassOf<AFreeFallCharacter> GetFreeFallCharacterClassFromInputType(EAutoReceiveInput::Type InputType) const;
 
 	void SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints);
+
+#pragma region Rounds
+protected:
 	
+	
+	UPROPERTY(EditAnywhere)
+	uint8 CurrentRound = 0;
+	//FVector<uint8> LossOrder;
+	FTimerHandle RoundTimerHandle;
+	// Refs to Objects in Scene
+	UPROPERTY()
+	TObjectPtr<AArenaActor> ArenaActorInstance;
+	// Match Parameters
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UMatchParameters> DefaultParameters = nullptr;
+
+	UPROPERTY()
+	UMatchParameters *CurrentParameters;
+	// Delegate declaration
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDStartRound);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDEndRound);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDResults);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDCallEvent);
+	// Delegate Instance
+	FDStartRound OnStartRound;
+	FDEndRound OnEndRound;
+	FDResults OnResults;
+	FDCallEvent OnCallEvent;
+private:
+	//After Initiation, launches the timer and links events
+	void StartRound();
+	// InGame event clock
+	void RoundEventTimer();
+	// When Round end condition is reached, unlinks and check if match is over
+	void EndRound();
+	// When Match is over, calls an event to show
+	// Results UI and buttons to go back to menu (/ restart)
+	void ShowResults();
+	// What RoundEventTimer calls 
+	void StartEvent();
+	UFUNCTION()
+	// Checks if end condition is reached
+	void CheckEndRound(AFreeFallCharacter* Character);
+	// Sets up the values for the match & rounds to follow
+	void SetupMatch(TSubclassOf<UMatchParameters> UserParameters);
+#pragma endregion
 };

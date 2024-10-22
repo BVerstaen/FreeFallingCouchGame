@@ -14,12 +14,11 @@ void AFreeFallGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 	CreateAndInitsPlayers();
-
-	TArray<APlayerStart*> PlayerStartsPoints;
-	FindPlayerStartActorsInMap(PlayerStartsPoints);
-	SpawnCharacters(PlayerStartsPoints);
+	ArenaActorInstance = GetWorld()->SpawnActor<AArenaActor>();
+	//TODO Find way to receive player made modifications
+	StartMatch();
 }
-
+#pragma region CharacterSpawn
 void AFreeFallGameMode::CreateAndInitsPlayers() const
 {
 	UGameInstance* GameInstance = GetWorld()->GetGameInstance();
@@ -88,7 +87,7 @@ void AFreeFallGameMode::SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints
 {
 	UFreeFallCharacterInputData* InputData = LoadInputDataFromConfig();
 	UInputMappingContext* InputMappingContext = LoadInputMappingContextFromConfig();
-	
+	uint8 ID_Player = 1;
 	for (APlayerStart* SpawnPoint : SpawnPoints)
 	{
 		EAutoReceiveInput::Type InputType = SpawnPoint->AutoReceiveInput.GetValue();
@@ -106,9 +105,132 @@ void AFreeFallGameMode::SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints
 		NewCharacter->InputMappingContext = InputMappingContext;
 		NewCharacter->AutoPossessPlayer = SpawnPoint->AutoReceiveInput;
 		NewCharacter->FinishSpawning(SpawnPoint->GetTransform());
-
+		NewCharacter->setIDPlayerLinked(ID_Player);
 		/*NewCharacter->SetOrientX(SpawnPoint->GetStartOrientX());*/
 
 		CharactersInsideArena.Add(NewCharacter);
+		ID_Player++;
 	}
 }
+#pragma endregion
+#pragma region PreRound
+void AFreeFallGameMode::StartMatch()
+{
+	ArenaActorInstance->OnCharacterDestroyed.AddDynamic(this, &AFreeFallGameMode::CheckEndRound);
+	SetupMatch(nullptr);
+	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------MATCH START--------------------"));
+	StartRound();
+}
+void AFreeFallGameMode::StartRound()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple, FString::Printf(TEXT("Current Round: %i"), CurrentRound));
+
+	TArray<APlayerStart*> PlayerStartsPoints;
+	FindPlayerStartActorsInMap(PlayerStartsPoints);
+	SpawnCharacters(PlayerStartsPoints);
+	ArenaActorInstance->Init();
+
+	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------ROUND START--------------------"));
+	if(OnStartRound.IsBound())
+	{
+		OnStartRound.Broadcast();
+	}
+	CurrentRound++;
+	if(CurrentParameters->getTimerDelay() > 0.f)
+	{
+		RoundEventTimer();	
+	}
+}
+void AFreeFallGameMode::SetupMatch(TSubclassOf<UMatchParameters> UserParameters)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "SetupMatch");
+	// Get Values passed in selection screen
+	if(IsValid(UserParameters))
+	{
+		CurrentParameters = NewObject<UMatchParameters>(UserParameters);
+
+	} else
+	{
+		CurrentParameters = NewObject<UMatchParameters>(DefaultParameters);
+		CurrentParameters->Init(DefaultParameters);
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "Test: " + CurrentParameters->getEraChosen());
+	// Selection screen has a UMatchParameters variable and can call this when switching values
+}
+#pragma endregion 
+
+#pragma region DuringRound
+
+void AFreeFallGameMode::CheckEndRound(AFreeFallCharacter* Character)
+{
+	//TODO Array of order in which characters got eliminated
+	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple,
+		FString::Printf(TEXT("Player number %i was eliminated!"), Character->getIDPlayerLinked()));
+	CharactersInsideArena.Remove(Character);
+	if(CharactersInsideArena.Num() <= 1)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "One character, remaining, end match!");
+		EndRound();
+	}
+}
+
+void AFreeFallGameMode::RoundEventTimer()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "StartTimer");
+	GetWorld()->GetTimerManager().SetTimer(
+		RoundTimerHandle,
+		this,
+		&AFreeFallGameMode::StartEvent,
+		CurrentParameters->getTimerDelay(),
+		true
+		);
+}
+
+void AFreeFallGameMode::StartEvent()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "StartEvent");
+	if(OnCallEvent.IsBound()) OnCallEvent.Broadcast();
+	//Here can be implemented a random function to start random events
+}
+#pragma endregion
+
+#pragma region PostRound
+void AFreeFallGameMode::EndRound()
+{
+	// Clear Timer
+	if(GetWorldTimerManager().IsTimerActive(RoundTimerHandle))
+		GetWorldTimerManager().ClearTimer(RoundTimerHandle);
+	
+	// Reset CharactersInside Arena
+	for (auto Element : CharactersInsideArena) { Element->Destroy();}
+	CharactersInsideArena.Empty();
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "EndRound");
+	
+	// Unlink event (to reapply properly later on, avoiding double linkage)
+	if(OnEndRound.IsBound())
+		OnEndRound.Broadcast();
+	// Check for end match
+	if(CurrentRound > CurrentParameters->getMaxRounds())
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------MATCH END--------------------"));
+		ShowResults();
+	} else
+	{
+		StartRound();
+	}
+}
+
+void AFreeFallGameMode::ShowResults()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "ShowResults");
+	CurrentRound = 0;
+	ArenaActorInstance->OnCharacterDestroyed.RemoveDynamic(this, &AFreeFallGameMode::CheckEndRound);
+
+	if(OnResults.IsBound())
+	{
+		OnResults.Broadcast();
+	}
+	//TODO AwaitUserInput
+	StartMatch();
+}
+#pragma endregion

@@ -26,11 +26,9 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -101,5 +99,12 @@ private:
 	void OnInputDive(const FInputActionValue& Value);
 
 #pragma endregion
-	
+
+#pragma region IDPlayer
+protected:
+	uint8 ID_PlayerLinked = -1;
+public:
+	int getIDPlayerLinked() const { return ID_PlayerLinked; }
+	void setIDPlayerLinked(int InID) { ID_PlayerLinked = InID; }
+#pragma endregion
 };
