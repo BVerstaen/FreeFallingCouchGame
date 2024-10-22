@@ -7,6 +7,7 @@
 #include "EnhancedInputComponent.h"
 #include "Characters/FreeFallCharacterInputData.h"
 #include "Characters/FreeFallCharacterStateMachine.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 
@@ -27,6 +28,7 @@ void AFreeFallCharacter::BeginPlay()
 	DefaultZPosition = GetActorLocation().Z;
 	
 	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+	GetCapsuleComponent()->SetSimulatePhysics(false);
 }
 
 // Called every frame
