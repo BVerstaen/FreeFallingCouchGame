@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -22,6 +22,9 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category="States")
 	TMap<EFreeFallCharacterStateID, TSubclassOf<UFreeFallCharacterState>> SmashCharacterStates;
 
+	UPROPERTY(Config, EditAnywhere, Category="Ejection")
+	float DelayAliveOffScreen;
+	
 	UPROPERTY(Config, EditAnywhere, Category="InputMove")
 	float InputMoveThreshold;
 
