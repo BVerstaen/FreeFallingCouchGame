@@ -21,10 +21,6 @@ AArenaActor::AArenaActor()
 void AArenaActor::BeginPlay()
 {
 	Super::BeginPlay();
-
-	//Attendre 1 seconde que le gamemode s'initialise A CHANGER PAR PITIE
-	FTimerHandle TimerHandle;
-	GetWorldTimerManager().SetTimer(TimerHandle, this, &AArenaActor::Init, 1, false);
 }
 
 void AArenaActor::Init()

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "InputMappingContext.h"
+#include "Arena/ArenaActor.h"
 #include "FreeFallingCouchGame/Public/Match/MatchParameters.h"
 #include "Characters/FreeFallCharacterInputData.h"
 #include "GameFramework/GameModeBase.h"
@@ -19,7 +20,8 @@ class FREEFALLINGCOUCHGAME_API AFreeFallGameMode : public AGameModeBase
 
 public:
 	virtual void BeginPlay() override;
-	
+	void StartMatch();
+
 	UPROPERTY(EditAnywhere)
 	TArray<AFreeFallCharacter*> CharactersInsideArena;
 
@@ -53,13 +55,25 @@ protected:
 	FDResults OnResults;
 	FDCallEvent OnCallEvent;
 	FTimerHandle RoundTimerHandle;
+	UPROPERTY()
+	TObjectPtr<AArenaActor> ArenaActorInstance;
 	
 private:
+	//After Initiation, launches the timer and links events
 	void StartRound();
+	// InGame event clock
 	void RoundEventTimer();
+	// When Round end condition is reached, unlinks and check if match is over
 	void EndRound();
+	// When Match is over, calls an event to show
+	// Results UI and buttons to go back to menu (/ restart)
 	void ShowResults();
+	// What RoundEventTimer calls 
 	void StartEvent();
+	UFUNCTION()
+	// Checks if end condition is reached
+	void CheckEndRound(AFreeFallCharacter* Character);
+	// Sets up the values for the match & rounds to follow
 	void SetupMatch(TSubclassOf<UMatchParameters> UserParameters);
 #pragma endregion
 };
