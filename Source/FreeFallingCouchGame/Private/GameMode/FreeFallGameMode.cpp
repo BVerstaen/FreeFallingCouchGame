@@ -87,7 +87,7 @@ void AFreeFallGameMode::SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints
 {
 	UFreeFallCharacterInputData* InputData = LoadInputDataFromConfig();
 	UInputMappingContext* InputMappingContext = LoadInputMappingContextFromConfig();
-	
+	int ID_Player = 1;
 	for (APlayerStart* SpawnPoint : SpawnPoints)
 	{
 		EAutoReceiveInput::Type InputType = SpawnPoint->AutoReceiveInput.GetValue();
@@ -105,10 +105,11 @@ void AFreeFallGameMode::SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints
 		NewCharacter->InputMappingContext = InputMappingContext;
 		NewCharacter->AutoPossessPlayer = SpawnPoint->AutoReceiveInput;
 		NewCharacter->FinishSpawning(SpawnPoint->GetTransform());
-
+		NewCharacter->setIDPlayerLinked(ID_Player);
 		/*NewCharacter->SetOrientX(SpawnPoint->GetStartOrientX());*/
 
 		CharactersInsideArena.Add(NewCharacter);
+		ID_Player++;
 	}
 }
 #pragma endregion
@@ -163,6 +164,9 @@ void AFreeFallGameMode::SetupMatch(TSubclassOf<UMatchParameters> UserParameters)
 void AFreeFallGameMode::CheckEndRound(AFreeFallCharacter* Character)
 {
 	//TODO Array of order in which characters got eliminated
+	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple,
+		FString::Printf(TEXT("Player number %i was eliminated!"), Character->getIDPlayerLinked()));
+
 	CharactersInsideArena.Remove(Character);
 	if(CharactersInsideArena.Num() <= 1)
 	{
