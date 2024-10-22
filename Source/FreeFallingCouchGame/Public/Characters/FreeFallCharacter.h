@@ -102,7 +102,7 @@ private:
 
 #pragma region IDPlayer
 protected:
-	int ID_PlayerLinked = -1;
+	uint8 ID_PlayerLinked = -1;
 public:
 	int getIDPlayerLinked() const { return ID_PlayerLinked; }
 	void setIDPlayerLinked(int InID) { ID_PlayerLinked = InID; }

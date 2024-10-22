@@ -40,24 +40,31 @@ private:
 
 #pragma region Rounds
 protected:
+	
+	
 	UPROPERTY(EditAnywhere)
 	uint8 CurrentRound = 0;
+	//FVector<uint8> LossOrder;
+	FTimerHandle RoundTimerHandle;
+	// Refs to Objects in Scene
+	UPROPERTY()
+	TObjectPtr<AArenaActor> ArenaActorInstance;
+	// Match Parameters
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UMatchParameters> DefaultParameters = nullptr;
+
 	UPROPERTY()
 	UMatchParameters *CurrentParameters;
+	// Delegate declaration
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDStartRound);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDEndRound);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDResults);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDCallEvent);
+	// Delegate Instance
 	FDStartRound OnStartRound;
 	FDEndRound OnEndRound;
 	FDResults OnResults;
 	FDCallEvent OnCallEvent;
-	FTimerHandle RoundTimerHandle;
-	UPROPERTY()
-	TObjectPtr<AArenaActor> ArenaActorInstance;
-	
 private:
 	//After Initiation, launches the timer and links events
 	void StartRound();
