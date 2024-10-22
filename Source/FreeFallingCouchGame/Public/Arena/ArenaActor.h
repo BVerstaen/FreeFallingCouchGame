@@ -19,9 +19,6 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	UFUNCTION()
-	void Init();
 	
 	UPROPERTY(EditAnywhere)
 	float OffScreenTolerance;
@@ -32,7 +29,8 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	UFUNCTION()
+	void Init();
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterDestroyed, AFreeFallCharacter*, Character);
 	UPROPERTY(BlueprintAssignable)
 	FOnCharacterDestroyed OnCharacterDestroyed;
