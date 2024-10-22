@@ -13,6 +13,8 @@
 void AFreeFallGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	SetupMatch(CurrentParameters);
 	CreateAndInitsPlayers();
 
 	TArray<APlayerStart*> PlayerStartsPoints;
@@ -112,3 +114,68 @@ void AFreeFallGameMode::SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints
 		CharactersInsideArena.Add(NewCharacter);
 	}
 }
+#pragma region Rounds
+
+void AFreeFallGameMode::EndRound()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "EndRound");
+	if(OnEndRound.IsBound())
+	{
+		OnEndRound.Broadcast();
+	}
+	if(CurrentRound > CurrentParameters.getMaxRounds())
+	{
+		ShowResults();
+	} else
+	{
+		StartRound();
+	}
+}
+
+void AFreeFallGameMode::ShowResults()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "ShowResults");
+	CurrentRound = 0;
+	if(OnResults.IsBound())
+	{
+		OnResults.Broadcast();
+	}
+}
+
+void AFreeFallGameMode::StartRound()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "StartRound");
+	if(OnStartRound.IsBound())
+	{
+		OnStartRound.Broadcast();
+		// void refGamemode->OnStartRound.AddDynamic(this, &UNameOfClassYouCallThisIn::NameOfFunctionToTrigger);
+	}
+	CurrentRound++;
+}
+
+void AFreeFallGameMode::RoundEventTimer()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "StartTimer");
+	GetWorld()->GetTimerManager().SetTimer(
+		RoundTimerHandle,
+		this,
+		&AFreeFallGameMode::StartEvent,
+		CurrentParameters.getTimerDelay(),
+		true
+		);
+}
+
+void AFreeFallGameMode::StartEvent()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "StartEvent");
+	//Here can be implemented a random function to start random events
+}
+
+void AFreeFallGameMode::SetupMatch(const UMatchParameters& UserParameters)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "SetupMatch");
+	// Get Values passed in selection screen
+	// Selection screen has a UMatchParameters variable and can call this when switching values
+	CurrentParameters.setValues(DefaultParameters);
+}
+#pragma endregion
