@@ -25,6 +25,9 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+public:
+	virtual void Tick(float DeltaTime) override;
+	
 #pragma endregion
 	
 #pragma region Parameters
@@ -66,6 +69,10 @@ private:
 	FVector GetRandomLocationSpawnVector() const;
 	
 public:
+	UFUNCTION(BlueprintCallable)
 	void SpawnObstacle();
-	
+	UFUNCTION(BlueprintCallable, CallInEditor)
+	void PauseSpawner();
+	UFUNCTION(BlueprintCallable, CallInEditor)
+	void ResumeSpawner();
 };
