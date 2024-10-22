@@ -3,6 +3,14 @@
 
 #include "Match/MatchParameters.h"
 
+void UMatchParameters::Init(TSubclassOf<UMatchParameters> UserParameters)
+{
+	MaxRounds = UserParameters.GetDefaultObject()->getMaxRounds();
+	EraName = UserParameters.GetDefaultObject()->getEraChosen();
+	EventDelay = UserParameters.GetDefaultObject()->getTimerDelay();
+	memcpy(ScoreValue, UserParameters.GetDefaultObject()->getScoreValues(), sizeof(int));
+}
+
 const int* UMatchParameters::getScoreValues() const
 {
 	return ScoreValue;

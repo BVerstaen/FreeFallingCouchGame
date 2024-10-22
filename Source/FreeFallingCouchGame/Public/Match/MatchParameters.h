@@ -29,6 +29,7 @@ class FREEFALLINGCOUCHGAME_API UMatchParameters : public UObject
 {
 	GENERATED_BODY()
 	public:
+	void Init(TSubclassOf<UMatchParameters> UserParameters);
 	const int* getScoreValues() const;
 	int getMaxRounds() const;
 	float getTimerDelay() const {return EventDelay;}

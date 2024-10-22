@@ -13,7 +13,8 @@
 void AFreeFallGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	SetupMatch(DefaultParameters);
+	//TODO Find way to receive player made modifications
+	SetupMatch(nullptr);
 	CreateAndInitsPlayers();
 
 	TArray<APlayerStart*> PlayerStartsPoints;
@@ -176,7 +177,15 @@ void AFreeFallGameMode::SetupMatch(TSubclassOf<UMatchParameters> UserParameters)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "SetupMatch");
 	// Get Values passed in selection screen
-	CurrentParameters = NewObject<UMatchParameters>(DefaultParameters);
+	if(IsValid(UserParameters))
+	{
+		CurrentParameters = NewObject<UMatchParameters>(UserParameters);
+
+	} else
+	{
+		CurrentParameters = NewObject<UMatchParameters>(DefaultParameters);
+		CurrentParameters->Init(DefaultParameters);
+	}
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "Test: " + CurrentParameters->getEraChosen());
 
 	// Selection screen has a UMatchParameters variable and can call this when switching values
