@@ -19,6 +19,7 @@ void AFreeFallGameMode::BeginPlay()
 
 	TArray<APlayerStart*> PlayerStartsPoints;
 	FindPlayerStartActorsInMap(PlayerStartsPoints);
+	StartRound();
 	SpawnCharacters(PlayerStartsPoints);
 }
 
@@ -118,6 +119,11 @@ void AFreeFallGameMode::SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints
 
 void AFreeFallGameMode::EndRound()
 {
+	if(GetWorldTimerManager().IsTimerActive(RoundTimerHandle))
+	{
+		GetWorldTimerManager().ClearTimer(RoundTimerHandle);
+	}
+	
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "EndRound");
 	if(OnEndRound.IsBound())
 	{
@@ -152,6 +158,10 @@ void AFreeFallGameMode::StartRound()
 		// void refGamemode->OnStartRound.AddDynamic(this, &UNameOfClassYouCallThisIn::NameOfFunctionToTrigger);
 	}
 	CurrentRound++;
+	if(CurrentParameters->getTimerDelay() > 0.f)
+	{
+		RoundEventTimer();	
+	}
 }
 
 void AFreeFallGameMode::RoundEventTimer()
@@ -161,8 +171,7 @@ void AFreeFallGameMode::RoundEventTimer()
 		RoundTimerHandle,
 		this,
 		&AFreeFallGameMode::StartEvent,
-//		CurrentParameters->getTimerDelay(),
-		10.0f,
+		CurrentParameters->getTimerDelay(),
 		true
 		);
 }
@@ -170,6 +179,7 @@ void AFreeFallGameMode::RoundEventTimer()
 void AFreeFallGameMode::StartEvent()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "StartEvent");
+	if(OnCallEvent.IsBound()) OnCallEvent.Broadcast();
 	//Here can be implemented a random function to start random events
 }
 

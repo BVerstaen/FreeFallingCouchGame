@@ -47,10 +47,11 @@ protected:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDStartRound);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDEndRound);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDResults);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDCallEvent);
 	FDStartRound OnStartRound;
 	FDEndRound OnEndRound;
 	FDResults OnResults;
-
+	FDCallEvent OnCallEvent;
 	FTimerHandle RoundTimerHandle;
 	
 private:
