@@ -18,7 +18,7 @@ void UFreeFallCharacterStateMove::StateEnter(EFreeFallCharacterStateID PreviousS
 {
 	Super::StateEnter(PreviousStateID);
 
-	Character->GetCharacterMovement()->MaxWalkSpeed = StartMoveSpeed;
+	Character->GetCharacterMovement()->MaxFlySpeed = StartMoveSpeed;
 
 	AccelerationAlpha = 0;
 
@@ -47,10 +47,15 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 	Super::StateTick(DeltaTime);
 
 	AccelerationAlpha += DeltaTime;
-	Character->GetCharacterMovement()->MaxWalkSpeed = FMath::Lerp(StartMoveSpeed,MaxMoveSpeed,FMath::Min(AccelerationAlpha/ReachMaxSpeedTime,1));
+	Character->GetCharacterMovement()->MaxFlySpeed = FMath::Lerp(StartMoveSpeed,MaxMoveSpeed,FMath::Min(AccelerationAlpha/ReachMaxSpeedTime,1));
 
 	const FVector2D InputMove = Character->GetInputMove();
-	
+
+	if (FMathf::Abs(Character->GetInputDive()) > CharactersSettings->InputDiveThreshold)
+	{
+		StateMachine->ChangeState(EFreeFallCharacterStateID::Dive);
+		return;
+	}
 	if (FMath::Abs(InputMove.Y) < CharactersSettings->InputMoveThreshold && FMath::Abs(InputMove.X) < CharactersSettings->InputMoveThreshold)
 	{
 		StateMachine->ChangeState(EFreeFallCharacterStateID::Idle);
