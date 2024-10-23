@@ -17,12 +17,6 @@ AArenaActor::AArenaActor()
 	OffScreenTolerance = 0.f;
 }
 
-// Called when the game starts or when spawned
-void AArenaActor::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
 void AArenaActor::Init()
 {
 	//Set existing characters
