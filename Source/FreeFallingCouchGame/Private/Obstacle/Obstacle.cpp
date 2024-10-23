@@ -16,6 +16,9 @@ AObstacle::AObstacle()
 	//Initialize parameters
 	Speed = 0.0f;
 	Direction = FVector::ZeroVector;
+
+	Mesh->SetSimulatePhysics(true);
+	Mesh->SetEnableGravity(false);
 }
 
 // Called when the game starts or when spawned
@@ -23,8 +26,6 @@ void AObstacle::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	Mesh->SetSimulatePhysics(true);
-	Mesh->SetEnableGravity(false);
 
 	Direction.Normalize();
 	FVector ImpulseVector = Direction * Speed;
