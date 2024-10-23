@@ -21,11 +21,11 @@ void AObstacleTransitionClouds::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if(DistanceTolerance >= FVector::Dist(-SpawnExtent, SpawnExtent))
+	if(DistanceTolerance >= FVector::Dist(-SpawnExtent, SpawnExtent)/2)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "!!!! DISTANCE TOLERANCE IS TOO HIGH ! UNREAL WILL CRASH IF TRY RANDOMIZEPLAYERSPOSITION !!!!");
 	}
-	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, FString::Printf(TEXT("%f"), FVector::Dist(-SpawnExtent, SpawnExtent)));
+	
 }
 
 void AObstacleTransitionClouds::StartTransition()
@@ -42,7 +42,8 @@ void AObstacleTransitionClouds::EndTransition()
 
 void AObstacleTransitionClouds::RandomizePlayersPositions()
 {
-	if(DistanceTolerance >= FMath::Sqrt(SpawnExtent.X * 2 + SpawnExtent.Y * 2))
+	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, FString::Printf(TEXT("%f"), FVector::Dist(-SpawnExtent, SpawnExtent)));
+	if(DistanceTolerance >= FVector::Dist(-SpawnExtent, SpawnExtent)/2)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "!!!! DISTANCE TOLERANCE IS TOO HIGH !!!!");
 		return;
