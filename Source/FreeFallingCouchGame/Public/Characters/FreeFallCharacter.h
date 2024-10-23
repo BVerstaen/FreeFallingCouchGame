@@ -107,4 +107,52 @@ public:
 	int getIDPlayerLinked() const { return ID_PlayerLinked; }
 	void setIDPlayerLinked(int InID) { ID_PlayerLinked = InID; }
 #pragma endregion
+
+#pragma region Bounce Collision
+protected:
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UCapsuleComponent> CapsuleCollision;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bAlreadyCollided = false;
+
+	/*Cooldown entre 2 rebonds*/
+	UPROPERTY(EditAnywhere, Category="Bounce Collision")
+	float BounceCooldownDelay = .1f;
+
+	/*Multiplicateur de rebondissement entre joueur / objets*/
+	UPROPERTY(EditAnywhere, Category="Bounce Collision")
+	float BounceObstacleMultiplier = 1.f;
+
+	/*Multiplicateur de rebondissement entre les joueurs*/
+	UPROPERTY(EditAnywhere, Category="Bounce Collision")
+	float BouncePlayerMultiplier = 1.f;
+
+	/*Combien JE donne à l'autre joueur (je garde 1 - X)*/
+	UPROPERTY(EditAnywhere, Category="Bounce Collision")
+	float BounceRestitutionMultiplier = 1.f;
+
+	/*Dois-je garder ma vélocité restante ou non ?*/
+	UPROPERTY(EditAnywhere, Category="Bounce Collision")
+	bool bShouldKeepRemainingVelocity = false;
+
+	/*La masse du joueur (sert pour les collisions entre objets)*/
+	UPROPERTY(EditAnywhere, Category="Bounce Collision")
+	float PlayerMass;
+	
+	UPROPERTY()
+	FVector OldVelocity = FVector::ZeroVector;
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void BounceCooldown();
+
+protected:
+	UFUNCTION()
+	void OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	
+	UFUNCTION()
+	void ResetBounce();
+	
+#pragma endregion 
 };
