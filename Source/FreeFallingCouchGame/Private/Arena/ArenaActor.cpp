@@ -5,6 +5,7 @@
 
 #include "Characters/FreeFallCharacter.h"
 #include "GameMode/FreeFallGameMode.h"
+#include "Kismet/GameplayStatics.h"
 #include "Settings/CharactersSettings.h"
 
 
@@ -15,6 +16,7 @@ AArenaActor::AArenaActor()
 	PrimaryActorTick.bCanEverTick = true;
 
 	OffScreenTolerance = 0.f;
+	NearEdgeScreenTolerance = 0.f;
 }
 
 void AArenaActor::Init()
@@ -29,7 +31,8 @@ void AArenaActor::Init()
 
 	//Set off-screen tolerance
 	const UCharactersSettings* CharactersSettings = GetDefault<UCharactersSettings>();
-	OffScreenTolerance = CharactersSettings->DelayAliveOffScreen;
+	OffScreenTolerance = CharactersSettings->MarginAliveOffScreen;
+	NearEdgeScreenTolerance = CharactersSettings->PercentageCloseEdgeScreen;
 }
 
 // Called every frame
@@ -38,21 +41,40 @@ void AArenaActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	TArray<AFreeFallCharacter*> CharactersToRemove;
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	
 	//Check if character was rendered on screen
 	for(AFreeFallCharacter* Character : CharactersInsideArena)
 	{
 		if(Character == nullptr) continue;
-		
-		if(!Character->WasRecentlyRendered(OffScreenTolerance))
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, Character->GetName() + "is out");
 
-			//Destroy current player
-			if(OnCharacterDestroyed.IsBound())
-				OnCharacterDestroyed.Broadcast(Character);
+		FVector PlayerLocation = Character->GetActorLocation();
+		FVector2D ScreenPosition;
+		
+		//Check if player position is a valid screen position
+		bool bCanConvertToScreen = PlayerController->ProjectWorldLocationToScreen(PlayerLocation, ScreenPosition);
+		if(bCanConvertToScreen)
+		{
+			//Check if player is beyond margin Tolerance
+			const FVector2D ViewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
+
+			if (!(ScreenPosition.X >= -OffScreenTolerance && ScreenPosition.X <= ViewportSize.X + OffScreenTolerance &&
+				ScreenPosition.Y >= -OffScreenTolerance && ScreenPosition.Y <= ViewportSize.Y + OffScreenTolerance))
+			{
+				//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, Character->GetName() + "is out");
+
+				//Destroy current player
+				if(OnCharacterDestroyed.IsBound())
+					OnCharacterDestroyed.Broadcast(Character);
 			
-			CharactersToRemove.Add(Character);
-			Character->Destroy();
+				CharactersToRemove.Add(Character);
+				Character->Destroy();
+			}
+			else if (!(ScreenPosition.X >= ViewportSize.X * NearEdgeScreenTolerance && ScreenPosition.X <= ViewportSize.X - ViewportSize.X * NearEdgeScreenTolerance &&
+				ScreenPosition.Y >= ViewportSize.Y * NearEdgeScreenTolerance && ScreenPosition.Y <= ViewportSize.Y - ViewportSize.Y * NearEdgeScreenTolerance))
+			{
+				//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Is Near Edge of Screen");
+			}
 		}
 	}
 

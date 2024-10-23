@@ -23,7 +23,10 @@ public:
 	TMap<EFreeFallCharacterStateID, TSubclassOf<UFreeFallCharacterState>> SmashCharacterStates;
 
 	UPROPERTY(Config, EditAnywhere, Category="Ejection")
-	float DelayAliveOffScreen;
+	float MarginAliveOffScreen;
+
+	UPROPERTY(Config, EditAnywhere, Category="Ejection")
+	float PercentageCloseEdgeScreen;
 	
 	UPROPERTY(Config, EditAnywhere, Category="InputMove")
 	float InputMoveThreshold;

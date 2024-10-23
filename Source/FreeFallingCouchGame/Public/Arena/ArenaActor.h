@@ -17,8 +17,11 @@ public:
 	AArenaActor();
 
 protected:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	float OffScreenTolerance;
+	
+	UPROPERTY()
+	float NearEdgeScreenTolerance;
 	
 	UPROPERTY()
 	TArray<AFreeFallCharacter*> CharactersInsideArena;
