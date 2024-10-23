@@ -5,11 +5,14 @@
 
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "Camera/CameraActor.h"
 #include "Characters/FreeFallCharacterInputData.h"
 #include "Characters/FreeFallCharacterStateMachine.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Obstacle/Obstacle.h"
+#include "Other/DiveLevels.h"
 
 
 // Sets default values
@@ -54,6 +57,10 @@ void AFreeFallCharacter::BeginPlay()
 	{
 		CapsuleCollision->OnComponentHit.AddDynamic(this, &AFreeFallCharacter::OnCapsuleCollisionHit);
 	}
+
+	//TODO: Pass this in Gamemode to clean code
+	DiveLevelsActor = Cast<ADiveLevels>(UGameplayStatics::GetActorOfClass(GetWorld(), ADiveLevels::StaticClass()));
+	CameraActor = Cast<ACameraActor>(UGameplayStatics::GetActorOfClass(GetWorld(), ACameraActor::StaticClass()));
 }
 
 // Called every frame
@@ -160,6 +167,16 @@ float AFreeFallCharacter::GetInputDive() const
 float AFreeFallCharacter::GetDefaultZPosition() const
 {
 	return DefaultZPosition;
+}
+
+ADiveLevels* AFreeFallCharacter::GetDiveLevelsActor() const
+{
+	return DiveLevelsActor;
+}
+
+ACameraActor* AFreeFallCharacter::GetCameraActor() const
+{
+	return CameraActor;
 }
 
 void AFreeFallCharacter::BindInputDiveAxisAndActions(UEnhancedInputComponent* EnhancedInputComponent)
