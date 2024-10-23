@@ -7,10 +7,12 @@
 #include "Arena/ArenaActor.h"
 #include "FreeFallingCouchGame/Public/Match/MatchParameters.h"
 #include "Characters/FreeFallCharacterInputData.h"
+#include "Characters/PlayerMatchData.h"
 #include "GameFramework/GameModeBase.h"
 #include "FreeFallGameMode.generated.h"
 
 class AFreeFallCharacter;
+
 class APlayerStart;
 
 UCLASS()
@@ -44,8 +46,11 @@ protected:
 	
 	UPROPERTY(EditAnywhere)
 	uint8 CurrentRound = 0;
-	//FVector<uint8> LossOrder;
 	FTimerHandle RoundTimerHandle;
+	//Ranking
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UPlayerMatchData> PlayerMatchData;
+	std::vector<uint8> LossOrder;
 	// Refs to Objects in Scene
 	UPROPERTY()
 	TObjectPtr<AArenaActor> ArenaActorInstance;
@@ -77,6 +82,8 @@ private:
 	void ShowResults();
 	// What RoundEventTimer calls 
 	void StartEvent();
+	//
+	void AddPoints();
 	UFUNCTION()
 	// Checks if end condition is reached
 	void CheckEndRound(AFreeFallCharacter* Character);
