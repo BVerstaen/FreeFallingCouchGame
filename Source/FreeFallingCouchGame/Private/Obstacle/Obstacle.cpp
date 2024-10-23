@@ -29,7 +29,10 @@ void AObstacle::BeginPlay()
 
 	Direction.Normalize();
 	FVector ImpulseVector = Direction * Speed;
-	Mesh->AddImpulse(ImpulseVector, NAME_None, true);
+	if(Mesh != nullptr)
+	{
+		Mesh->AddImpulse(ImpulseVector, NAME_None, true);
+	}
 }
 
 UStaticMeshComponent* AObstacle::GetMesh()
