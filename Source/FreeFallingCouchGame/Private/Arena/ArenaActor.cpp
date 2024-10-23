@@ -17,18 +17,13 @@ AArenaActor::AArenaActor()
 	OffScreenTolerance = 0.f;
 }
 
-// Called when the game starts or when spawned
-void AArenaActor::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
 void AArenaActor::Init()
 {
 	//Set existing characters
 	AFreeFallGameMode* FreeFallGameMode = Cast<AFreeFallGameMode>(GetWorld()->GetAuthGameMode());
+	if(FreeFallGameMode == nullptr) return;
+	if(FreeFallGameMode->CharactersInsideArena.Num() <= 0) GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "No Existing Character in Arena");
 	
-	if(FreeFallGameMode->CharactersInsideArena.Num() <= 0) GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "T niqué");
 	CharactersInsideArena.Empty();
 	CharactersInsideArena.Append(FreeFallGameMode->CharactersInsideArena);
 

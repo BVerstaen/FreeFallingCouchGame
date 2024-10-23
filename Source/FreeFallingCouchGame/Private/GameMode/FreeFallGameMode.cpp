@@ -116,6 +116,11 @@ void AFreeFallGameMode::SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints
 #pragma region PreRound
 void AFreeFallGameMode::StartMatch()
 {
+	// Check Player data
+	if(!IsValid(PlayerMatchData))
+		PlayerMatchData = NewObject<UPlayerMatchData>();
+	PlayerMatchData->resetScoreValue();
+	
 	ArenaActorInstance->OnCharacterDestroyed.AddDynamic(this, &AFreeFallGameMode::CheckEndRound);
 	SetupMatch(nullptr);
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------MATCH START--------------------"));
@@ -166,14 +171,15 @@ void AFreeFallGameMode::CheckEndRound(AFreeFallCharacter* Character)
 	//TODO Array of order in which characters got eliminated
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple,
 		FString::Printf(TEXT("Player number %i was eliminated!"), Character->getIDPlayerLinked()));
+	LossOrder.insert(LossOrder.begin(), Character->getIDPlayerLinked());
 	CharactersInsideArena.Remove(Character);
 	if(CharactersInsideArena.Num() <= 1)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "One character, remaining, end match!");
+		AddPoints();
 		EndRound();
 	}
 }
-
 void AFreeFallGameMode::RoundEventTimer()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "StartTimer");
@@ -195,6 +201,37 @@ void AFreeFallGameMode::StartEvent()
 #pragma endregion
 
 #pragma region PostRound
+
+void AFreeFallGameMode::AddPoints()
+{
+	std::vector<uint8> RoundRanking;
+	if(CharactersInsideArena.Num() == 1)
+	{
+		RoundRanking.push_back(CharactersInsideArena[0]->getIDPlayerLinked());
+	}
+	// Append lossOrder to RoundRanking
+	RoundRanking.insert(RoundRanking.end(), LossOrder.begin(), LossOrder.end());
+	if(IsValid(PlayerMatchData))
+	{
+		// Assign points
+		const int*temp = 	CurrentParameters->getScoreValues();
+		for(int x = 0; x < RoundRanking.size(); x++)
+		{
+			PlayerMatchData->setScoreValue(RoundRanking[x], temp[x]);
+		}
+	}
+	// Debug, can and should be removed
+	int i = 1;
+	for(uint8 Ranking : RoundRanking)
+	{
+			GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Yellow,
+FString::Printf(TEXT("%i spot is taken by player id: %i !"), i, Ranking));
+		i++;
+	}
+	// Empty lossOrder
+	LossOrder.clear();
+}
+
 void AFreeFallGameMode::EndRound()
 {
 	// Clear Timer
@@ -210,7 +247,7 @@ void AFreeFallGameMode::EndRound()
 	if(OnEndRound.IsBound())
 		OnEndRound.Broadcast();
 	// Check for end match
-	if(CurrentRound > CurrentParameters->getMaxRounds())
+	if(CurrentRound >= CurrentParameters->getMaxRounds())
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------MATCH END--------------------"));
 		ShowResults();
@@ -226,6 +263,9 @@ void AFreeFallGameMode::ShowResults()
 	CurrentRound = 0;
 	ArenaActorInstance->OnCharacterDestroyed.RemoveDynamic(this, &AFreeFallGameMode::CheckEndRound);
 
+	//TODO Remove Debug
+	PlayerMatchData->DebugPrintScore();
+	
 	if(OnResults.IsBound())
 	{
 		OnResults.Broadcast();
