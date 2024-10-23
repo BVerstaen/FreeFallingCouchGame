@@ -30,3 +30,16 @@ void AObstacle::BeginPlay()
 	FVector ImpulseVector = Direction * Speed;
 	Mesh->AddImpulse(ImpulseVector, NAME_None, true);
 }
+
+UStaticMeshComponent* AObstacle::GetMesh()
+{
+	return Mesh;
+}
+
+void AObstacle::ResetLaunch()
+{
+	Mesh->SetAllPhysicsLinearVelocity(FVector::ZeroVector, false);
+	Direction.Normalize();
+	FVector ImpulseVector = Direction * Speed;
+	Mesh->AddImpulse(ImpulseVector, NAME_None, true);
+}
