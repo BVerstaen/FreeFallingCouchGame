@@ -12,6 +12,8 @@ AObstacleSpawner::AObstacleSpawner()
 	ObstacleMaxSpeed = 1;
 	ObstacleMinTimer = 0;
 	ObstacleMaxTimer = 1;
+
+	bPlaySpawnTimer = true;
 }
 
 void AObstacleSpawner::BeginPlay()
@@ -19,8 +21,11 @@ void AObstacleSpawner::BeginPlay()
 	Super::BeginPlay();
 	
 	//Set spawner timer
-	float SpawnDelay = FMath::RandRange(ObstacleMinTimer, ObstacleMaxTimer);
-	GetWorldTimerManager().SetTimer(SpawnTimer, this, &AObstacleSpawner::SpawnObstacle, SpawnDelay, false, SpawnDelay);
+	if(bPlaySpawnTimer)
+	{
+		float SpawnDelay = FMath::RandRange(ObstacleMinTimer, ObstacleMaxTimer);
+		GetWorldTimerManager().SetTimer(SpawnTimer, this, &AObstacleSpawner::SpawnObstacle, SpawnDelay, false, SpawnDelay);
+	}
 }
 
 void AObstacleSpawner::Tick(float DeltaTime)
@@ -64,33 +69,28 @@ void AObstacleSpawner::SpawnObstacle()
 	SpawningObstacle->Direction = ObstacleDirection;
 	SpawningObstacle->FinishSpawning(SpawnTransform);
 
-	//Reset timer
 	GetWorldTimerManager().ClearTimer(SpawnTimer);
-	//Check if there's any linked spawner
-	if(LinkedSpawners.Num() > 0)
+	//Reset timer
+	if(bPlaySpawnTimer)
 	{
-		//Restart every spawner (except self)
-		for(AObstacleSpawner* Spawner : LinkedSpawners)
-		{
-			Spawner->RestartSpawner();
-		}
-	}
-	else
-	{
-		//Start new delay
 		float SpawnDelay = FMath::RandRange(ObstacleMinTimer, ObstacleMaxTimer);
-		GetWorldTimerManager().SetTimer(SpawnTimer, this, &AObstacleSpawner::SpawnObstacle, SpawnDelay, false);
+		GetWorldTimerManager().SetTimer(SpawnTimer, this, &AObstacleSpawner::SpawnObstacle, SpawnDelay, false);		
 	}
+	
 }
 
 void AObstacleSpawner::PauseSpawner()
 {
+	bPlaySpawnTimer = false;
+	
 	//Reset timer with new delay
 	GetWorldTimerManager().ClearTimer(SpawnTimer);
 }
 
 void AObstacleSpawner::RestartSpawner()
 {
+	bPlaySpawnTimer = true;
+	
 	//Reset timer with new delay
 	GetWorldTimerManager().ClearTimer(SpawnTimer);
     float SpawnDelay = FMath::RandRange(ObstacleMinTimer, ObstacleMaxTimer);

@@ -61,12 +61,6 @@ public :
 	/* Delay maximum entre 2 spawns */
 	UPROPERTY(EditAnywhere)
 	float ObstacleMaxTimer;
-
-	/* Autres Spawners d'obnstacles à reset après avoir tirée
-	 * PS : Le spawner ne se relancera plus tant qu'un autre spawner ne l'aura reset
-	 */
-	UPROPERTY(EditAnywhere)
-	TArray<AObstacleSpawner*> LinkedSpawners;
 	
 #pragma endregion
 	
@@ -81,4 +75,6 @@ public:
 	void PauseSpawner();
 	UFUNCTION(BlueprintCallable, CallInEditor)
 	void RestartSpawner();
+
+	bool bPlaySpawnTimer;
 };
