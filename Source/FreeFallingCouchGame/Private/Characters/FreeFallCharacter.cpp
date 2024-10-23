@@ -9,6 +9,7 @@
 #include "Characters/FreeFallCharacterStateMachine.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Obstacle/Obstacle.h"
 
 
 // Sets default values
@@ -16,19 +17,43 @@ AFreeFallCharacter::AFreeFallCharacter()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	//Create & setup collision
+	CapsuleCollision = CreateDefaultSubobject<UCapsuleComponent>("Collision");
+	if(CapsuleCollision != nullptr)
+	{
+		//Setup capsule
+		CapsuleCollision->InitCapsuleSize(40,88);
+		CapsuleCollision->SetRelativeRotation(FRotator(0,90,0));
+		
+		//Attach
+		CapsuleCollision->SetupAttachment(RootComponent); // RootComponent est généralement la capsule
+
+		//Setup collisions
+		CapsuleCollision->SetCollisionProfileName(TEXT("BlockAllDynamic")); // Bloque tous les objets dynamiques
+		CapsuleCollision->SetNotifyRigidBodyCollision(true); // Permet de recevoir des notifications de collisions
+		CapsuleCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	}
 }
 
 // Called when the game starts or when spawned
 void AFreeFallCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	//Setup state machine
 	CreateStateMachine();
 	InitStateMachine();
 
 	DefaultZPosition = GetActorLocation().Z;
-	
+
+	//Setup movement & physics
 	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 	GetCapsuleComponent()->SetSimulatePhysics(false);
+
+	if(CapsuleCollision)
+	{
+		CapsuleCollision->OnComponentHit.AddDynamic(this, &AFreeFallCharacter::OnCapsuleCollisionHit);
+	}
 }
 
 // Called every frame
@@ -171,4 +196,73 @@ void AFreeFallCharacter::OnInputDive(const FInputActionValue& Value)
 {
 	InputDive = Value.Get<float>();
 }
+
+void AFreeFallCharacter::BounceCooldown()
+{
+	bAlreadyCollided = true;
+
+	FTimerHandle TimerHandle;
+	GetWorldTimerManager().SetTimer(TimerHandle, this, &AFreeFallCharacter::ResetBounce, BounceCooldownDelay, false);
+}
+
+void AFreeFallCharacter::ResetBounce()
+{
+	bAlreadyCollided = false;
+	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+}
+
+void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if(bAlreadyCollided) return; //Return if cooldown isn't over
+	
+	//Cast to smaller obstacle
+	AObstacle* OtherObstacle = Cast<AObstacle>(OtherActor);
+	if(OtherObstacle)
+	{
+		UStaticMeshComponent* ObstacleMesh = OtherObstacle->GetMesh(); 
+		//Obstacle hit logic
+		if(ObstacleMesh->GetMass() > PlayerMass) //if object is heavier
+		{
+			//then player gets thrown around
+			FVector PlayerVelocity = ObstacleMesh->GetPhysicsLinearVelocity() * BounceObstacleMultiplier;
+			PlayerVelocity.Z = 0;
+			LaunchCharacter(PlayerVelocity,true,true);
+
+			OtherObstacle->ResetLaunch();
+		}
+		else
+		{
+			//else object gets thrown around
+			FVector ObjectVelocity = GetCharacterMovement()->Velocity * BounceObstacleMultiplier;
+			ObstacleMesh->AddForce(ObjectVelocity);
+		}
+	}
+
+	//Cast to bigger FreefallCharacter
+	AFreeFallCharacter* OtherFreeFallCharacter = Cast<AFreeFallCharacter>(OtherActor);
+	if(OtherFreeFallCharacter)
+	{
+		//Launch character logic
+		OldVelocity = GetCharacterMovement()->Velocity;
+
+		//Bounce self 
+		FVector NewVelocity = (OtherFreeFallCharacter->GetCharacterMovement()->Velocity * BounceRestitutionMultiplier +
+			(bShouldKeepRemainingVelocity ? GetCharacterMovement()->Velocity * (1-BounceRestitutionMultiplier) : FVector::Zero()) ) * BouncePlayerMultiplier;
+		LaunchCharacter(NewVelocity, true, true);
+
+		//Bounce other character
+		NewVelocity = (OldVelocity * BounceRestitutionMultiplier +
+			(bShouldKeepRemainingVelocity ? OtherFreeFallCharacter->GetCharacterMovement()->Velocity * (1-BounceRestitutionMultiplier) : FVector::Zero()) ) * BouncePlayerMultiplier;
+		OtherFreeFallCharacter->LaunchCharacter(NewVelocity, true, true);
+
+		if(!OtherFreeFallCharacter->bAlreadyCollided)
+		{
+			OtherFreeFallCharacter->BounceCooldown();
+		}
+	}
+
+	BounceCooldown();
+}
+
 
