@@ -133,7 +133,7 @@ void AFreeFallGameMode::StartRound()
 	TArray<APlayerStart*> PlayerStartsPoints;
 	FindPlayerStartActorsInMap(PlayerStartsPoints);
 	SpawnCharacters(PlayerStartsPoints);
-	ArenaActorInstance->Init();
+	ArenaActorInstance->Init(this);
 
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------ROUND START--------------------"));
 	if(OnStartRound.IsBound())

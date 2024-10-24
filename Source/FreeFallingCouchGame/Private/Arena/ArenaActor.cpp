@@ -19,10 +19,9 @@ AArenaActor::AArenaActor()
 	NearEdgeScreenTolerance = 0.f;
 }
 
-void AArenaActor::Init()
+void AArenaActor::Init(const AFreeFallGameMode* FreeFallGameMode)
 {
 	//Set existing characters
-	AFreeFallGameMode* FreeFallGameMode = Cast<AFreeFallGameMode>(GetWorld()->GetAuthGameMode());
 	if(FreeFallGameMode == nullptr) return;
 	if(FreeFallGameMode->CharactersInsideArena.Num() <= 0) GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "No Existing Character in Arena");
 	
