@@ -7,6 +7,8 @@
 #include "GameFramework/Actor.h"
 #include "ArenaActor.generated.h"
 
+class AFreeFallGameMode;
+
 UCLASS()
 class FREEFALLINGCOUCHGAME_API AArenaActor : public AActor
 {
@@ -30,7 +32,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	UFUNCTION()
-	void Init();
+	void Init(const AFreeFallGameMode* FreeFallGameMode);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterDestroyed, AFreeFallCharacter*, Character);
 	UPROPERTY(BlueprintAssignable)
 	FOnCharacterDestroyed OnCharacterDestroyed;
