@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "DiveLevels.generated.h"
 
+enum class EDiveLayerBoundsID : uint8;
 enum class EDiveLayersID : uint8;
 
 UCLASS()
@@ -25,7 +26,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	
-	float GetDiveBoundZCoord(EDiveLayersID Layer, bool UpBound);
+	float GetDiveBoundZCoord(EDiveLayersID Layer, EDiveLayerBoundsID Bound);
 
 	EDiveLayersID GetDiveLayersFromCoord(float PlayerCoordZ);
 

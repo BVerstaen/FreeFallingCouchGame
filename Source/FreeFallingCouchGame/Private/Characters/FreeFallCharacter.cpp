@@ -43,11 +43,12 @@ AFreeFallCharacter::AFreeFallCharacter()
 void AFreeFallCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	DiveLevelsActor = Cast<ADiveLevels>(UGameplayStatics::GetActorOfClass(GetWorld(), ADiveLevels::StaticClass()));
+	
 	//Setup state machine
 	CreateStateMachine();
 	InitStateMachine();
-
-	DefaultZPosition = GetActorLocation().Z;
 
 	//Setup movement & physics
 	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
@@ -59,7 +60,6 @@ void AFreeFallCharacter::BeginPlay()
 	}
 
 	//TODO: Pass this in Gamemode to clean code
-	DiveLevelsActor = Cast<ADiveLevels>(UGameplayStatics::GetActorOfClass(GetWorld(), ADiveLevels::StaticClass()));
 	CameraActor = Cast<ACameraActor>(UGameplayStatics::GetActorOfClass(GetWorld(), ACameraActor::StaticClass()));
 }
 
@@ -165,11 +165,6 @@ float AFreeFallCharacter::GetInputDive() const
 	return InputDive;
 }
 
-float AFreeFallCharacter::GetDefaultZPosition() const
-{
-	return DefaultZPosition;
-}
-
 void AFreeFallCharacter::SetDiveMaterialColor()
 {
 	if (DiveMaterialInstance == nullptr || DiveLevelsActor == nullptr) return;
@@ -183,6 +178,11 @@ void AFreeFallCharacter::SetDiveMaterialColor()
 ADiveLevels* AFreeFallCharacter::GetDiveLevelsActor() const
 {
 	return DiveLevelsActor;
+}
+
+float AFreeFallCharacter::GetDiveLayerForceStrength() const
+{
+	return DiveLayerForceStrength;
 }
 
 ACameraActor* AFreeFallCharacter::GetCameraActor() const

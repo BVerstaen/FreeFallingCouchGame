@@ -11,7 +11,15 @@ UENUM(BlueprintType)
 enum class EDiveLayersID : uint8
 {
 	None = 0,
-	Down,
+	Bottom,
 	Middle,
 	Top
+};
+
+UENUM(BlueprintType)
+enum class EDiveLayerBoundsID : uint8
+{
+	Middle = 0,
+	Up,
+	Down,
 };

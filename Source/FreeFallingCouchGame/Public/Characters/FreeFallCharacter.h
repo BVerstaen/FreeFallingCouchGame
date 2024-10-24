@@ -87,12 +87,12 @@ private:
 
 public:
 	float GetInputDive() const;
-	float GetDefaultZPosition() const;
 
 	UFUNCTION(BlueprintCallable)
 	void SetDiveMaterialColor();
 	
 	ADiveLevels* GetDiveLevelsActor() const;
+	float GetDiveLayerForceStrength() const;
 	ACameraActor* GetCameraActor() const;
 
 	UPROPERTY(EditAnywhere)
@@ -102,11 +102,11 @@ protected:
 	UPROPERTY()
 	float InputDive = 0.f;
 
+	UPROPERTY(EditAnywhere)
+	float DiveLayerForceStrength = 1.f;
+
 	UPROPERTY(BlueprintReadWrite)
 	UMaterialInstanceDynamic* DiveMaterialInstance;
-	
-	UPROPERTY()
-	float DefaultZPosition = 0.f;
 
 	UPROPERTY()
 	ADiveLevels* DiveLevelsActor;
