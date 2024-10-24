@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Characters/FreeFallCharacterState.h"
+#include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "FreeFallCharacterStateGrab.generated.h"
 
 /**
@@ -20,8 +21,8 @@ public:
 	virtual void StateEnter(EFreeFallCharacterStateID PreviousStateID) override;
 
 	virtual void StateExit(EFreeFallCharacterStateID NextStateID) override;
-
-	virtual void StateTick(float DeltaTime) override;
+	
+	void ExitStateConditions() const;
 
 protected:
 	AFreeFallCharacter* FindPlayerToGrab() const;
@@ -33,6 +34,6 @@ protected:
 	
 public:
 	UPROPERTY()
-	TObjectPtr<AFreeFallCharacter> OtherCharacter;
+	UPhysicsConstraintComponent* GrabConstraint;
 
 };

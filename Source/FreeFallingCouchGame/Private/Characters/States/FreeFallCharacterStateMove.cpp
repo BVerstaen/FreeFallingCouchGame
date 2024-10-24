@@ -23,8 +23,9 @@ void UFreeFallCharacterStateMove::StateEnter(EFreeFallCharacterStateID PreviousS
 
 	Character->GetCharacterMovement()->MaxFlySpeed = StartMoveSpeed;
 	Character->OnInputGrabEvent.AddDynamic(this, &UFreeFallCharacterStateMove::OnInputGrab);
-	
-	AccelerationAlpha = 0;
+
+	if(PreviousStateID != EFreeFallCharacterStateID::Grab)
+		AccelerationAlpha = 0;
 
 	// GEngine->AddOnScreenDebugMessage(
 	// 	-1,

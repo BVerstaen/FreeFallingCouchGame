@@ -8,6 +8,7 @@
 #include "Characters/FreeFallCharacterStateMachine.h"
 #include "Kismet/KismetSystemLibrary.h"
 
+
 EFreeFallCharacterStateID UFreeFallCharacterStateGrab::GetStateID()
 {
 	return EFreeFallCharacterStateID::Grab;
@@ -24,11 +25,32 @@ void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousS
 	 	TEXT("Enter State Grab")
 	 	);
 	
-	AFreeFallCharacter* FoundCharacter = FindPlayerToGrab();
-	if(!FoundCharacter)
+	//Stop grabbing if release key
+	if(!Character->bIsGrabbing)
 	{
-		StateMachine->ChangeState(EFreeFallCharacterStateID::Idle);
+		if(Character->OtherCharacter)
+		{
+			//Launch other character & destroy Grab Constraint
+		}
+
+		//Exit Grab state
+		ExitStateConditions();
+		return;
 	}
+
+	
+	//Check if caught character
+	AFreeFallCharacter* FoundCharacter = FindPlayerToGrab();
+	if(!FoundCharacter)	//Change state if couldn't find a player
+	{
+		ExitStateConditions();
+		return;
+	}
+	Character->OtherCharacter = FoundCharacter;
+
+	/*
+	*	Essaye avec spring arm 
+	 */
 }
 
 void UFreeFallCharacterStateGrab::StateExit(EFreeFallCharacterStateID NextStateID)
@@ -43,9 +65,14 @@ void UFreeFallCharacterStateGrab::StateExit(EFreeFallCharacterStateID NextStateI
 	 );
 }
 
-void UFreeFallCharacterStateGrab::StateTick(float DeltaTime)
+void UFreeFallCharacterStateGrab::ExitStateConditions() const
 {
-	Super::StateTick(DeltaTime);
+	if(Character->GetInputMove() != FVector2D::ZeroVector)
+	{
+		StateMachine->ChangeState(EFreeFallCharacterStateID::Move);
+		return;
+	}
+	StateMachine->ChangeState(EFreeFallCharacterStateID::Idle);
 }
 
 AFreeFallCharacter* UFreeFallCharacterStateGrab::FindPlayerToGrab() const
@@ -66,7 +93,7 @@ AFreeFallCharacter* UFreeFallCharacterStateGrab::FindPlayerToGrab() const
 														traceObjectTypes,
 														false,
 														ignoreActors,
-														EDrawDebugTrace::ForOneFrame,
+														EDrawDebugTrace::Persistent,
 														HitResult,
 														true);
 	if (CanGrab)

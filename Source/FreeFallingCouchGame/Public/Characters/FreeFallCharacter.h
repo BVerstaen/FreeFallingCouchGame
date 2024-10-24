@@ -133,9 +133,11 @@ private:
 	void OnInputGrab(const FInputActionValue& Value);
 
 	
-protected:
+public:
 	bool bIsGrabbing = false;
 	
+	UPROPERTY()
+	TObjectPtr<AFreeFallCharacter> OtherCharacter;
 #pragma endregion 
 
 #pragma region IDPlayer
