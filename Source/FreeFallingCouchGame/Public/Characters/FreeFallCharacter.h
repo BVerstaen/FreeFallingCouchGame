@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "FreeFallCharacter.generated.h"
 
+class ADiveLevels;
 struct FInputActionValue;
 class UInputMappingContext;
 class UFreeFallCharacterInputData;
@@ -85,13 +86,24 @@ private:
 public:
 	float GetInputDive() const;
 	float GetDefaultZPosition() const;
+	ADiveLevels* GetDiveLevelsActor() const;
+	ACameraActor* GetCameraActor() const;
 
 protected:
 	UPROPERTY()
 	float InputDive = 0.f;
 
 	UPROPERTY()
+	UMaterialInstanceDynamic* PlayerMaterialInstance;
+	
+	UPROPERTY()
 	float DefaultZPosition = 0.f;
+
+	UPROPERTY()
+	ADiveLevels* DiveLevelsActor;
+
+	UPROPERTY()
+	ACameraActor* CameraActor;
 	
 private:
 	void BindInputDiveAxisAndActions(UEnhancedInputComponent* EnhancedInputComponent);

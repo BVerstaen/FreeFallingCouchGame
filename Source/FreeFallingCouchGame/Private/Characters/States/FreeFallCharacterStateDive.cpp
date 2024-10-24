@@ -3,6 +3,7 @@
 
 #include "Characters/States/FreeFallCharacterStateDive.h"
 
+#include "Camera/CameraActor.h"
 #include "Characters/FreeFallCharacter.h"
 #include "Characters/FreeFallCharacterStateID.h"
 #include "Characters/FreeFallCharacterStateMachine.h"
@@ -63,17 +64,41 @@ void UFreeFallCharacterStateDive::StateTick(float DeltaTime)
 	{
 		if (Character->GetDefaultZPosition() + CharactersSettings->DiveDistance > Character->GetActorLocation().Z && InputDive < 0)
 		{
-			Character->AddMovementInput(FVector::UpVector, -InputDive);
+			FVector Direction = Character->GetCameraActor()->GetActorForwardVector();
+			Direction.Normalize();
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				3.f,
+				FColor::Green,
+				TEXT("Going up"));
+			Character->AddMovementInput(Direction, InputDive);
 		}
-		else
+		else if (InputDive < 0)
 		{
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				3.f,
+				FColor::Red,
+				TEXT("Can't go up"));
 		}
 		if (Character->GetDefaultZPosition() - CharactersSettings->DiveDistance < Character->GetActorLocation().Z && InputDive > 0)
 		{
-			Character->AddMovementInput(FVector::UpVector, -InputDive);
+			FVector Direction = Character->GetCameraActor()->GetActorForwardVector();
+			Direction.Normalize();
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				3.f,
+				FColor::Green,
+				TEXT("Going down"));
+			Character->AddMovementInput(Direction, InputDive);
 		}
-		else
+		else if (InputDive > 0)
 		{
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				3.f,
+				FColor::Red,
+				TEXT("Can't go down"));
 		}
 	}
 }
