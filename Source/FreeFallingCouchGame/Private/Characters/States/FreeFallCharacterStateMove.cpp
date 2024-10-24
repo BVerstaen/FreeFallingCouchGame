@@ -19,7 +19,8 @@ void UFreeFallCharacterStateMove::StateEnter(EFreeFallCharacterStateID PreviousS
 	Super::StateEnter(PreviousStateID);
 
 	Character->GetCharacterMovement()->MaxFlySpeed = StartMoveSpeed;
-
+	Character->OnInputGrabEvent.AddDynamic(this, &UFreeFallCharacterStateMove::OnInputGrab);
+	
 	AccelerationAlpha = 0;
 
 	// GEngine->AddOnScreenDebugMessage(
@@ -34,6 +35,7 @@ void UFreeFallCharacterStateMove::StateExit(EFreeFallCharacterStateID NextStateI
 {
 	Super::StateExit(NextStateID);
 
+	Character->OnInputGrabEvent.RemoveDynamic(this, &UFreeFallCharacterStateMove::OnInputGrab);
 	// GEngine->AddOnScreenDebugMessage(
 	// 	-1,
 	// 	3.f,
@@ -72,4 +74,9 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 		FColor::Cyan,
 		TEXT("Tick State Move")
 		);
+}
+
+void UFreeFallCharacterStateMove::OnInputGrab()
+{
+	StateMachine->ChangeState(EFreeFallCharacterStateID::Grab);
 }

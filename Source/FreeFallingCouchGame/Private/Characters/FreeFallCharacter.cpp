@@ -82,6 +82,7 @@ void AFreeFallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 	BindInputMoveAxisAndActions(EnhancedInputComponent);
 	BindInputDiveAxisAndActions(EnhancedInputComponent);
+	BindInputGrabActions(EnhancedInputComponent);
 }
 
 void AFreeFallCharacter::CreateStateMachine()
@@ -224,6 +225,35 @@ void AFreeFallCharacter::OnInputDive(const FInputActionValue& Value)
 	InputDive = Value.Get<float>();
 }
 
+void AFreeFallCharacter::BindInputGrabActions(UEnhancedInputComponent* EnhancedInputComponent)
+{
+	if (InputData == nullptr) return;
+	
+	if (InputData->InputActionGrab)
+	{
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionGrab,
+			ETriggerEvent::Started,
+			this,
+			&AFreeFallCharacter::OnInputGrab
+			);
+
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionGrab,
+			ETriggerEvent::Completed,
+			this,
+			&AFreeFallCharacter::OnInputGrab
+			);
+	}
+}
+
+void AFreeFallCharacter::OnInputGrab(const FInputActionValue& Value)
+{
+	bIsGrabbing = Value.Get<bool>();
+	OnInputGrabEvent.Broadcast();
+}
+	
+#pragma region Bounce Fucntions
 void AFreeFallCharacter::BounceCooldown()
 {
 	bAlreadyCollided = true;
@@ -291,5 +321,5 @@ void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent
 
 	BounceCooldown();
 }
-
+#pragma endregion 
 

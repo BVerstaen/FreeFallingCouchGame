@@ -4,14 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Characters/FreeFallCharacterState.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "FreeFallCharacterStateMove.generated.h"
+#include "FreeFallCharacterStateGrab.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class FREEFALLINGCOUCHGAME_API UFreeFallCharacterStateMove : public UFreeFallCharacterState
+class FREEFALLINGCOUCHGAME_API UFreeFallCharacterStateGrab : public UFreeFallCharacterState
 {
 	GENERATED_BODY()
 
@@ -25,24 +24,15 @@ public:
 	virtual void StateTick(float DeltaTime) override;
 
 protected:
-	UPROPERTY(EditAnywhere)
-	float MaxMoveSpeed;
+	AFreeFallCharacter* FindPlayerToGrab() const;
 
 	UPROPERTY(EditAnywhere)
-	float StartMoveSpeed;
-
+	float GrabForwardDistance = 1.0f;
 	UPROPERTY(EditAnywhere)
-	float ReachMaxSpeedTime;
-
-private:
+	float GrabRadius = 10.0f;
+	
+public:
 	UPROPERTY()
-	float AccelerationAlpha;
+	TObjectPtr<AFreeFallCharacter> OtherCharacter;
 
-#pragma region  Input Event
-	
-private:
-	UFUNCTION()
-	void OnInputGrab();
-	
-#pragma endregion
 };

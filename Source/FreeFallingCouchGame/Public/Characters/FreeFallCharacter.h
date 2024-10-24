@@ -49,6 +49,7 @@ protected:
 	TObjectPtr<UFreeFallCharacterStateMachine> StateMachine;
 
 public:
+	UPROPERTY(EditAnywhere)
 	TMap<EFreeFallCharacterStateID, TSubclassOf<UFreeFallCharacterState>> FreeFallCharacterStatesOverride;
 
 #pragma endregion
@@ -119,6 +120,23 @@ private:
 	void OnInputDive(const FInputActionValue& Value);
 
 #pragma endregion
+
+#pragma region Input Grab
+
+public:
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInputGrabbing);
+	FInputGrabbing OnInputGrabEvent;
+	
+private:
+	void BindInputGrabActions(UEnhancedInputComponent* EnhancedInputComponent);
+
+	void OnInputGrab(const FInputActionValue& Value);
+
+	
+protected:
+	bool bIsGrabbing = false;
+	
+#pragma endregion 
 
 #pragma region IDPlayer
 protected:
