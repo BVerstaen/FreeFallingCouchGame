@@ -282,12 +282,10 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime) const
 	GetMovementComponent()->Velocity = NewCharacterVelocity;
 	OtherCharacter->GetMovementComponent()->Velocity = NewOtherCharacterVelocity;
 
-	//Sync other Character rotations -> Lerp to Character rotation
+	//Set other Character rotation
 	FRotator TargetRotation = this->GetActorRotation();
-	TargetRotation.Yaw += GrabDefaultRotationOffset; //Target = rotation relative to other's when first grabbed
 	FRotator NewGrabbedRotation = FMath::RInterpTo(OtherCharacter->GetActorRotation(), TargetRotation, DeltaTime, GrabRotationSpeed);
-	OtherCharacter->SetActorRotation(NewGrabbedRotation);
-
+	OtherCharacter->SetActorRotation(NewGrabbedRotation);	
 }
 
 #pragma region Bounce Fucntions

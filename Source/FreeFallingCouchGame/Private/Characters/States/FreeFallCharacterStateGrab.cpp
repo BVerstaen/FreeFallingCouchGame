@@ -26,13 +26,6 @@ void UFreeFallCharacterStateGrab::StateInit(UFreeFallCharacterStateMachine* InSt
 void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousStateID)
 {
 	Super::StateEnter(PreviousStateID);
-
-	GEngine->AddOnScreenDebugMessage(
-	 	-1,
-	 	3.f,
-	 	FColor::Green,
-	 	TEXT("Enter State Grab")
-	 	);
 	
 	//Stop grabbing if release key
 	if(!Character->bIsGrabbing)
@@ -60,16 +53,21 @@ void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousS
 	AFreeFallCharacter* FoundCharacter = FindPlayerToGrab();
 	if(FoundCharacter)	//Change state if couldn't find a player
 	{
-		//Set cross-references
-		Character->OtherCharacter = FoundCharacter;
-		Character->OtherCharacter->OtherCharacter = Character;
+		//Check if not trying to grab the character that is grabbing you
+		if(FoundCharacter != Character->OtherCharacter)
+		{
+			//Set cross-references
+			Character->OtherCharacter = FoundCharacter;
+			Character->OtherCharacter->OtherCharacter = Character;
 		
-		//Calculate location offset
-		FVector GrabOffset = FoundCharacter->GetActorLocation() - Character->GetActorLocation();
-		Character->GrabInitialOffset = Character->GetActorRotation().UnrotateVector(GrabOffset);
+			//Calculate location offset
+			FVector GrabOffset = FoundCharacter->GetActorLocation() - Character->GetActorLocation();
+			Character->GrabInitialOffset = Character->GetActorRotation().UnrotateVector(GrabOffset);
 
-		//Calculate rotation offset
-		FoundCharacter->GrabDefaultRotationOffset = FoundCharacter->GetActorRotation().Yaw - Character->GetActorRotation().Yaw;
+			//Calculate rotation offset
+			Character->GrabDefaultRotationOffset = FoundCharacter->GetActorRotation().Yaw - Character->GetActorRotation().Yaw;
+			FoundCharacter->GrabDefaultRotationOffset = Character->GetActorRotation().Yaw - FoundCharacter->GetActorRotation().Yaw;
+		}
 	}
 	ExitStateConditions();
 }
@@ -102,7 +100,7 @@ AFreeFallCharacter* UFreeFallCharacterStateGrab::FindPlayerToGrab() const
 														traceObjectTypes,
 														false,
 														ignoreActors,
-														EDrawDebugTrace::Persistent,
+														EDrawDebugTrace::ForOneFrame,
 														HitResult,
 														true);
 	if (CanGrab)
