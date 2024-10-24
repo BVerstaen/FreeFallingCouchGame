@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "FreeFallCharacter.generated.h"
 
+enum class EDiveLayersID : uint8;
 class ADiveLevels;
 struct FInputActionValue;
 class UInputMappingContext;
@@ -86,15 +87,22 @@ private:
 public:
 	float GetInputDive() const;
 	float GetDefaultZPosition() const;
+
+	UFUNCTION(BlueprintCallable)
+	void SetDiveMaterialColor();
+	
 	ADiveLevels* GetDiveLevelsActor() const;
 	ACameraActor* GetCameraActor() const;
+
+	UPROPERTY(EditAnywhere)
+	TMap<EDiveLayersID, FLinearColor> DiveLevelsColors;
 
 protected:
 	UPROPERTY()
 	float InputDive = 0.f;
 
-	UPROPERTY()
-	UMaterialInstanceDynamic* PlayerMaterialInstance;
+	UPROPERTY(BlueprintReadWrite)
+	UMaterialInstanceDynamic* DiveMaterialInstance;
 	
 	UPROPERTY()
 	float DefaultZPosition = 0.f;

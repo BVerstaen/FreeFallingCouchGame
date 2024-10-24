@@ -33,8 +33,7 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	float ReachMaxSpeedTime;
-
-private:
+	
 	UPROPERTY()
 	float AccelerationAlpha;;
 };
