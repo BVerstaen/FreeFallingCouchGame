@@ -132,12 +132,18 @@ private:
 
 	void OnInputGrab(const FInputActionValue& Value);
 
+	void UpdateMovementInfluence(float DeltaTime) const;
 	
 public:
 	bool bIsGrabbing = false;
 	
 	UPROPERTY()
 	TObjectPtr<AFreeFallCharacter> OtherCharacter;
+
+	FVector GrabInitialOffset;
+	float GrabRotationSpeed;
+	float GrabRotationInfluenceStrength;
+	
 #pragma endregion 
 
 #pragma region IDPlayer

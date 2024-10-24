@@ -18,9 +18,9 @@ class FREEFALLINGCOUCHGAME_API UFreeFallCharacterStateGrab : public UFreeFallCha
 public:
 	virtual EFreeFallCharacterStateID GetStateID() override;
 
+	virtual void StateInit(UFreeFallCharacterStateMachine* InStateMachine) override;
+	
 	virtual void StateEnter(EFreeFallCharacterStateID PreviousStateID) override;
-
-	virtual void StateExit(EFreeFallCharacterStateID NextStateID) override;
 	
 	void ExitStateConditions() const;
 
@@ -31,6 +31,10 @@ protected:
 	float GrabForwardDistance = 1.0f;
 	UPROPERTY(EditAnywhere)
 	float GrabRadius = 10.0f;
+	UPROPERTY(EditAnywhere)
+	float RotationSpeed = 10.0f;
+	UPROPERTY(EditAnywhere)
+	float RotationInfluenceStrength = 5.f;
 	
 public:
 	UPROPERTY()

@@ -14,6 +14,14 @@ EFreeFallCharacterStateID UFreeFallCharacterStateGrab::GetStateID()
 	return EFreeFallCharacterStateID::Grab;
 }
 
+void UFreeFallCharacterStateGrab::StateInit(UFreeFallCharacterStateMachine* InStateMachine)
+{
+	Super::StateInit(InStateMachine);
+	//Pass fields to Character
+	Character->GrabRotationSpeed = RotationSpeed;
+	Character->GrabRotationInfluenceStrength = RotationInfluenceStrength;
+}
+
 void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousStateID)
 {
 	Super::StateEnter(PreviousStateID);
@@ -30,7 +38,9 @@ void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousS
 	{
 		if(Character->OtherCharacter)
 		{
-			//Launch other character & destroy Grab Constraint
+			//Remove reference
+			Character->OtherCharacter->OtherCharacter = nullptr;
+			Character->OtherCharacter = nullptr;
 		}
 
 		//Exit Grab state
@@ -41,28 +51,17 @@ void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousS
 	
 	//Check if caught character
 	AFreeFallCharacter* FoundCharacter = FindPlayerToGrab();
-	if(!FoundCharacter)	//Change state if couldn't find a player
+	if(FoundCharacter)	//Change state if couldn't find a player
 	{
-		ExitStateConditions();
-		return;
+		//Set cross-references
+		Character->OtherCharacter = FoundCharacter;
+		Character->OtherCharacter->OtherCharacter = Character;
+
+		//Calculate offset
+		FVector GrabOffset = FoundCharacter->GetActorLocation() - Character->GetActorLocation();
+		Character->GrabInitialOffset = Character->GetActorRotation().UnrotateVector(GrabOffset);
 	}
-	Character->OtherCharacter = FoundCharacter;
-
-	/*
-	*	Essaye avec spring arm 
-	 */
-}
-
-void UFreeFallCharacterStateGrab::StateExit(EFreeFallCharacterStateID NextStateID)
-{
-	Super::StateExit(NextStateID);
-
-	GEngine->AddOnScreenDebugMessage(
-	 -1,
-	 3.f,
-	 FColor::Green,
-	 TEXT("Exit State Grab")
-	 );
+	ExitStateConditions();
 }
 
 void UFreeFallCharacterStateGrab::ExitStateConditions() const

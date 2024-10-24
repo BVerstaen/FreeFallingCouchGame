@@ -68,6 +68,7 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	TickStateMachine(DeltaTime);
+	UpdateMovementInfluence(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -252,7 +253,48 @@ void AFreeFallCharacter::OnInputGrab(const FInputActionValue& Value)
 	bIsGrabbing = Value.Get<bool>();
 	OnInputGrabEvent.Broadcast();
 }
+
+void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime) const
+{
+	if(OtherCharacter == nullptr) return;
 	
+    //Calculate new offset of child actor based on Character rotation
+	FVector RotatedOffset = this->GetActorRotation().RotateVector(GrabInitialOffset);
+    FVector NewOtherCharacterPosition = this->GetActorLocation() + RotatedOffset;
+	if(bIsGrabbing)
+		OtherCharacter->SetActorLocation(NewOtherCharacterPosition);
+
+    //Get both players velocity
+    FVector CharacterVelocity = GetVelocity();
+    FVector OtherCharacterVelocity = OtherCharacter->GetVelocity();
+
+    //Don't apply influence if one of the characters aren't moving
+    if (CharacterVelocity.IsNearlyZero())
+        OtherCharacter->GetMovementComponent()->Velocity = FVector::ZeroVector;
+    else if (OtherCharacterVelocity.IsNearlyZero())
+        GetMovementComponent()->Velocity = CharacterVelocity;
+    else
+    {
+
+        //Mutual influence of movements
+        FVector DirectionToOther = (OtherCharacter->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+        FVector CombinedMovement = (CharacterVelocity + OtherCharacterVelocity) * 0.5f;
+        FVector PerpendicularForce = FVector::CrossProduct(CharacterVelocity, DirectionToOther) * GrabRotationInfluenceStrength;
+    	
+    	//Calculate new velocities based on combined forces
+        FVector NewCharacterVelocity = CombinedMovement + PerpendicularForce * DeltaTime;
+        FVector NewOtherCharacterVelocity = CombinedMovement - PerpendicularForce * DeltaTime;
+    	//Apply each other's velocity
+        GetMovementComponent()->Velocity = NewCharacterVelocity;
+        OtherCharacter->GetMovementComponent()->Velocity = NewOtherCharacterVelocity;
+    }
+	
+	//Sync other Character rotations -> Lerp to Character rotation
+    FRotator TargetRotation = this->GetActorRotation();
+    FRotator NewGrabbedRotation = FMath::RInterpTo(OtherCharacter->GetActorRotation(), TargetRotation, DeltaTime, GrabRotationSpeed);
+    OtherCharacter->SetActorRotation(NewGrabbedRotation);
+}
+
 #pragma region Bounce Fucntions
 void AFreeFallCharacter::BounceCooldown()
 {
@@ -322,4 +364,3 @@ void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent
 	BounceCooldown();
 }
 #pragma endregion 
-
