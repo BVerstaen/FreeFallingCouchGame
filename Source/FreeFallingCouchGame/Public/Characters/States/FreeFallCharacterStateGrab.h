@@ -27,15 +27,18 @@ public:
 protected:
 	AFreeFallCharacter* FindPlayerToGrab() const;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="PlayerGrab - Catch")
 	float GrabForwardDistance = 1.0f;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="PlayerGrab - Catch")
 	float GrabRadius = 10.0f;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="PlayerGrab - Influences")
 	float RotationSpeed = 10.0f;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="PlayerGrab - Influences")
 	float RotationInfluenceStrength = 5.f;
-	
+	UPROPERTY(EditAnywhere, Category="PlayerGrab - Launch")
+	float LaunchOtherCharacterForceMultiplier = 20.f;
+	UPROPERTY(EditAnywhere, Category="PlayerGrab - Launch")
+	float LaunchOtherCharacterBaseLaunchMultiplier = 0.f;
 public:
 	UPROPERTY()
 	UPhysicsConstraintComponent* GrabConstraint;

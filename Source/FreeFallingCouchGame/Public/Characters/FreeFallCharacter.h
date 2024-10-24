@@ -140,9 +140,11 @@ public:
 	UPROPERTY()
 	TObjectPtr<AFreeFallCharacter> OtherCharacter;
 
+	//Fields are set by Grab State
 	FVector GrabInitialOffset;
 	float GrabRotationSpeed;
 	float GrabRotationInfluenceStrength;
+	float GrabDefaultRotationOffset;
 	
 #pragma endregion 
 

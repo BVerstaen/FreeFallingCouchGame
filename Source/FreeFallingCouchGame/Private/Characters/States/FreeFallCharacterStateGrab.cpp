@@ -6,6 +6,7 @@
 #include "Characters/FreeFallCharacter.h"
 #include "Characters/FreeFallCharacterStateID.h"
 #include "Characters/FreeFallCharacterStateMachine.h"
+#include "GameFramework/PawnMovementComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 
@@ -38,9 +39,15 @@ void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousS
 	{
 		if(Character->OtherCharacter)
 		{
+			//Launch other character
+			FVector LaunchVelocity = Character->GetMovementComponent()->Velocity * LaunchOtherCharacterForceMultiplier;
+			LaunchVelocity += Character->GetActorForwardVector() * LaunchOtherCharacterBaseLaunchMultiplier;
+			Character->OtherCharacter->LaunchCharacter(LaunchVelocity, true, true);
+
 			//Remove reference
 			Character->OtherCharacter->OtherCharacter = nullptr;
 			Character->OtherCharacter = nullptr;
+			
 		}
 
 		//Exit Grab state
@@ -56,10 +63,13 @@ void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousS
 		//Set cross-references
 		Character->OtherCharacter = FoundCharacter;
 		Character->OtherCharacter->OtherCharacter = Character;
-
-		//Calculate offset
+		
+		//Calculate location offset
 		FVector GrabOffset = FoundCharacter->GetActorLocation() - Character->GetActorLocation();
 		Character->GrabInitialOffset = Character->GetActorRotation().UnrotateVector(GrabOffset);
+
+		//Calculate rotation offset
+		FoundCharacter->GrabDefaultRotationOffset = FoundCharacter->GetActorRotation().Yaw - Character->GetActorRotation().Yaw;
 	}
 	ExitStateConditions();
 }
