@@ -6,6 +6,7 @@
 #include "Characters/FreeFallCharacterState.h"
 #include "FreeFallCharacterStateDive.generated.h"
 
+class ADiveLevels;
 /**
  * 
  */
@@ -16,13 +17,18 @@ class FREEFALLINGCOUCHGAME_API UFreeFallCharacterStateDive : public UFreeFallCha
 
 	virtual EFreeFallCharacterStateID GetStateID() override;
 
+	virtual void StateInit(UFreeFallCharacterStateMachine* InStateMachine) override;
+
 	virtual void StateEnter(EFreeFallCharacterStateID PreviousStateID) override;
 
 	virtual void StateExit(EFreeFallCharacterStateID NextStateID) override;
 
 	virtual void StateTick(float DeltaTime) override;
 
-protected:
+private:
+	void ApplyDiveForce();
+
+	bool IsInCenterOfLayer() const;
 
 protected:
 	UPROPERTY(EditAnywhere)
@@ -35,5 +41,11 @@ protected:
 	float ReachMaxSpeedTime;
 	
 	UPROPERTY()
-	float AccelerationAlpha;;
+	float AccelerationAlpha;
+	
+	UPROPERTY()
+	float ChangeLayerCooldownTime;
+
+	UPROPERTY()
+	ADiveLevels* DiveLevelsActor;
 };

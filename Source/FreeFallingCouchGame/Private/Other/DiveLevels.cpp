@@ -26,39 +26,30 @@ void ADiveLevels::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-float ADiveLevels::GetDiveBoundZCoord(EDiveLayersID Layer, bool UpBound)
+float ADiveLevels::GetDiveBoundZCoord(EDiveLayersID Layer, EDiveLayerBoundsID Bound)
 {
-	float BoundZ = -1.f;
-	switch (Layer)
-	{
-	case EDiveLayersID::Top:
-		BoundZ = DiveLevelSize.Z * 2 + 1 + (DiveLevelSize.Z/2 * UpBound? 1 : -1); 
-		break;
-		
-	case EDiveLayersID::Middle:
-		BoundZ = UpBound? DiveLevelSize.Z/2 : -DiveLevelSize.Z/2;
-		break;
-		
-	case EDiveLayersID::Down:
-		BoundZ = (DiveLevelSize.Z * 2 + 1) * -1 + (DiveLevelSize.Z/2 * UpBound? 1 : -1); 
-		break;
+	float BoundMiddleCoordZ =
+		Layer==EDiveLayersID::Top ? DiveLevelSize.Z * 2 + 1 :
+		Layer==EDiveLayersID::Bottom ? DiveLevelSize.Z * -2 - 1 :
+		0;
 
-	default:
-		BoundZ = -1.f;
-	}
+	BoundMiddleCoordZ+=
+		Bound==EDiveLayerBoundsID::Up ? DiveLevelSize.Z/2 :
+		Bound==EDiveLayerBoundsID::Down ? -DiveLevelSize.Z/2 :
+		0;
 
-	return GetActorLocation().Z + BoundZ;
+	return GetActorLocation().Z + BoundMiddleCoordZ;
 }
 
 EDiveLayersID ADiveLevels::GetDiveLayersFromCoord(float PlayerCoordZ)
 {
-	if (PlayerCoordZ > GetDiveBoundZCoord(EDiveLayersID::Middle, true))
+	if (PlayerCoordZ > GetDiveBoundZCoord(EDiveLayersID::Middle, EDiveLayerBoundsID::Up))
 	{
 		return EDiveLayersID::Top;
 	}
-	if (PlayerCoordZ < GetDiveBoundZCoord(EDiveLayersID::Middle, false))
+	if (PlayerCoordZ < GetDiveBoundZCoord(EDiveLayersID::Middle,  EDiveLayerBoundsID::Down))
 	{
-		return EDiveLayersID::Down;
+		return EDiveLayersID::Bottom;
 	}
 	return EDiveLayersID::Middle;
 }

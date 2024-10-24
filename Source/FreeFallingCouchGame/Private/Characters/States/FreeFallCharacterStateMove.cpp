@@ -3,10 +3,13 @@
 
 #include "Characters/States/FreeFallCharacterStateMove.h"
 
+#include "Camera/CameraActor.h"
 #include "Characters/FreeFallCharacter.h"
 #include "Characters/FreeFallCharacterStateID.h"
 #include "Characters/FreeFallCharacterStateMachine.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Other/DiveLayersID.h"
+#include "Other/DiveLevels.h"
 #include "Settings/CharactersSettings.h"
 
 EFreeFallCharacterStateID UFreeFallCharacterStateMove::GetStateID()
