@@ -47,3 +47,8 @@ void AObstacle::ResetLaunch()
 	FVector ImpulseVector = Direction * Speed;
 	Mesh->AddImpulse(ImpulseVector, NAME_None, true);
 }
+
+bool AObstacle::CanBeGrabbed()
+{
+	return IsGrabbable;
+}

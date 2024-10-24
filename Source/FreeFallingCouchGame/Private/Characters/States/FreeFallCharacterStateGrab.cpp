@@ -8,6 +8,7 @@
 #include "Characters/FreeFallCharacterStateMachine.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Interface//GrabbableInterface.h"
 
 
 EFreeFallCharacterStateID UFreeFallCharacterStateGrab::GetStateID()
@@ -109,6 +110,42 @@ AFreeFallCharacter* UFreeFallCharacterStateGrab::FindPlayerToGrab() const
 		{
 			return OtherActor;
 		}
+	}
+	return nullptr;
+}
+
+AActor* UFreeFallCharacterStateGrab::FindActorToGrab() const
+{
+	FTransform CharacterTransform = Character->GetTransform();
+	
+	FVector SphereLocation = CharacterTransform.GetLocation() + CharacterTransform.GetRotation().GetForwardVector() * GrabForwardDistance;
+	ETraceTypeQuery TraceChannel = UEngineTypes::ConvertToTraceType(ECC_WorldDynamic);
+	TArray<AActor*> ignoreActors;
+	FHitResult HitResult;
+	
+	bool CanGrab = UKismetSystemLibrary::SphereTraceSingle(
+														GetWorld(),
+														SphereLocation,
+														SphereLocation,
+														GrabRadius,
+														TraceChannel,
+														false,
+														ignoreActors,
+														EDrawDebugTrace::ForOneFrame,
+														HitResult,
+														true);
+	//Has grabbed anything
+	if (CanGrab)
+	{
+		//Has interface
+		if(HitResult.GetActor()->Implements<UGrabbableInterface>())
+		{
+			//If so, check if can be grabbed
+			IGrabbableInterface* IGrabbableActor = Cast<IGrabbableInterface>(HitResult.GetActor());
+			if(IGrabbableActor->CanBeGrabbed())
+				return HitResult.GetActor();
+		}
+
 	}
 	return nullptr;
 }

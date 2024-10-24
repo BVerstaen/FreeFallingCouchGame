@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Characters/FreeFallCharacterState.h"
+#include "Obstacle/Obstacle.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "FreeFallCharacterStateGrab.generated.h"
 
@@ -26,12 +27,13 @@ public:
 
 protected:
 	AFreeFallCharacter* FindPlayerToGrab() const;
-
-	/*Distance de la boule (par rapport au forward du joueur) qui check si on peut grab un joueur*/
-	UPROPERTY(EditAnywhere, Category="PlayerGrab - Catch")
+	AActor* FindActorToGrab() const;
+	
+	/*Distance de la boule (par rapport au forward du joueur) qui check si on peut grab un joueur ou obstacle*/
+	UPROPERTY(EditAnywhere, Category="Grab - Catch")
 	float GrabForwardDistance = 1.0f;
-	/*Le radius de la boule qui check si on peut grab un joueur*/
-	UPROPERTY(EditAnywhere, Category="PlayerGrab - Catch")
+	/*Le radius de la boule qui check si on peut grab un joueur ou obstacle*/
+	UPROPERTY(EditAnywhere, Category="Grab - Catch")
 	float GrabRadius = 10.0f;
 	/*A quelle vitesse celui qui est agrippé suit la rotation du "maitre" ?*/
 	UPROPERTY(EditAnywhere, Category="PlayerGrab - Influences")
