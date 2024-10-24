@@ -43,11 +43,11 @@ float ADiveLevels::GetDiveBoundZCoord(EDiveLayersID Layer, EDiveLayerBoundsID Bo
 
 EDiveLayersID ADiveLevels::GetDiveLayersFromCoord(float PlayerCoordZ)
 {
-	if (PlayerCoordZ > GetDiveBoundZCoord(EDiveLayersID::Middle, EDiveLayerBoundsID::Up))
+	if (PlayerCoordZ > GetDiveBoundZCoord(EDiveLayersID::Top, EDiveLayerBoundsID::Down))
 	{
 		return EDiveLayersID::Top;
 	}
-	if (PlayerCoordZ < GetDiveBoundZCoord(EDiveLayersID::Middle,  EDiveLayerBoundsID::Down))
+	if (PlayerCoordZ < GetDiveBoundZCoord(EDiveLayersID::Bottom,  EDiveLayerBoundsID::Up))
 	{
 		return EDiveLayersID::Bottom;
 	}

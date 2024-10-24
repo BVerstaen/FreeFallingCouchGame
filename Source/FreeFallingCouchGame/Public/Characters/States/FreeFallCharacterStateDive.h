@@ -6,7 +6,17 @@
 #include "Characters/FreeFallCharacterState.h"
 #include "FreeFallCharacterStateDive.generated.h"
 
+enum class EDiveLayersID : uint8;
 class ADiveLevels;
+
+UENUM()
+enum class EDivePhase : uint8
+{
+	ChangingLayer,
+	CrossingLayer,
+	DiveForcesApplying,
+};
+
 /**
  * 
  */
@@ -25,27 +35,36 @@ class FREEFALLINGCOUCHGAME_API UFreeFallCharacterStateDive : public UFreeFallCha
 
 	virtual void StateTick(float DeltaTime) override;
 
+	void CheckTargetedLayer();
+
 private:
 	void ApplyDiveForce();
 
 	bool IsInCenterOfLayer() const;
 
+	FString GetLayerName(EDiveLayersID LayerID) const;
+
 protected:
-	UPROPERTY(EditAnywhere)
-	float MaxDiveSpeed;
-
-	UPROPERTY(EditAnywhere)
-	float StartDiveSpeed;
-
-	UPROPERTY(EditAnywhere)
-	float ReachMaxSpeedTime;
 	
-	UPROPERTY()
-	float AccelerationAlpha;
-	
-	UPROPERTY()
-	float ChangeLayerCooldownTime;
+	UPROPERTY(EditAnywhere)
+	float DiveSpeed = 400.f;
 
+	UPROPERTY(EditAnywhere)
+	float CrossLayerCooldown = 0.5f;
+
+private:
+	UPROPERTY()
+	float EnterDiveLevelThreshold = 5.f;
+	
 	UPROPERTY()
 	ADiveLevels* DiveLevelsActor;
+
+	UPROPERTY()
+	EDivePhase CurrentDivePhase;
+
+	UPROPERTY()
+	EDiveLayersID TargetLayer;
+
+	UPROPERTY()
+	float CrossLayerClock;
 };
