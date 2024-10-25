@@ -9,6 +9,7 @@
 #include "GameFramework/PawnMovementComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Interface//GrabbableInterface.h"
+#include "Kismet/KismetStringLibrary.h"
 
 
 EFreeFallCharacterStateID UFreeFallCharacterStateGrab::GetStateID()
@@ -30,20 +31,37 @@ void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousS
 	//Get previous state ID
 
 	//Can't grab if is grabbed
-	if(Character->OtherCharacter && !Character->bIsGrabbingPlayer)
+	if(Character->OtherCharacter && !(Character->GrabbingState == EFreeFallCharacterGrabbingState::GrabPlayer))
 		ExitStateConditions();
 	
 	//Stop grabbing if release key
 	if(!Character->bInputGrabPressed)
 	{
-		ReleasePlayerGrab(PreviousStateID);
+		switch (Character->GrabbingState)
+		{
+			case EFreeFallCharacterGrabbingState::GrabPlayer:
+				ReleasePlayerGrab(PreviousStateID);
+				break;
+			
+			case EFreeFallCharacterGrabbingState::GrabObject:
+				ReleaseObjectGrab(PreviousStateID);
+				break;
+			
+			case EFreeFallCharacterGrabbingState::None:
+			default: 
+				break;
+		}
+
 		ExitStateConditions();
 		return;
 	}
 
 	
 	//Check if caught character
-	PlayerGrab();
+	if(Character->GrabbingState == EFreeFallCharacterGrabbingState::None)
+		PlayerGrab();
+	if(Character->GrabbingState == EFreeFallCharacterGrabbingState::None)
+		ObjectGrab();
 	ExitStateConditions();
 }
 
@@ -78,6 +96,7 @@ AFreeFallCharacter* UFreeFallCharacterStateGrab::FindPlayerToGrab() const
 														EDrawDebugTrace::ForOneFrame,
 														HitResult,
 														true);
+	
 	if (CanGrab)
 	{
 		if(AFreeFallCharacter* OtherActor =  Cast<AFreeFallCharacter>(HitResult.GetActor()))
@@ -108,6 +127,8 @@ AActor* UFreeFallCharacterStateGrab::FindActorToGrab() const
 														EDrawDebugTrace::ForOneFrame,
 														HitResult,
 														true);
+
+	
 	//Has grabbed anything
 	if (CanGrab)
 	{
@@ -127,7 +148,7 @@ AActor* UFreeFallCharacterStateGrab::FindActorToGrab() const
 void UFreeFallCharacterStateGrab::ReleasePlayerGrab(EFreeFallCharacterStateID PreviousStateID)
 {
 	PreviousState = PreviousStateID;
-	Character->bIsGrabbingPlayer = false;
+	Character->GrabbingState = EFreeFallCharacterGrabbingState::None;
 	
 	if(Character->OtherCharacter)
 	{
@@ -154,14 +175,35 @@ void UFreeFallCharacterStateGrab::ReleasePlayerGrab(EFreeFallCharacterStateID Pr
 
 void UFreeFallCharacterStateGrab::ReleaseObjectGrab(EFreeFallCharacterStateID PreviousStateID)
 {
+	Character->GrabbingState = EFreeFallCharacterGrabbingState::None;
+
+	if(Character->OtherObject || Character->GrabbingState == EFreeFallCharacterGrabbingState::GrabObject)
+	{
+		//Detach object
+		FDetachmentTransformRules DetachmentRules = FDetachmentTransformRules(EDetachmentRule::KeepWorld, false);
+		Character->OtherObject->DetachFromActor(DetachmentRules);
+		
+		//Launch other object
+		FVector LaunchVelocity = Character->GetMovementComponent()->Velocity * LaunchObjectForceMultiplier;
+		LaunchVelocity += Character->GetActorForwardVector() * LaunchObjectBaseLaunchMultiplier;
+		//Get Actor's mesh
+		if(UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(Character->OtherObject->GetComponentByClass(UStaticMeshComponent::StaticClass())))
+		{
+			Mesh->SetSimulatePhysics(true);
+			Mesh->AddImpulse(LaunchVelocity,NAME_None,false);
+		}
+		
+		//Null reference
+		Character->OtherObject = nullptr;
+	}
 }
 
 void UFreeFallCharacterStateGrab::PlayerGrab() const
 {
-	AFreeFallCharacter* FoundCharacter = FindPlayerToGrab();
+ 	AFreeFallCharacter* FoundCharacter = FindPlayerToGrab();
 	if(FoundCharacter)	//Change state if couldn't find a player
 	{
-		Character->bIsGrabbingPlayer = true;
+		Character->GrabbingState = EFreeFallCharacterGrabbingState::GrabPlayer;
 		
 		//Set cross-references
 		Character->OtherCharacter = FoundCharacter;
@@ -183,8 +225,29 @@ void UFreeFallCharacterStateGrab::PlayerGrab() const
 
 void UFreeFallCharacterStateGrab::ObjectGrab() const
 {
-	if(const AActor* FoundActor = FindActorToGrab())
+	AActor* FoundActor = FindActorToGrab();
+	if(FoundActor)
 	{
-		Character->bIsGrabbingObject = true;
+		Character->OtherObject = FoundActor;
+		
+		//If is an obstacle
+		if(const AObstacle* FoundObstacle = Cast<AObstacle>(FoundActor))
+		{
+			//Check who's heavier
+			if(FoundObstacle->Mesh->GetMass() > Character->GetPlayerMass())
+			{
+				Character->GrabbingState = EFreeFallCharacterGrabbingState::GrabHeavierObject;
+			}
+			else
+			{
+				Character->GrabbingState = EFreeFallCharacterGrabbingState::GrabObject;
+				
+				FoundObstacle->Mesh->ComponentVelocity = FVector(0, 0, 0);
+				FoundObstacle->Mesh->SetSimulatePhysics(false);
+				FAttachmentTransformRules AttachementRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, EAttachmentRule::KeepWorld, true);
+				FoundActor->AttachToComponent(Character->GetObjectGrabPoint(), AttachementRules);
+			}
+		}
+		
 	}
 }

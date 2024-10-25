@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "FreeFallCharacterGrabbingState"
 #include "GameFramework/Character.h"
 #include "FreeFallCharacter.generated.h"
 
@@ -138,17 +139,26 @@ private:
 	
 public:
 	bool bInputGrabPressed = false;
-	bool bIsGrabbingPlayer = false;
-	bool bIsGrabbingObject = false;
+	EFreeFallCharacterGrabbingState GrabbingState;
 	
 	UPROPERTY()
 	TObjectPtr<AFreeFallCharacter> OtherCharacter;
 
+	UPROPERTY()
+	TObjectPtr<AActor> OtherObject;
+	
 	//Fields are set by Grab State
 	FVector GrabInitialOffset;
 	float GrabRotationSpeed;
 	float GrabRotationInfluenceStrength;
 	FRotator GrabDefaultRotationOffset;
+
+protected:
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USceneComponent> ObjectGrabPoint;
+
+public :
+	TObjectPtr<USceneComponent> GetObjectGrabPoint() const;
 	
 #pragma endregion 
 
@@ -199,6 +209,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void BounceCooldown();
 
+	UFUNCTION()
+	float GetPlayerMass();
+	
 protected:
 	UFUNCTION()
 	void OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);

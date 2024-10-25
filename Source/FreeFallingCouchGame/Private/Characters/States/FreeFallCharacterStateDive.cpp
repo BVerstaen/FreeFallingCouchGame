@@ -234,7 +234,7 @@ void UFreeFallCharacterStateDive::ApplyMoveInputs(float DeltaTime)
 	FVector CharacterDirection = Character->GetActorForwardVector();
 
 	//Set Orient Rotation To Movement
-	if(Character->bIsGrabbingPlayer)
+	if(Character->GrabbingState == EFreeFallCharacterGrabbingState::GrabPlayer)
 	{
 		if(Character->GetCharacterMovement()->bOrientRotationToMovement)
 		{

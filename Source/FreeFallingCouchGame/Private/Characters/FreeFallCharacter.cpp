@@ -37,6 +37,13 @@ AFreeFallCharacter::AFreeFallCharacter()
 		CapsuleCollision->SetNotifyRigidBodyCollision(true); // Permet de recevoir des notifications de collisions
 		CapsuleCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	}
+
+	//Create grabbing point
+	ObjectGrabPoint = CreateDefaultSubobject<USceneComponent>("GrabPoint");
+	if(ObjectGrabPoint != nullptr)
+	{
+		ObjectGrabPoint->SetupAttachment(RootComponent);
+	}
 }
 
 // Called when the game starts or when spawned
@@ -264,7 +271,7 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime) const
 	if(OtherCharacter == nullptr) return;
 
 	//Calculate new offset of child actor based on Character rotation
-	if(bIsGrabbingPlayer)
+	if(GrabbingState == EFreeFallCharacterGrabbingState::GrabPlayer)
 	{
 		FVector RotatedOffset = this->GetActorRotation().RotateVector(GrabInitialOffset);
 		FVector NewOtherCharacterPosition = this->GetActorLocation() + RotatedOffset;
@@ -294,6 +301,11 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime) const
 	OtherCharacter->SetActorRotation(NewGrabbedRotation);
 }
 
+TObjectPtr<USceneComponent> AFreeFallCharacter::GetObjectGrabPoint() const
+{
+	return ObjectGrabPoint;
+}
+
 #pragma region Bounce Fucntions
 void AFreeFallCharacter::BounceCooldown()
 {
@@ -301,6 +313,11 @@ void AFreeFallCharacter::BounceCooldown()
 
 	FTimerHandle TimerHandle;
 	GetWorldTimerManager().SetTimer(TimerHandle, this, &AFreeFallCharacter::ResetBounce, BounceCooldownDelay, false);
+}
+
+float AFreeFallCharacter::GetPlayerMass()
+{
+	return PlayerMass;
 }
 
 void AFreeFallCharacter::ResetBounce()

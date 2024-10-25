@@ -40,7 +40,7 @@ public:
 	TObjectPtr<UMaterial> Layer3Material;
 
 	UPROPERTY(EditAnywhere)
-	bool IsGrabbable;
+	bool IsGrabbable = true;
 	
 	/*Sera modifiée par l'Obstacle Spawner*/
 	UPROPERTY(VisibleAnywhere)
