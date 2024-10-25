@@ -138,7 +138,8 @@ private:
 	
 public:
 	bool bInputGrabPressed = false;
-	bool bIsGrabbing = false;
+	bool bIsGrabbingPlayer = false;
+	bool bIsGrabbingObject = false;
 	
 	UPROPERTY()
 	TObjectPtr<AFreeFallCharacter> OtherCharacter;

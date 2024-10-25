@@ -72,13 +72,13 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 	FVector CharacterDirection = Character->GetActorForwardVector();
 
 	//Set Orient Rotation To Movement
-	if(Character->bIsGrabbing)
+	if(Character->bIsGrabbingPlayer)
 	{
 		if(Character->GetCharacterMovement()->bOrientRotationToMovement)
 		{
 			//Get angle btw Character & movement direction
 			float DotProduct = FVector::DotProduct(MovementDirection, CharacterDirection);
-			if(DotProduct > OrientationThreshold && Character->bIsGrabbing || DotProduct > GrabbedOrientationThreshold && !Character->bIsGrabbing )
+			if(DotProduct > OrientationThreshold && Character->bIsGrabbingPlayer || DotProduct > GrabbedOrientationThreshold && !Character->bIsGrabbingPlayer )
 			{
 				Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 				OldInputDirection = InputMove;

@@ -264,7 +264,7 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime) const
 	if(OtherCharacter == nullptr) return;
 
 	//Calculate new offset of child actor based on Character rotation
-	if(bIsGrabbing)
+	if(bIsGrabbingPlayer)
 	{
 		FVector RotatedOffset = this->GetActorRotation().RotateVector(GrabInitialOffset);
 		FVector NewOtherCharacterPosition = this->GetActorLocation() + RotatedOffset;
