@@ -1,6 +1,5 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "UI/Widgets/MatchSelectionWidget.h"
 
 void UMatchSelectionWidget::NativeConstruct()
@@ -40,4 +39,10 @@ void UMatchSelectionWidget::TestCallOnPressed(FString NameElementPressed)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple, FString::Printf(TEXT("Current Round: %s"), *NameElementPressed));
 
+}
+
+void UMatchSelectionWidget::ReceiveData(int inMaxRounds, float inEventDelay, FString inEraChosen,
+	EMatchTypes InMatchType)
+{
+	PlayerCustomData->setMatchParameters(inMaxRounds, inEventDelay, inEraChosen, InMatchType);
 }

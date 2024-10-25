@@ -34,3 +34,12 @@ void UMatchParameters::setValues(TObjectPtr<UMatchParameters> UserParameters)
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Data not valid");
 	}
 }
+
+void UMatchParameters::setMatchParameters(int inMaxRounds, float inEventDelay, FString inEraChosen,
+	EMatchTypes InMatchType)
+{
+	MaxRounds = inMaxRounds;
+	EraName = inEraChosen;
+	EventDelay = inEventDelay;
+	MatchType = InMatchType;
+}

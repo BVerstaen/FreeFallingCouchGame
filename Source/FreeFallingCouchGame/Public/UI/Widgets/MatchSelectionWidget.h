@@ -1,15 +1,10 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Characters/PlayerMatchData.h"
-#include "Components/TextBlock.h"
 #include "Components/UniformGridPanel.h"
-#include "Components/UniformGridSlot.h"
+#include "FreeFallingCouchGame/Public/Match/MatchParameters.h"
 #include "MatchSelectionWidget.generated.h"
-
 /**
  * 
  */
@@ -26,10 +21,13 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "MatchSelectionWidget")
 	void TestCallOnPressed(FString NameElementPressed);
+	UFUNCTION(BlueprintCallable, Category = "MatchSelectionWidget")
+	void ReceiveData(int inMaxRounds = 3, float inEventDelay = 45.0f, FString inEraChosen = "Default",
+		 EMatchTypes InMatchType = Classic);
 protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Match Data")
-	UPlayerMatchData *PlayerCustomData;
+	UMatchParameters *PlayerCustomData;
 
 	UPROPERTY(EditAnywhere, Category = "Blueprint Data")
 	TSubclassOf<UUserWidget> ItemWidgetClass = nullptr;

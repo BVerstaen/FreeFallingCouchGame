@@ -9,7 +9,7 @@
 /**
  * 
  */
-UENUM()
+UENUM(BlueprintType)
 enum EMatchTypes
 {
 	Classic,
@@ -28,13 +28,17 @@ UCLASS(Blueprintable)
 class FREEFALLINGCOUCHGAME_API UMatchParameters : public UObject
 {
 	GENERATED_BODY()
-	public:
+public:
 	void Init(TSubclassOf<UMatchParameters> UserParameters);
 	const int* getScoreValues() const;
 	int getMaxRounds() const;
 	float getTimerDelay() const {return EventDelay;}
 	FString getEraChosen() const {return EraName;}
 	void setValues(TObjectPtr<UMatchParameters> UserParameters);
+
+	UFUNCTION(BlueprintCallable)
+	void setMatchParameters(int inMaxRounds = 3, float inEventDelay = 45.0f, FString inEraChosen = "Default",
+		 EMatchTypes InMatchType = Classic);
 protected:
 	// Scores based on your ranking (IN ORDER)
 	UPROPERTY(EditAnywhere)
@@ -49,5 +53,5 @@ protected:
 	UPROPERTY(EditAnywhere)
 	FString EraName = "Default";
 	// Current Match Type (Classic, Teams, etc...)
-	//EMatchTypes MatchType;
+	EMatchTypes MatchType = Classic;
 };
