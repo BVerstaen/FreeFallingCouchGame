@@ -27,6 +27,10 @@ void UFreeFallCharacterStateGrab::StateInit(UFreeFallCharacterStateMachine* InSt
 void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousStateID)
 {
 	Super::StateEnter(PreviousStateID);
+
+	//Can't grab if you're grabbed
+	if(!Character->bIsGrabbing && Character->OtherCharacter)
+		ExitStateConditions();
 	
 	//Stop grabbing if release key
 	if(!Character->bIsGrabbing)
@@ -54,21 +58,17 @@ void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousS
 	AFreeFallCharacter* FoundCharacter = FindPlayerToGrab();
 	if(FoundCharacter)	//Change state if couldn't find a player
 	{
-		//Check if not trying to grab the character that is grabbing you
-		if(FoundCharacter != Character->OtherCharacter)
-		{
-			//Set cross-references
-			Character->OtherCharacter = FoundCharacter;
-			Character->OtherCharacter->OtherCharacter = Character;
+		//Set cross-references
+		Character->OtherCharacter = FoundCharacter;
+		Character->OtherCharacter->OtherCharacter = Character;
 		
-			//Calculate location offset
-			FVector GrabOffset = FoundCharacter->GetActorLocation() - Character->GetActorLocation();
-			Character->GrabInitialOffset = Character->GetActorRotation().UnrotateVector(GrabOffset);
+		//Calculate location offset
+		FVector GrabOffset = FoundCharacter->GetActorLocation() - Character->GetActorLocation();
+		Character->GrabInitialOffset = Character->GetActorRotation().UnrotateVector(GrabOffset);
 
-			//Calculate rotation offset
-			Character->GrabDefaultRotationOffset = FoundCharacter->GetActorRotation().Yaw - Character->GetActorRotation().Yaw;
-			FoundCharacter->GrabDefaultRotationOffset = Character->GetActorRotation().Yaw - FoundCharacter->GetActorRotation().Yaw;
-		}
+		//Calculate rotation offset
+		Character->GrabDefaultRotationOffset = FoundCharacter->GetActorRotation() - Character->GetActorRotation();
+		FoundCharacter->GrabDefaultRotationOffset = Character->GetActorRotation() - FoundCharacter->GetActorRotation();
 	}
 	ExitStateConditions();
 }

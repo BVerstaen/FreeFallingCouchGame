@@ -144,7 +144,7 @@ public:
 	FVector GrabInitialOffset;
 	float GrabRotationSpeed;
 	float GrabRotationInfluenceStrength;
-	float GrabDefaultRotationOffset;
+	FRotator GrabDefaultRotationOffset;
 	
 #pragma endregion 
 
