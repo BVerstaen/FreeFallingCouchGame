@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Obstacle/Events/EventActor.h"
 #include "ObstacleTransitionClouds.generated.h"
 
 class AFreeFallCharacter;
 
 UCLASS()
-class FREEFALLINGCOUCHGAME_API AObstacleTransitionClouds : public AActor
+class FREEFALLINGCOUCHGAME_API AObstacleTransitionClouds : public AEventActor
 {
 	GENERATED_BODY()
 
@@ -45,4 +46,6 @@ public:
 	void RandomizePlayersPositions();
 	UFUNCTION(BlueprintCallable)
 	bool IsNearAnyPlayer(const FVector& SpawnPosition, float Tolerance, TArray<FVector>& SpawnedPositionList);
+
+	virtual void TriggerEvent() override;
 };
