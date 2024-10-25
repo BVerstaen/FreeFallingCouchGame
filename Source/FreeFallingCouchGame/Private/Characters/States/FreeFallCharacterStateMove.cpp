@@ -8,6 +8,7 @@
 #include "Characters/FreeFallCharacterStateID.h"
 #include "Characters/FreeFallCharacterStateMachine.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetStringLibrary.h"
 #include "Other/DiveLayersID.h"
 #include "Other/DiveLevels.h"
 #include "Settings/CharactersSettings.h"
@@ -22,8 +23,12 @@ void UFreeFallCharacterStateMove::StateEnter(EFreeFallCharacterStateID PreviousS
 	Super::StateEnter(PreviousStateID);
 
 	Character->GetCharacterMovement()->MaxFlySpeed = StartMoveSpeed;
-	Character->GetCharacterMovement()->bOrientRotationToMovement = true;
 	Character->OnInputGrabEvent.AddDynamic(this, &UFreeFallCharacterStateMove::OnInputGrab);
+
+	//Set OrientRotation to movement (deactivated if is grabbed)
+	Character->GetCharacterMovement()->bOrientRotationToMovement = true;
+	if(Character->OtherCharacter != nullptr && !Character->bIsGrabbing)
+		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	
 	if(PreviousStateID != EFreeFallCharacterStateID::Grab)
 		AccelerationAlpha = 0;
@@ -62,24 +67,25 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 	FVector CharacterDirection = Character->GetActorForwardVector();
 
 	//Set Orient Rotation To Movement
-	if(Character->bIsGrabbing && Character->GetCharacterMovement()->bOrientRotationToMovement)
+	if(Character->bIsGrabbing)
 	{
-		//Get angle btw Character & movement direction
-		float DotProduct = FVector::DotProduct(MovementDirection, CharacterDirection);
-		if(DotProduct > OrientationThreshold)
+		if(Character->GetCharacterMovement()->bOrientRotationToMovement)
 		{
-			Character->GetCharacterMovement()->bOrientRotationToMovement = false;
-			OldInputDirection = InputMove;
+			//Get angle btw Character & movement direction
+			float DotProduct = FVector::DotProduct(MovementDirection, CharacterDirection);
+			if(DotProduct > OrientationThreshold)
+			{
+				Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+				OldInputDirection = InputMove;
+			}
 		}
-	}
-	else
-	{
-		//If you change direction -> Restore Orient Rotation Movement
-		if(OldInputDirection != InputMove)
+		else if(OldInputDirection != InputMove)
 		{
+			//If you change direction -> Restore Orient Rotation Movement
 			Character->GetCharacterMovement()->bOrientRotationToMovement = true;
-		}
+		}		
 	}
+
 	
 	//Change state if other input
 	if (FMathf::Abs(Character->GetInputDive()) > CharactersSettings->InputDiveThreshold)

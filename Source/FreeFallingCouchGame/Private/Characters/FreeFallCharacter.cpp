@@ -284,8 +284,9 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime) const
 
 	//Set other Character rotation
 	FRotator TargetRotation = this->GetActorRotation();
+	TargetRotation += GrabDefaultRotationOffset;
 	FRotator NewGrabbedRotation = FMath::RInterpTo(OtherCharacter->GetActorRotation(), TargetRotation, DeltaTime, GrabRotationSpeed);
-	OtherCharacter->SetActorRotation(NewGrabbedRotation);	
+	OtherCharacter->SetActorRotation(NewGrabbedRotation);
 }
 
 #pragma region Bounce Fucntions
