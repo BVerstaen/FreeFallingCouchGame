@@ -31,6 +31,7 @@ void UFreeFallCharacterStateDive::StateEnter(EFreeFallCharacterStateID PreviousS
 	//Not crash if DiveLevelsActor is not set in scene
 	if (DiveLevelsActor == nullptr)
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "DiveLevelsActor is not set on Scene, Actor won't dive");
 		if (FMath::Abs(Character->GetInputMove().X) > CharactersSettings->InputMoveThreshold ||
 				FMath::Abs(Character->GetInputMove().Y) > CharactersSettings->InputMoveThreshold)
 		{
@@ -107,6 +108,7 @@ void UFreeFallCharacterStateDive::StateTick(float DeltaTime)
 	}
 	else
 	{
+		if (CurrentDivePhase == EDivePhase::DiveForcesApplying) CheckTargetedLayer();
 		CrossLayerClock += DeltaTime;
 		GEngine->AddOnScreenDebugMessage(
 			-1,
@@ -116,7 +118,7 @@ void UFreeFallCharacterStateDive::StateTick(float DeltaTime)
 			CurrentDivePhase == EDivePhase::ChangingLayer ? "ChangingLayer" : "CrossingLayer");
 		FVector Direction = Character->GetCameraActor()->GetActorForwardVector();
 		Direction.Normalize();
-		if (DiveLevelsActor->GetDiveBoundZCoord(TargetLayer, EDiveLayerBoundsID::Up) > Character->GetActorLocation().Z && InputDive < 0)
+		if (DiveLevelsActor->GetDiveBoundZCoord(TargetLayer, EDiveLayerBoundsID::Up) - DiveLayerThreshold > Character->GetActorLocation().Z && InputDive < 0)
 		{
 			Character->AddMovementInput(Direction, -1);
 		}
@@ -127,7 +129,7 @@ void UFreeFallCharacterStateDive::StateTick(float DeltaTime)
 			if (Velocity.Z > 1) Character->GetCharacterMovement()->Velocity += Velocity.Z * Direction;
 		}
 		
-		if (DiveLevelsActor->GetDiveBoundZCoord(TargetLayer, EDiveLayerBoundsID::Down) < Character->GetActorLocation().Z && InputDive > 0)
+		if (DiveLevelsActor->GetDiveBoundZCoord(TargetLayer, EDiveLayerBoundsID::Down) + DiveLayerThreshold < Character->GetActorLocation().Z && InputDive > 0)
 		{
 			Character->AddMovementInput(Direction,  1);
 		}
@@ -142,6 +144,9 @@ void UFreeFallCharacterStateDive::StateTick(float DeltaTime)
 			if (CurrentDivePhase == EDivePhase::ChangingLayer)
 			{
 				CurrentDivePhase = EDivePhase::CrossingLayer;
+				FVector Velocity = Character->GetCharacterMovement()->Velocity;
+				if (Velocity.Z < -1) Character->GetCharacterMovement()->Velocity += Velocity.Z * Direction;
+				Character->GetCharacterMovement()->MaxFlySpeed = DiveLevelsActor->GetDiveSize() / CrossLayerCooldown;
 				CrossLayerClock = 0.f;
 			}
 		}

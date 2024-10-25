@@ -52,6 +52,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float CrossLayerCooldown = 0.5f;
 
+	UPROPERTY(EditAnywhere)
+	float DiveLayerThreshold = 10.f;
+
 private:
 	UPROPERTY()
 	float EnterDiveLevelThreshold = 5.f;
