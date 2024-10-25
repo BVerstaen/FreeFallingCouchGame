@@ -47,7 +47,7 @@ void UFreeFallCharacterStateMove::StateExit(EFreeFallCharacterStateID NextStateI
 
 	if (NextStateID == EFreeFallCharacterStateID::Dive)
 	{
-		Cast<UFreeFallCharacterStateDive>(Character->StateMachine->GetState(NextStateID))->SetMoveStats(MaxMoveSpeed, StartMoveSpeed, ReachMaxSpeedTime, OrientationThreshold, &AccelerationAlpha);
+		Cast<UFreeFallCharacterStateDive>(Character->GetStateMachine()->GetState(NextStateID))->SetMoveStats(MaxMoveSpeed, StartMoveSpeed, ReachMaxSpeedTime, OrientationThreshold, &AccelerationAlpha);
 	}
 
 	Character->OnInputGrabEvent.RemoveDynamic(this, &UFreeFallCharacterStateMove::OnInputGrab);
