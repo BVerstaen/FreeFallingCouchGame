@@ -43,11 +43,11 @@ public:
 	bool IsGrabbable = true;
 	
 	/*Sera modifiée par l'Obstacle Spawner*/
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditAnywhere)
 	float Speed;
 
 	/*Sera modifiée par l'Obstacle Spawner*/
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditAnywhere)
 	FVector Direction;
 
 #pragma endregion

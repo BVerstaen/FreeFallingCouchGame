@@ -108,6 +108,11 @@ void AFreeFallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	BindInputGrabActions(EnhancedInputComponent);
 }
 
+void AFreeFallCharacter::DestroyPlayer()
+{
+	Destroy();
+}
+
 void AFreeFallCharacter::CreateStateMachine()
 {
 	StateMachine = NewObject<UFreeFallCharacterStateMachine>(this);
@@ -373,43 +378,87 @@ void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent
 	AObstacle* OtherObstacle = Cast<AObstacle>(OtherActor);
 	if(OtherObstacle)
 	{
-		UStaticMeshComponent* ObstacleMesh = OtherObstacle->GetMesh(); 
-		//Obstacle hit logic
-		if(ObstacleMesh->GetMass() > PlayerMass) //if object is heavier
-		{
-			//then player gets thrown around
-			FVector PlayerVelocity = ObstacleMesh->GetPhysicsLinearVelocity() * BounceObstacleMultiplier;
-			PlayerVelocity.Z = 0;
-			LaunchCharacter(PlayerVelocity,true,true);
+		// Récupération du mesh de l'obstacle
+		UStaticMeshComponent* ObstacleMesh = OtherObstacle->GetMesh();
 
-			OtherObstacle->ResetLaunch();
-		}
-		else
-		{
-			//else object gets thrown around
-			FVector ObjectVelocity = GetCharacterMovement()->Velocity * BounceObstacleMultiplier;
-			ObstacleMesh->AddForce(ObjectVelocity);
-		}
+		//Get impact direction
+		FVector ImpactDirection = (ObstacleMesh->GetComponentLocation() - GetActorLocation()).GetSafeNormal();
+
+		//Player bounce
+		FVector PlayerVelocity = (-ImpactDirection * ObstacleMesh->GetPhysicsLinearVelocity().Size() * BounceObstacleRestitutionMultiplier
+			* (bShouldConsiderMassObject ? ObstacleMesh->GetMass() / PlayerMass : 1)
+			+ (bShouldKeepRemainingVelocity ? GetCharacterMovement()->Velocity * (1 - BouncePlayerRestitutionMultiplier) : FVector::Zero())) 
+			* BouncePlayerMultiplier;
+		
+		PlayerVelocity.Z = 0;
+		LaunchCharacter(PlayerVelocity, true, true);
+
+		//Obstacle Bounce
+		FVector ObjectVelocity = (ImpactDirection * GetCharacterMovement()->Velocity.Size() * BouncePlayerRestitutionMultiplier
+			* (bShouldConsiderMassObject ? PlayerMass / ObstacleMesh->GetMass() : 1)
+			+ (bShouldKeepRemainingVelocity ? ObstacleMesh->GetPhysicsLinearVelocity() * (1 - BounceObstacleRestitutionMultiplier) : FVector::Zero())) 
+			* BounceObstacleMultiplier;
+		
+		ObjectVelocity.Z = 0;
+		ObstacleMesh->AddForce(ObjectVelocity);
 	}
 
 	//Cast to bigger FreefallCharacter
 	AFreeFallCharacter* OtherFreeFallCharacter = Cast<AFreeFallCharacter>(OtherActor);
 	if(OtherFreeFallCharacter)
 	{
-		//Launch character logic
+		// //Launch character logic
+		// OldVelocity = GetCharacterMovement()->Velocity;
+		//
+		// //Bounce self 
+		// FVector NewVelocity = (OtherFreeFallCharacter->GetCharacterMovement()->Velocity * BouncePlayerRestitutionMultiplier
+		// 	+ (bShouldKeepRemainingVelocity ? GetCharacterMovement()->Velocity * (1-BouncePlayerRestitutionMultiplier) : FVector::Zero()) )
+		// 	* BouncePlayerMultiplier;
+		// LaunchCharacter(NewVelocity, true, true);
+		//
+		// GEngine->AddOnScreenDebugMessage(
+		// -1,
+		// 3.f,
+		// FColor::Red,
+		// TEXT("Between Char Velocity = " + NewVelocity.ToString())
+		// );
+		//
+		// //Bounce other character
+		// NewVelocity = (OldVelocity * BouncePlayerRestitutionMultiplier
+		// 	+ (bShouldKeepRemainingVelocity ? OtherFreeFallCharacter->GetCharacterMovement()->Velocity * (1-BouncePlayerRestitutionMultiplier) : FVector::Zero()) )
+		// 	* BouncePlayerMultiplier;
+		// OtherFreeFallCharacter->LaunchCharacter(NewVelocity, true, true);
+		//
+		// if(!OtherFreeFallCharacter->bAlreadyCollided)
+		// {
+		// 	OtherFreeFallCharacter->BounceCooldown();
+		// }
+
+		//Get impact direction
+		FVector ImpactDirection = (OtherFreeFallCharacter->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+		
 		OldVelocity = GetCharacterMovement()->Velocity;
 
-		//Bounce self 
-		FVector NewVelocity = (OtherFreeFallCharacter->GetCharacterMovement()->Velocity * BounceRestitutionMultiplier +
-			(bShouldKeepRemainingVelocity ? GetCharacterMovement()->Velocity * (1-BounceRestitutionMultiplier) : FVector::Zero()) ) * BouncePlayerMultiplier;
+		//Bounce self
+		FVector NewVelocity = (-ImpactDirection * OtherFreeFallCharacter->GetCharacterMovement()->Velocity.Size() * BouncePlayerRestitutionMultiplier
+			+ (bShouldKeepRemainingVelocity ? OldVelocity * (1 - BouncePlayerRestitutionMultiplier) : FVector::Zero()))
+			* BouncePlayerMultiplier;
 		LaunchCharacter(NewVelocity, true, true);
+		
+		GEngine->AddOnScreenDebugMessage(
+			-1,
+			3.f,
+			FColor::Red,
+			TEXT("Between Char Velocity = " + NewVelocity.ToString())
+		);
 
 		//Bounce other character
-		NewVelocity = (OldVelocity * BounceRestitutionMultiplier +
-			(bShouldKeepRemainingVelocity ? OtherFreeFallCharacter->GetCharacterMovement()->Velocity * (1-BounceRestitutionMultiplier) : FVector::Zero()) ) * BouncePlayerMultiplier;
+		NewVelocity = (ImpactDirection * OldVelocity.Size() * BouncePlayerRestitutionMultiplier
+			+ (bShouldKeepRemainingVelocity ? OtherFreeFallCharacter->GetCharacterMovement()->Velocity * (1 - BouncePlayerRestitutionMultiplier) : FVector::Zero()))
+			* BouncePlayerMultiplier;
 		OtherFreeFallCharacter->LaunchCharacter(NewVelocity, true, true);
-
-		if(!OtherFreeFallCharacter->bAlreadyCollided)
+		
+		if (!OtherFreeFallCharacter->bAlreadyCollided)
 		{
 			OtherFreeFallCharacter->BounceCooldown();
 		}

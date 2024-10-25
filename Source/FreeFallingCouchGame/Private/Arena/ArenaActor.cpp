@@ -42,11 +42,12 @@ void AArenaActor::Tick(float DeltaTime)
 	TArray<AFreeFallCharacter*> CharactersToRemove;
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	
-	//Check if character was rendered on screen
-	for(AFreeFallCharacter* Character : CharactersInsideArena)
+	//Check if character was rendered on screen (inverted loop to avoid indexation problems)
+	for(int i = CharactersInsideArena.Num() - 1; i > -1; i--)
 	{
+		AFreeFallCharacter* Character = CharactersInsideArena[i];
 		if(Character == nullptr) continue;
-
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, Character->GetName());
 		FVector PlayerLocation = Character->GetActorLocation();
 		FVector2D ScreenPosition;
 		
@@ -65,9 +66,8 @@ void AArenaActor::Tick(float DeltaTime)
 				//Destroy current player
 				if(OnCharacterDestroyed.IsBound())
 					OnCharacterDestroyed.Broadcast(Character);
-			
+
 				CharactersToRemove.Add(Character);
-				Character->Destroy();
 			}
 			else if (!(ScreenPosition.X >= ViewportSize.X * NearEdgeScreenTolerance && ScreenPosition.X <= ViewportSize.X - ViewportSize.X * NearEdgeScreenTolerance &&
 				ScreenPosition.Y >= ViewportSize.Y * NearEdgeScreenTolerance && ScreenPosition.Y <= ViewportSize.Y - ViewportSize.Y * NearEdgeScreenTolerance))
@@ -77,11 +77,11 @@ void AArenaActor::Tick(float DeltaTime)
 		}
 	}
 
-	//Check if there's any characters to remove
-	if(CharactersToRemove.Num() > 0)
+	//Remove & destroy actors
+	for (AFreeFallCharacter* Character : CharactersToRemove)
 	{
-		for(AFreeFallCharacter* Character : CharactersToRemove)
-			CharactersInsideArena.Remove(Character);
-		CharactersToRemove.Empty();
+		CharactersInsideArena.Remove(Character);
+		Character->Destroy();
 	}
+	CharactersToRemove.Empty();
 }
