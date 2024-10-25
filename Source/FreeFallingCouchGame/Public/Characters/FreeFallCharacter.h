@@ -44,9 +44,12 @@ public:
 
 	void TickStateMachine(float DeltaTime) const;
 
-public:
+protected:
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<UFreeFallCharacterStateMachine> StateMachine;
+	
+public:
+	TObjectPtr<UFreeFallCharacterStateMachine> GetStateMachine() const;
 	
 	UPROPERTY(EditAnywhere)
 	TMap<EFreeFallCharacterStateID, TSubclassOf<UFreeFallCharacterState>> FreeFallCharacterStatesOverride;

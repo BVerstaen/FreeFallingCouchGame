@@ -27,8 +27,6 @@ void UFreeFallCharacterStateMove::StateEnter(EFreeFallCharacterStateID PreviousS
 
 	//Set OrientRotation to movement (deactivated if is grabbed)
 	Character->GetCharacterMovement()->bOrientRotationToMovement = true;
-	if(Character->OtherCharacter != nullptr && !Character->bIsGrabbing)
-		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	
 	if(PreviousStateID != EFreeFallCharacterStateID::Grab)
 		AccelerationAlpha = 0;
@@ -73,7 +71,7 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 		{
 			//Get angle btw Character & movement direction
 			float DotProduct = FVector::DotProduct(MovementDirection, CharacterDirection);
-			if(DotProduct > OrientationThreshold)
+			if(DotProduct > OrientationThreshold && Character->bIsGrabbing || DotProduct > GrabbedOrientationThreshold && !Character->bIsGrabbing )
 			{
 				Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 				OldInputDirection = InputMove;

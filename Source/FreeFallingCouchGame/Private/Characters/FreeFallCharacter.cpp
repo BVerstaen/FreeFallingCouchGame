@@ -103,6 +103,11 @@ void AFreeFallCharacter::TickStateMachine(float DeltaTime) const
 	StateMachine->Tick(DeltaTime);
 }
 
+TObjectPtr<UFreeFallCharacterStateMachine> AFreeFallCharacter::GetStateMachine() const
+{
+	return StateMachine;
+}
+
 void AFreeFallCharacter::SetupMappingContextIntoController() const
 {
 	APlayerController* PlayerController = Cast<APlayerController>(Controller);
