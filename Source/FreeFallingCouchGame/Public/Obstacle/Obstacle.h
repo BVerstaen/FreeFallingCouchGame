@@ -3,11 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Interface/GrabbableInterface.h"
 #include "GameFramework/Actor.h"
 #include "Obstacle.generated.h"
 
 UCLASS()
-class FREEFALLINGCOUCHGAME_API AObstacle : public AActor
+class FREEFALLINGCOUCHGAME_API AObstacle : public AActor, public IGrabbableInterface
 {
 	GENERATED_BODY()
 
@@ -37,6 +38,9 @@ public:
 	
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UMaterial> Layer3Material;
+
+	UPROPERTY(EditAnywhere)
+	bool IsGrabbable;
 	
 	/*Sera modifiée par l'Obstacle Spawner*/
 	UPROPERTY(VisibleAnywhere)
@@ -54,4 +58,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void ResetLaunch();
+
+	UFUNCTION()
+	virtual bool CanBeGrabbed() override;
 };

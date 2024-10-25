@@ -44,11 +44,11 @@ public:
 
 	void TickStateMachine(float DeltaTime) const;
 
-protected:
+public:
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<UFreeFallCharacterStateMachine> StateMachine;
-
-public:
+	
+	UPROPERTY(EditAnywhere)
 	TMap<EFreeFallCharacterStateID, TSubclassOf<UFreeFallCharacterState>> FreeFallCharacterStatesOverride;
 
 #pragma endregion
@@ -119,6 +119,34 @@ private:
 	void OnInputDive(const FInputActionValue& Value);
 
 #pragma endregion
+
+#pragma region Input Grab
+
+public:
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInputGrabbing);
+	FInputGrabbing OnInputGrabEvent;
+	
+private:
+	void BindInputGrabActions(UEnhancedInputComponent* EnhancedInputComponent);
+
+	void OnInputGrab(const FInputActionValue& Value);
+
+	void UpdateMovementInfluence(float DeltaTime) const;
+	
+public:
+	bool bInputGrabPressed = false;
+	bool bIsGrabbing = false;
+	
+	UPROPERTY()
+	TObjectPtr<AFreeFallCharacter> OtherCharacter;
+
+	//Fields are set by Grab State
+	FVector GrabInitialOffset;
+	float GrabRotationSpeed;
+	float GrabRotationInfluenceStrength;
+	FRotator GrabDefaultRotationOffset;
+	
+#pragma endregion 
 
 #pragma region IDPlayer
 protected:

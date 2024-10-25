@@ -20,6 +20,8 @@ void UFreeFallCharacterState::StateInit(UFreeFallCharacterStateMachine* InStateM
 {
 	StateMachine = InStateMachine;
 	Character = InStateMachine->GetCharacter();
+	//Needed else State move will crash
+	CharactersSettings = GetDefault<UCharactersSettings>();
 }
 
 void UFreeFallCharacterState::StateEnter(EFreeFallCharacterStateID PreviousStateID)

@@ -7,7 +7,10 @@
 #include "Characters/FreeFallCharacter.h"
 #include "Characters/FreeFallCharacterStateID.h"
 #include "Characters/FreeFallCharacterStateMachine.h"
+#include "Characters/States/FreeFallCharacterStateDive.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/InputSettings.h"
+#include "Kismet/KismetStringLibrary.h"
 #include "Other/DiveLayersID.h"
 #include "Other/DiveLevels.h"
 #include "Settings/CharactersSettings.h"
@@ -22,8 +25,15 @@ void UFreeFallCharacterStateMove::StateEnter(EFreeFallCharacterStateID PreviousS
 	Super::StateEnter(PreviousStateID);
 
 	Character->GetCharacterMovement()->MaxFlySpeed = StartMoveSpeed;
+	Character->OnInputGrabEvent.AddDynamic(this, &UFreeFallCharacterStateMove::OnInputGrab);
 
-	AccelerationAlpha = 0;
+	//Set OrientRotation to movement (deactivated if is grabbed)
+	Character->GetCharacterMovement()->bOrientRotationToMovement = true;
+	if(Character->OtherCharacter != nullptr && !Character->bIsGrabbing)
+		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+	
+	if(PreviousStateID != EFreeFallCharacterStateID::Grab)
+		AccelerationAlpha = 0;
 
 	// GEngine->AddOnScreenDebugMessage(
 	// 	-1,
@@ -37,6 +47,12 @@ void UFreeFallCharacterStateMove::StateExit(EFreeFallCharacterStateID NextStateI
 {
 	Super::StateExit(NextStateID);
 
+	if (NextStateID == EFreeFallCharacterStateID::Dive)
+	{
+		Cast<UFreeFallCharacterStateDive>(Character->StateMachine->GetState(NextStateID))->SetMoveStats(MaxMoveSpeed, StartMoveSpeed, ReachMaxSpeedTime, OrientationThreshold, &AccelerationAlpha);
+	}
+
+	Character->OnInputGrabEvent.RemoveDynamic(this, &UFreeFallCharacterStateMove::OnInputGrab);
 	// GEngine->AddOnScreenDebugMessage(
 	// 	-1,
 	// 	3.f,
@@ -53,7 +69,32 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 	Character->GetCharacterMovement()->MaxFlySpeed = FMath::Lerp(StartMoveSpeed,MaxMoveSpeed,FMath::Min(AccelerationAlpha/ReachMaxSpeedTime,1));
 
 	const FVector2D InputMove = Character->GetInputMove();
+	
+	FVector MovementDirection = Character->GetVelocity().GetSafeNormal();
+	FVector CharacterDirection = Character->GetActorForwardVector();
 
+	//Set Orient Rotation To Movement
+	if(Character->bIsGrabbing)
+	{
+		if(Character->GetCharacterMovement()->bOrientRotationToMovement)
+		{
+			//Get angle btw Character & movement direction
+			float DotProduct = FVector::DotProduct(MovementDirection, CharacterDirection);
+			if(DotProduct > OrientationThreshold)
+			{
+				Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+				OldInputDirection = InputMove;
+			}
+		}
+		else if(OldInputDirection != InputMove)
+		{
+			//If you change direction -> Restore Orient Rotation Movement
+			Character->GetCharacterMovement()->bOrientRotationToMovement = true;
+		}		
+	}
+
+	
+	//Change state if other input
 	if (FMathf::Abs(Character->GetInputDive()) > CharactersSettings->InputDiveThreshold)
 	{
 		StateMachine->ChangeState(EFreeFallCharacterStateID::Dive);
@@ -75,4 +116,9 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 		FColor::Cyan,
 		TEXT("Tick State Move")
 		);
+}
+
+void UFreeFallCharacterStateMove::OnInputGrab()
+{
+	StateMachine->ChangeState(EFreeFallCharacterStateID::Grab);
 }
