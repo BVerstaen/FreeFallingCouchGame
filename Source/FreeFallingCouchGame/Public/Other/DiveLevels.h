@@ -28,6 +28,8 @@ public:
 	
 	float GetDiveBoundZCoord(EDiveLayersID Layer, EDiveLayerBoundsID Bound);
 
+	float GetDiveSize();
+
 	EDiveLayersID GetDiveLayersFromCoord(float PlayerCoordZ);
 
 

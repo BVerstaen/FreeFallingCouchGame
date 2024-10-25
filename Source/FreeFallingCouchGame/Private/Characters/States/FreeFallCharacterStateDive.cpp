@@ -31,6 +31,7 @@ void UFreeFallCharacterStateDive::StateEnter(EFreeFallCharacterStateID PreviousS
 	//Not crash if DiveLevelsActor is not set in scene
 	if (DiveLevelsActor == nullptr)
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "DiveLevelsActor is not set on Scene, Actor won't dive");
 		if (FMath::Abs(Character->GetInputMove().X) > CharactersSettings->InputMoveThreshold ||
 				FMath::Abs(Character->GetInputMove().Y) > CharactersSettings->InputMoveThreshold)
 		{
@@ -64,6 +65,8 @@ void UFreeFallCharacterStateDive::StateTick(float DeltaTime)
 	if (DiveLevelsActor == nullptr) return;
 
 	float InputDive = Character->GetInputDive();
+
+	ApplyMoveInputs(DeltaTime);
 
 	GEngine->AddOnScreenDebugMessage(
 		-1,
@@ -107,6 +110,7 @@ void UFreeFallCharacterStateDive::StateTick(float DeltaTime)
 	}
 	else
 	{
+		if (CurrentDivePhase == EDivePhase::DiveForcesApplying) CheckTargetedLayer();
 		CrossLayerClock += DeltaTime;
 		GEngine->AddOnScreenDebugMessage(
 			-1,
@@ -116,7 +120,7 @@ void UFreeFallCharacterStateDive::StateTick(float DeltaTime)
 			CurrentDivePhase == EDivePhase::ChangingLayer ? "ChangingLayer" : "CrossingLayer");
 		FVector Direction = Character->GetCameraActor()->GetActorForwardVector();
 		Direction.Normalize();
-		if (DiveLevelsActor->GetDiveBoundZCoord(TargetLayer, EDiveLayerBoundsID::Up) > Character->GetActorLocation().Z && InputDive < 0)
+		if (DiveLevelsActor->GetDiveBoundZCoord(TargetLayer, EDiveLayerBoundsID::Up) - DiveLayerThreshold > Character->GetActorLocation().Z && InputDive < 0)
 		{
 			Character->AddMovementInput(Direction, -1);
 		}
@@ -127,7 +131,7 @@ void UFreeFallCharacterStateDive::StateTick(float DeltaTime)
 			if (Velocity.Z > 1) Character->GetCharacterMovement()->Velocity += Velocity.Z * Direction;
 		}
 		
-		if (DiveLevelsActor->GetDiveBoundZCoord(TargetLayer, EDiveLayerBoundsID::Down) < Character->GetActorLocation().Z && InputDive > 0)
+		if (DiveLevelsActor->GetDiveBoundZCoord(TargetLayer, EDiveLayerBoundsID::Down) + DiveLayerThreshold < Character->GetActorLocation().Z && InputDive > 0)
 		{
 			Character->AddMovementInput(Direction,  1);
 		}
@@ -142,6 +146,9 @@ void UFreeFallCharacterStateDive::StateTick(float DeltaTime)
 			if (CurrentDivePhase == EDivePhase::ChangingLayer)
 			{
 				CurrentDivePhase = EDivePhase::CrossingLayer;
+				FVector Velocity = Character->GetCharacterMovement()->Velocity;
+				if (Velocity.Z < -1) Character->GetCharacterMovement()->Velocity += Velocity.Z * Direction;
+				Character->GetCharacterMovement()->MaxFlySpeed = DiveLevelsActor->GetDiveSize() / CrossLayerCooldown;
 				CrossLayerClock = 0.f;
 			}
 		}
@@ -195,6 +202,7 @@ void UFreeFallCharacterStateDive::CheckTargetedLayer()
 	Character->GetCharacterMovement()->MaxFlySpeed = DiveSpeed;
 }
 
+
 void UFreeFallCharacterStateDive::ApplyDiveForce()
 {
 	float ZPosition = Character->GetActorLocation().Z;
@@ -208,6 +216,55 @@ void UFreeFallCharacterStateDive::ApplyDiveForce()
 		Character->AddMovementInput(Direction, ZPosDifference < 0 ? -1 : 1);
 	}
 	GEngine->AddOnScreenDebugMessage(-1, 0.1, FColor::Red, "DiveForces");
+}
+
+void UFreeFallCharacterStateDive::ApplyMoveInputs(float DeltaTime)
+{
+	if (AccelerationAlpha == nullptr)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, "Acceleration is not set");
+		return;
+	}
+	*AccelerationAlpha += DeltaTime;
+	float MoveSpeed = FMath::Lerp(StartMoveSpeed,MaxMoveSpeed,FMath::Min(*AccelerationAlpha / ReachMaxSpeedTime,1));
+
+	const FVector2D InputMove = Character->GetInputMove();
+	
+	FVector MovementDirection = Character->GetVelocity().GetSafeNormal();
+	FVector CharacterDirection = Character->GetActorForwardVector();
+
+	//Set Orient Rotation To Movement
+	if(Character->bIsGrabbing)
+	{
+		if(Character->GetCharacterMovement()->bOrientRotationToMovement)
+		{
+			//Get angle btw Character & movement direction
+			float DotProduct = FVector::DotProduct(MovementDirection, CharacterDirection);
+			if(DotProduct > OrientationThreshold)
+			{
+				Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+				OldInputDirection = InputMove;
+			}
+		}
+		else if(OldInputDirection != InputMove)
+		{
+			//If you change direction -> Restore Orient Rotation Movement
+			Character->GetCharacterMovement()->bOrientRotationToMovement = true;
+		}		
+	}
+
+	
+	
+	if (FMath::Abs(InputMove.Y) > CharactersSettings->InputMoveThreshold || FMath::Abs(InputMove.X) > CharactersSettings->InputMoveThreshold)
+	{
+		//Character->GetCharacterMovement()->AddForce(FVector::ForwardVector * FVector(InputMove.X, InputMove.Y, 0) );
+		Character->AddMovementInput(FVector::ForwardVector , InputMove.X * (MoveSpeed / Character->GetCharacterMovement()->MaxFlySpeed));
+		Character->AddMovementInput(FVector::RightVector , InputMove.Y * (MoveSpeed / Character->GetCharacterMovement()->MaxFlySpeed));
+	}
+	else
+	{
+		*AccelerationAlpha = 0.f;
+	}
 }
 
 bool UFreeFallCharacterStateDive::IsInCenterOfLayer() const
@@ -228,4 +285,14 @@ FString UFreeFallCharacterStateDive::GetLayerName(EDiveLayersID LayerID) const
 		case EDiveLayersID::Bottom: return FString("Bottom");
 		default: return FString("Unknown");
 	}
+}
+
+void UFreeFallCharacterStateDive::SetMoveStats(float Move_MaxMoveSpeed, float Move_StartMoveSpeed,
+	float Move_ReachMaxSpeedTime, float Move_OrientationThreshold, float* Move_AccelerationAlpha)
+{
+	MaxMoveSpeed = Move_MaxMoveSpeed;
+	StartMoveSpeed = Move_StartMoveSpeed;
+	ReachMaxSpeedTime = Move_ReachMaxSpeedTime;
+	OrientationThreshold = Move_OrientationThreshold;
+	AccelerationAlpha = Move_AccelerationAlpha;
 }

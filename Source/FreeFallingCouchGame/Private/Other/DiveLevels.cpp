@@ -34,11 +34,16 @@ float ADiveLevels::GetDiveBoundZCoord(EDiveLayersID Layer, EDiveLayerBoundsID Bo
 		0;
 
 	BoundMiddleCoordZ+=
-		Bound==EDiveLayerBoundsID::Up ? DiveLevelSize.Z/2 :
-		Bound==EDiveLayerBoundsID::Down ? -DiveLevelSize.Z/2 :
+		Bound==EDiveLayerBoundsID::Up ? DiveLevelSize.Z :
+		Bound==EDiveLayerBoundsID::Down ? -DiveLevelSize.Z :
 		0;
 
 	return GetActorLocation().Z + BoundMiddleCoordZ;
+}
+
+float ADiveLevels::GetDiveSize()
+{
+	return DiveLevelSize.Z;
 }
 
 EDiveLayersID ADiveLevels::GetDiveLayersFromCoord(float PlayerCoordZ)
