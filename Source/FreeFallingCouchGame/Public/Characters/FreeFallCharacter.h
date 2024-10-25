@@ -44,11 +44,10 @@ public:
 
 	void TickStateMachine(float DeltaTime) const;
 
-protected:
+public:
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<UFreeFallCharacterStateMachine> StateMachine;
-
-public:
+	
 	UPROPERTY(EditAnywhere)
 	TMap<EFreeFallCharacterStateID, TSubclassOf<UFreeFallCharacterState>> FreeFallCharacterStatesOverride;
 
@@ -135,6 +134,7 @@ private:
 	void UpdateMovementInfluence(float DeltaTime) const;
 	
 public:
+	bool bInputGrabPressed = false;
 	bool bIsGrabbing = false;
 	
 	UPROPERTY()

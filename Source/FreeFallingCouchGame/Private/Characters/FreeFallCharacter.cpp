@@ -250,7 +250,7 @@ void AFreeFallCharacter::BindInputGrabActions(UEnhancedInputComponent* EnhancedI
 
 void AFreeFallCharacter::OnInputGrab(const FInputActionValue& Value)
 {
-	bIsGrabbing = Value.Get<bool>();
+	bInputGrabPressed = Value.Get<bool>();
 	OnInputGrabEvent.Broadcast();
 }
 
