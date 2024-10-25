@@ -42,7 +42,7 @@ void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousS
 			//If release while diving -> then don't launch and set other to dive instead
 			if(PreviousStateID == EFreeFallCharacterStateID::Dive)
 			{
-				Character->OtherCharacter->StateMachine->ChangeState(EFreeFallCharacterStateID::Dive);
+				Character->OtherCharacter->GetStateMachine()->ChangeState(EFreeFallCharacterStateID::Dive);
 				//Exit Grab state
 				ExitStateConditions();
 				return;
