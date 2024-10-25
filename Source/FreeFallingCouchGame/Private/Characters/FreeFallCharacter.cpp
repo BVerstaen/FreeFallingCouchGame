@@ -75,9 +75,24 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	TickStateMachine(DeltaTime);
-	UpdateMovementInfluence(DeltaTime);
+
+	//Update physic based on grab
+	switch (GrabbingState)
+	{
+	case EFreeFallCharacterGrabbingState::None:
+	case EFreeFallCharacterGrabbingState::GrabHeavierObject:
+		break;
+	case EFreeFallCharacterGrabbingState::GrabPlayer:
+		UpdateMovementInfluence(DeltaTime);
+		break;
+	case EFreeFallCharacterGrabbingState::GrabObject:
+		UpdateObjectPosition(DeltaTime);
+		break;
+	}
+	
 }
 
+#pragma region StateMachine & IMC
 // Called to bind functionality to input
 void AFreeFallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -128,9 +143,13 @@ void AFreeFallCharacter::SetupMappingContextIntoController() const
 
 	InputSystem->AddMappingContext(InputMappingContext,0);
 }
+#pragma endregion
 
+#pragma region Move
 FVector2D AFreeFallCharacter::GetInputMove() const
 {
+	if(GrabbingState == EFreeFallCharacterGrabbingState::GrabHeavierObject) return FVector2D::ZeroVector;
+	
 	return InputMove;
 }
 
@@ -172,9 +191,12 @@ void AFreeFallCharacter::OnInputMove(const FInputActionValue& Value)
 {
 	InputMove = Value.Get<FVector2D>();
 }
+#pragma endregion
 
+#pragma region Dive
 float AFreeFallCharacter::GetInputDive() const
 {
+	if(GrabbingState == EFreeFallCharacterGrabbingState::GrabHeavierObject) return 0.0f;
 	return InputDive;
 }
 
@@ -237,7 +259,9 @@ void AFreeFallCharacter::OnInputDive(const FInputActionValue& Value)
 {
 	InputDive = Value.Get<float>();
 }
+#pragma endregion 
 
+#pragma region Grabbing
 void AFreeFallCharacter::BindInputGrabActions(UEnhancedInputComponent* EnhancedInputComponent)
 {
 	if (InputData == nullptr) return;
@@ -301,10 +325,24 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime) const
 	OtherCharacter->SetActorRotation(NewGrabbedRotation);
 }
 
+void AFreeFallCharacter::UpdateObjectPosition(float DeltaTime) const
+{
+	OtherObject->SetActorLocation(GetObjectGrabPoint()->GetComponentLocation());
+}
+
+void AFreeFallCharacter::UpdateHeavyObjectPosition(float DeltaTime)
+{
+
+	FVector NewPosition = OtherObject->GetActorLocation() + GrabHeavyObjectRelativeLocationPoint;
+	SetActorLocation(NewPosition);
+}
+
 TObjectPtr<USceneComponent> AFreeFallCharacter::GetObjectGrabPoint() const
 {
 	return ObjectGrabPoint;
 }
+
+#pragma endregion
 
 #pragma region Bounce Fucntions
 void AFreeFallCharacter::BounceCooldown()

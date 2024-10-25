@@ -9,7 +9,6 @@
 #include "GameFramework/PawnMovementComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Interface//GrabbableInterface.h"
-#include "Kismet/KismetStringLibrary.h"
 
 
 EFreeFallCharacterStateID UFreeFallCharacterStateGrab::GetStateID()
@@ -175,27 +174,33 @@ void UFreeFallCharacterStateGrab::ReleasePlayerGrab(EFreeFallCharacterStateID Pr
 
 void UFreeFallCharacterStateGrab::ReleaseObjectGrab(EFreeFallCharacterStateID PreviousStateID)
 {
-	Character->GrabbingState = EFreeFallCharacterGrabbingState::None;
 
-	if(Character->OtherObject || Character->GrabbingState == EFreeFallCharacterGrabbingState::GrabObject)
+	if(Character->OtherObject)
 	{
-		//Detach object
 		FDetachmentTransformRules DetachmentRules = FDetachmentTransformRules(EDetachmentRule::KeepWorld, false);
-		Character->OtherObject->DetachFromActor(DetachmentRules);
-		
-		//Launch other object
-		FVector LaunchVelocity = Character->GetMovementComponent()->Velocity * LaunchObjectForceMultiplier;
-		LaunchVelocity += Character->GetActorForwardVector() * LaunchObjectBaseLaunchMultiplier;
-		//Get Actor's mesh
-		if(UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(Character->OtherObject->GetComponentByClass(UStaticMeshComponent::StaticClass())))
+		if(Character->GrabbingState == EFreeFallCharacterGrabbingState::GrabObject)
 		{
-			Mesh->SetSimulatePhysics(true);
-			Mesh->AddImpulse(LaunchVelocity,NAME_None,false);
+			//Launch other object
+			FVector LaunchVelocity = Character->GetMovementComponent()->Velocity * LaunchObjectForceMultiplier;
+			LaunchVelocity += Character->GetActorForwardVector() * LaunchObjectBaseLaunchMultiplier;
+			//Get Actor's mesh
+			if(UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(Character->OtherObject->GetComponentByClass(UStaticMeshComponent::StaticClass())))
+			{
+				Mesh->SetSimulatePhysics(true);
+				Mesh->AddImpulse(LaunchVelocity,NAME_None,false);
+			}
+		}
+		else if(Character->GrabbingState == EFreeFallCharacterGrabbingState::GrabHeavierObject)
+		{
+			//Detach player from object
+			Character->DetachFromActor(DetachmentRules);
 		}
 		
 		//Null reference
 		Character->OtherObject = nullptr;
 	}
+	
+	Character->GrabbingState = EFreeFallCharacterGrabbingState::None;
 }
 
 void UFreeFallCharacterStateGrab::PlayerGrab() const
@@ -237,15 +242,21 @@ void UFreeFallCharacterStateGrab::ObjectGrab() const
 			if(FoundObstacle->Mesh->GetMass() > Character->GetPlayerMass())
 			{
 				Character->GrabbingState = EFreeFallCharacterGrabbingState::GrabHeavierObject;
+				Character->GetMovementComponent()->Velocity = FVector(0, 0, 0);
+				Character->GrabHeavyObjectRelativeLocationPoint = FoundObstacle->GetActorLocation() - Character->GetActorLocation();
 			}
 			else
 			{
 				Character->GrabbingState = EFreeFallCharacterGrabbingState::GrabObject;
 				
 				FoundObstacle->Mesh->ComponentVelocity = FVector(0, 0, 0);
-				FoundObstacle->Mesh->SetSimulatePhysics(false);
+				FoundObstacle->Mesh->SetSimulatePhysics(true);
+
 				FAttachmentTransformRules AttachementRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, EAttachmentRule::KeepWorld, true);
 				FoundActor->AttachToComponent(Character->GetObjectGrabPoint(), AttachementRules);
+				//Detach object
+				FDetachmentTransformRules DetachmentRules = FDetachmentTransformRules(EDetachmentRule::KeepWorld, false);
+				Character->OtherObject->DetachFromActor(DetachmentRules);
 			}
 		}
 		

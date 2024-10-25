@@ -135,7 +135,12 @@ private:
 
 	void OnInputGrab(const FInputActionValue& Value);
 
+	UFUNCTION()
 	void UpdateMovementInfluence(float DeltaTime) const;
+	UFUNCTION()
+	void UpdateObjectPosition(float DeltaTime) const;
+	UFUNCTION()
+	void UpdateHeavyObjectPosition(float DeltaTime);
 	
 public:
 	bool bInputGrabPressed = false;
@@ -146,6 +151,8 @@ public:
 
 	UPROPERTY()
 	TObjectPtr<AActor> OtherObject;
+
+	FVector GrabHeavyObjectRelativeLocationPoint;
 	
 	//Fields are set by Grab State
 	FVector GrabInitialOffset;
