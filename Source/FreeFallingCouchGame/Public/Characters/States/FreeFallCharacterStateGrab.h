@@ -35,6 +35,9 @@ protected:
 	/*Le radius de la boule qui check si on peut grab un joueur ou obstacle*/
 	UPROPERTY(EditAnywhere, Category="Grab - Catch")
 	float GrabRadius = 10.0f;
+	/*Le radius de la boule qui check si on peut grab un joueur ou obstacle*/
+	UPROPERTY(EditAnywhere, Category="Grab - Catch")
+	float GrabMinimumDistance = 30.0f;
 	/*A quelle vitesse celui qui est agrippé suit la rotation du "maitre" ?*/
 	UPROPERTY(EditAnywhere, Category="PlayerGrab - Influences")
 	float RotationSpeed = 10.0f;
@@ -47,6 +50,10 @@ protected:
 	/*Multiplicateur de base quand le joueur lance sa prise (force par défaut si immobile)*/
 	UPROPERTY(EditAnywhere, Category="PlayerGrab - Launch")
 	float LaunchOtherCharacterBaseLaunchMultiplier = 0.f;
+
+	UPROPERTY()
+	EFreeFallCharacterStateID PreviousState;
+
 public:
 	UPROPERTY()
 	UPhysicsConstraintComponent* GrabConstraint;

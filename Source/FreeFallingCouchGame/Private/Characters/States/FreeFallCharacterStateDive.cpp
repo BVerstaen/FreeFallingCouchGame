@@ -226,7 +226,7 @@ void UFreeFallCharacterStateDive::ApplyMoveInputs(float DeltaTime)
 		return;
 	}
 	*AccelerationAlpha += DeltaTime;
-	Character->GetCharacterMovement()->MaxFlySpeed = FMath::Lerp(StartMoveSpeed,MaxMoveSpeed,FMath::Min(*AccelerationAlpha / ReachMaxSpeedTime,1));
+	float MoveSpeed = FMath::Lerp(StartMoveSpeed,MaxMoveSpeed,FMath::Min(*AccelerationAlpha / ReachMaxSpeedTime,1));
 
 	const FVector2D InputMove = Character->GetInputMove();
 	
@@ -258,8 +258,8 @@ void UFreeFallCharacterStateDive::ApplyMoveInputs(float DeltaTime)
 	if (FMath::Abs(InputMove.Y) > CharactersSettings->InputMoveThreshold || FMath::Abs(InputMove.X) > CharactersSettings->InputMoveThreshold)
 	{
 		//Character->GetCharacterMovement()->AddForce(FVector::ForwardVector * FVector(InputMove.X, InputMove.Y, 0) );
-		Character->AddMovementInput(FVector::ForwardVector , InputMove.X);
-		Character->AddMovementInput(FVector::RightVector , InputMove.Y);
+		Character->AddMovementInput(FVector::ForwardVector , InputMove.X * (MoveSpeed / Character->GetCharacterMovement()->MaxFlySpeed));
+		Character->AddMovementInput(FVector::RightVector , InputMove.Y * (MoveSpeed / Character->GetCharacterMovement()->MaxFlySpeed));
 	}
 	else
 	{

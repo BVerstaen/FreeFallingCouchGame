@@ -27,21 +27,32 @@ void UFreeFallCharacterStateGrab::StateInit(UFreeFallCharacterStateMachine* InSt
 void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousStateID)
 {
 	Super::StateEnter(PreviousStateID);
-
-	//Can't grab if you're grabbed
-	if(!Character->bIsGrabbing && Character->OtherCharacter)
+	//Get previous state ID
+	PreviousState = PreviousStateID;
+	
+	if(Character->OtherCharacter && !Character->bIsGrabbing)
 		ExitStateConditions();
 	
 	//Stop grabbing if release key
-	if(!Character->bIsGrabbing)
+	if(!Character->bInputGrabPressed)
 	{
+		Character->bIsGrabbing = false;
 		if(Character->OtherCharacter)
 		{
+			//If release while diving -> then don't launch and set other to dive instead
+			if(PreviousStateID == EFreeFallCharacterStateID::Dive)
+			{
+				Character->OtherCharacter->StateMachine->ChangeState(EFreeFallCharacterStateID::Dive);
+				//Exit Grab state
+				ExitStateConditions();
+				return;
+			}
+			
 			//Launch other character
 			FVector LaunchVelocity = Character->GetMovementComponent()->Velocity * LaunchOtherCharacterForceMultiplier;
 			LaunchVelocity += Character->GetActorForwardVector() * LaunchOtherCharacterBaseLaunchMultiplier;
 			Character->OtherCharacter->LaunchCharacter(LaunchVelocity, true, true);
-
+			
 			//Remove reference
 			Character->OtherCharacter->OtherCharacter = nullptr;
 			Character->OtherCharacter = nullptr;
@@ -58,12 +69,18 @@ void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousS
 	AFreeFallCharacter* FoundCharacter = FindPlayerToGrab();
 	if(FoundCharacter)	//Change state if couldn't find a player
 	{
+		Character->bIsGrabbing = true;
+		
 		//Set cross-references
 		Character->OtherCharacter = FoundCharacter;
 		Character->OtherCharacter->OtherCharacter = Character;
-		
 		//Calculate location offset
 		FVector GrabOffset = FoundCharacter->GetActorLocation() - Character->GetActorLocation();
+		if(GrabOffset.Size() <= GrabMinimumDistance)
+		{
+			FoundCharacter->SetActorLocation(Character->GetActorLocation() + Character->GetActorForwardVector() * GrabMinimumDistance);
+			GrabOffset = FoundCharacter->GetActorLocation() - Character->GetActorLocation();
+		}
 		Character->GrabInitialOffset = Character->GetActorRotation().UnrotateVector(GrabOffset);
 
 		//Calculate rotation offset

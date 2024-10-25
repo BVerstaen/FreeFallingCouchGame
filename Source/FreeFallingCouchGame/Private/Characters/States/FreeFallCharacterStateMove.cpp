@@ -49,7 +49,7 @@ void UFreeFallCharacterStateMove::StateExit(EFreeFallCharacterStateID NextStateI
 
 	if (NextStateID == EFreeFallCharacterStateID::Dive)
 	{
-		Cast<UFreeFallCharacterStateDive>(Character)->SetMoveStats(MaxMoveSpeed, StartMoveSpeed, ReachMaxSpeedTime, OrientationThreshold, &AccelerationAlpha);
+		Cast<UFreeFallCharacterStateDive>(Character->StateMachine->GetState(NextStateID))->SetMoveStats(MaxMoveSpeed, StartMoveSpeed, ReachMaxSpeedTime, OrientationThreshold, &AccelerationAlpha);
 	}
 
 	Character->OnInputGrabEvent.RemoveDynamic(this, &UFreeFallCharacterStateMove::OnInputGrab);
@@ -116,11 +116,6 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 		FColor::Cyan,
 		TEXT("Tick State Move")
 		);
-}
-
-float* UFreeFallCharacterStateMove::GetAccelerationFactor()
-{
-	return &AccelerationAlpha;
 }
 
 void UFreeFallCharacterStateMove::OnInputGrab()
