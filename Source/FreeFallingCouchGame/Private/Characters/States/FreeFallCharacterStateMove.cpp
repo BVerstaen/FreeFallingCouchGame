@@ -7,7 +7,9 @@
 #include "Characters/FreeFallCharacter.h"
 #include "Characters/FreeFallCharacterStateID.h"
 #include "Characters/FreeFallCharacterStateMachine.h"
+#include "Characters/States/FreeFallCharacterStateDive.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/InputSettings.h"
 #include "Kismet/KismetStringLibrary.h"
 #include "Other/DiveLayersID.h"
 #include "Other/DiveLevels.h"
@@ -44,6 +46,11 @@ void UFreeFallCharacterStateMove::StateEnter(EFreeFallCharacterStateID PreviousS
 void UFreeFallCharacterStateMove::StateExit(EFreeFallCharacterStateID NextStateID)
 {
 	Super::StateExit(NextStateID);
+
+	if (NextStateID == EFreeFallCharacterStateID::Dive)
+	{
+		Cast<UFreeFallCharacterStateDive>(Character)->SetMoveStats(MaxMoveSpeed, StartMoveSpeed, ReachMaxSpeedTime, OrientationThreshold, &AccelerationAlpha);
+	}
 
 	Character->OnInputGrabEvent.RemoveDynamic(this, &UFreeFallCharacterStateMove::OnInputGrab);
 	// GEngine->AddOnScreenDebugMessage(
@@ -109,6 +116,11 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 		FColor::Cyan,
 		TEXT("Tick State Move")
 		);
+}
+
+float* UFreeFallCharacterStateMove::GetAccelerationFactor()
+{
+	return &AccelerationAlpha;
 }
 
 void UFreeFallCharacterStateMove::OnInputGrab()

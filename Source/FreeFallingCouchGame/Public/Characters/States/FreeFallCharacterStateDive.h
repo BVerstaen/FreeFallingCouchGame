@@ -40,6 +40,8 @@ class FREEFALLINGCOUCHGAME_API UFreeFallCharacterStateDive : public UFreeFallCha
 private:
 	void ApplyDiveForce();
 
+	void ApplyMoveInputs(float DeltaTime);
+
 	bool IsInCenterOfLayer() const;
 
 	FString GetLayerName(EDiveLayersID LayerID) const;
@@ -54,6 +56,32 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	float DiveLayerThreshold = 10.f;
+
+#pragma region MoveInputs
+
+public:
+	void SetMoveStats(float Move_MaxMoveSpeed, float Move_StartMoveSpeed, float Move_ReachMaxSpeedTime, float Move_OrientationThreshold, float* Move_AccelerationAlpha);
+	
+protected:
+	UPROPERTY()
+	float MaxMoveSpeed;
+
+	UPROPERTY()
+	float StartMoveSpeed;
+
+	UPROPERTY()
+	float ReachMaxSpeedTime;
+
+	/*Le seuil à partir duquel le joueur ne bloque plus sa rotation et permet d'être influencé (uniquement si attrape joueur)*/
+	UPROPERTY()
+	float OrientationThreshold;
+
+	FVector2D OldInputDirection;
+
+private:
+	float* AccelerationAlpha;
+
+#pragma endregion
 
 private:
 	UPROPERTY()
