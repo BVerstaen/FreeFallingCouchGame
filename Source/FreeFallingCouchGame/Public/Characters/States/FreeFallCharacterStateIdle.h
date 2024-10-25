@@ -22,4 +22,12 @@ public:
 	virtual void StateExit(EFreeFallCharacterStateID NextStateID) override;
 
 	virtual void StateTick(float DeltaTime) override;
+
+#pragma region  Input Event
+	
+private:
+	UFUNCTION()
+	void OnInputGrab();
+	
+#pragma endregion 
 };

@@ -68,6 +68,7 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	TickStateMachine(DeltaTime);
+	UpdateMovementInfluence(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -82,6 +83,7 @@ void AFreeFallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 	BindInputMoveAxisAndActions(EnhancedInputComponent);
 	BindInputDiveAxisAndActions(EnhancedInputComponent);
+	BindInputGrabActions(EnhancedInputComponent);
 }
 
 void AFreeFallCharacter::CreateStateMachine()
@@ -224,6 +226,69 @@ void AFreeFallCharacter::OnInputDive(const FInputActionValue& Value)
 	InputDive = Value.Get<float>();
 }
 
+void AFreeFallCharacter::BindInputGrabActions(UEnhancedInputComponent* EnhancedInputComponent)
+{
+	if (InputData == nullptr) return;
+	
+	if (InputData->InputActionGrab)
+	{
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionGrab,
+			ETriggerEvent::Started,
+			this,
+			&AFreeFallCharacter::OnInputGrab
+			);
+
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionGrab,
+			ETriggerEvent::Completed,
+			this,
+			&AFreeFallCharacter::OnInputGrab
+			);
+	}
+}
+
+void AFreeFallCharacter::OnInputGrab(const FInputActionValue& Value)
+{
+	bIsGrabbing = Value.Get<bool>();
+	OnInputGrabEvent.Broadcast();
+}
+
+void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime) const
+{
+	if(OtherCharacter == nullptr) return;
+
+	//Calculate new offset of child actor based on Character rotation
+	if(bIsGrabbing)
+	{
+		FVector RotatedOffset = this->GetActorRotation().RotateVector(GrabInitialOffset);
+		FVector NewOtherCharacterPosition = this->GetActorLocation() + RotatedOffset;
+		OtherCharacter->SetActorLocation(NewOtherCharacterPosition);		
+	}
+	
+    //Get both players velocity
+    FVector CharacterVelocity = GetVelocity();
+    FVector OtherCharacterVelocity = OtherCharacter->GetVelocity();
+	
+	//Mutual influence of movements
+	FVector DirectionToOther = (OtherCharacter->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+	FVector CombinedMovement = (CharacterVelocity + OtherCharacterVelocity) * 0.5f;
+	FVector PerpendicularForce = FVector::CrossProduct(CharacterVelocity, DirectionToOther) * GrabRotationInfluenceStrength;
+    	
+	//Calculate new velocities based on combined forces
+	FVector NewCharacterVelocity = CombinedMovement + PerpendicularForce * DeltaTime;
+	FVector NewOtherCharacterVelocity = CombinedMovement - PerpendicularForce * DeltaTime;
+	//Apply each other's velocity
+	GetMovementComponent()->Velocity = NewCharacterVelocity;
+	OtherCharacter->GetMovementComponent()->Velocity = NewOtherCharacterVelocity;
+
+	//Set other Character rotation
+	FRotator TargetRotation = this->GetActorRotation();
+	FRotator NewGrabbedRotation = FMath::RInterpTo(OtherCharacter->GetActorRotation(), TargetRotation, DeltaTime, GrabRotationSpeed);
+	OtherCharacter->SetActorRotation(NewGrabbedRotation);	
+}
+
+#pragma region Bounce Fucntions
 void AFreeFallCharacter::BounceCooldown()
 {
 	bAlreadyCollided = true;
@@ -291,5 +356,4 @@ void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent
 
 	BounceCooldown();
 }
-
-
+#pragma endregion 
