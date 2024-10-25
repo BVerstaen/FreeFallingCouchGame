@@ -21,15 +21,19 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	/*Distance minimum entre les joueurs*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float DistanceTolerance;
 
+	/*Distance minimum entre les joueurs*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector SpawnExtent;
 
+	/*Delay de la transition avant le TP des joueurs*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float DelayAfterStartTransition;
-	
+
+	/*Delay de la transition après le TP des joueurs*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float DelayBeforeEndTransition;
 public:
