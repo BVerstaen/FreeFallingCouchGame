@@ -44,6 +44,13 @@ AFreeFallCharacter::AFreeFallCharacter()
 	{
 		ObjectGrabPoint->SetupAttachment(RootComponent);
 	}
+
+	//Create Parachute attach point
+	ParachuteAttachPoint = CreateDefaultSubobject<USceneComponent>("Parachute");
+	if(ParachuteAttachPoint != nullptr)
+	{
+		ParachuteAttachPoint->SetupAttachment(RootComponent);
+	}
 }
 
 // Called when the game starts or when spawned
@@ -92,6 +99,11 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 	
 }
 
+void AFreeFallCharacter::DestroyPlayer()
+{
+	Destroy();
+}
+
 #pragma region StateMachine & IMC
 // Called to bind functionality to input
 void AFreeFallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -108,10 +120,6 @@ void AFreeFallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	BindInputGrabActions(EnhancedInputComponent);
 }
 
-void AFreeFallCharacter::DestroyPlayer()
-{
-	Destroy();
-}
 
 void AFreeFallCharacter::CreateStateMachine()
 {
@@ -370,7 +378,7 @@ void AFreeFallCharacter::ResetBounce()
 }
 
 void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+                                               UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	if(bAlreadyCollided) return; //Return if cooldown isn't over
 	
@@ -467,3 +475,12 @@ void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent
 	BounceCooldown();
 }
 #pragma endregion 
+
+#pragma region Parachute Fucntions
+
+USceneComponent* AFreeFallCharacter::GetParachuteAttachPoint()
+{
+	return ParachuteAttachPoint;
+}
+
+#pragma endregion

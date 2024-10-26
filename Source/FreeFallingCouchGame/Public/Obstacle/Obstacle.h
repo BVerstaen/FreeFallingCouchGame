@@ -61,4 +61,7 @@ public:
 
 	UFUNCTION()
 	virtual bool CanBeGrabbed() override;
+
+	UFUNCTION()
+	virtual bool CanBeTaken() override;
 };

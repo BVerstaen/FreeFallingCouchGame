@@ -47,7 +47,7 @@ void AArenaActor::Tick(float DeltaTime)
 	{
 		AFreeFallCharacter* Character = CharactersInsideArena[i];
 		if(Character == nullptr) continue;
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, Character->GetName());
+		
 		FVector PlayerLocation = Character->GetActorLocation();
 		FVector2D ScreenPosition;
 		

@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "FreeFallCharacter.generated.h"
 
+class AParachute;
 enum class EDiveLayersID : uint8;
 class ADiveLevels;
 struct FInputActionValue;
@@ -240,5 +241,21 @@ protected:
 	UFUNCTION()
 	void ResetBounce();
 	
-#pragma endregion 
+#pragma endregion
+
+#pragma region Parachute
+
+public:
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<AParachute> Parachute;
+
+protected:
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USceneComponent> ParachuteAttachPoint;
+
+public:
+	UFUNCTION()
+	USceneComponent* GetParachuteAttachPoint(); 
+	
+#pragma endregion
 };
