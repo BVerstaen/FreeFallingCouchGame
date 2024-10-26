@@ -489,10 +489,7 @@ void AFreeFallCharacter::LaunchParachute()
 {
 	if(!Parachute) return;
 	AParachute* LooseParachute = Parachute->DropParachute(this);
-
-	FVector DirectionToCenter = (GetActorLocation() - FVector(0, 0, 0)).GetSafeNormal();
-	
-	LooseParachute->LaunchParacute(DirectionToCenter);
+	LooseParachute->RecenterParachute();
 }
 
 #pragma endregion

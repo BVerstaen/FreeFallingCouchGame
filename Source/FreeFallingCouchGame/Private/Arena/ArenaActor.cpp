@@ -83,7 +83,7 @@ void AArenaActor::Tick(float DeltaTime)
 	for (AFreeFallCharacter* Character : CharactersToRemove)
 	{
 		CharactersInsideArena.Remove(Character);
-		Character->Destroy();
+		Character->DestroyPlayer();
 	}
 	CharactersToRemove.Empty();
 }

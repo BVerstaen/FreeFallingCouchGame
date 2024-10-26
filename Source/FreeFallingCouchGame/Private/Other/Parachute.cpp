@@ -23,7 +23,7 @@ AParachute::AParachute()
 void AParachute::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	StartingLocation = GetActorLocation();
 }
 
 // Called every frame
@@ -92,10 +92,12 @@ AParachute* AParachute::DropParachute(AFreeFallCharacter* PreviousOwner)
 	return this;
 }
 
-void AParachute::LaunchParacute(FVector Direction)
+void AParachute::RecenterParachute()
 {
 	Mesh->SetSimulatePhysics(true);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
+
+	FVector Direction = (StartingLocation - GetActorLocation()).GetSafeNormal();
 	Mesh->AddImpulse(Direction * LaunchForce);
 }
 
