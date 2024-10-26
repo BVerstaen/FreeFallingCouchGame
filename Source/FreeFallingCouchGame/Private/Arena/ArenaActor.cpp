@@ -34,6 +34,12 @@ void AArenaActor::Init(const AFreeFallGameMode* FreeFallGameMode)
 	OffScreenHorizontalTolerance = CharactersSettings->MarginHorizontalOffScreen;
 	OffScreenVerticalTolerance = CharactersSettings->MarginVerticalOffScreen;
 	NearEdgeScreenTolerance = CharactersSettings->PercentageCloseEdgeScreen;
+	
+	MainCameraController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+
+	//TEMPORAIRE !!! PARACHUTE A SPAWN DANS GAMEMODE
+	AActor* ParachuteActor = UGameplayStatics::GetActorOfClass(GetWorld(), AParachute::StaticClass());
+	Parachute = Cast<AParachute>(ParachuteActor);
 }
 
 // Called every frame
@@ -41,8 +47,13 @@ void AArenaActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	CheckAndRemoveOutOfBoundPlayers();
+	CheckOutOfBoundParachute();
+}
+
+void AArenaActor::CheckAndRemoveOutOfBoundPlayers()
+{
 	TArray<AFreeFallCharacter*> CharactersToRemove;
-	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	
 	//Check if character was rendered on screen (inverted loop to avoid indexation problems)
 	for(int i = CharactersInsideArena.Num() - 1; i > -1; i--)
@@ -54,14 +65,13 @@ void AArenaActor::Tick(float DeltaTime)
 		FVector2D ScreenPosition;
 		
 		//Check if player position is a valid screen position
-		bool bCanConvertToScreen = PlayerController->ProjectWorldLocationToScreen(PlayerLocation, ScreenPosition);
+		bool bCanConvertToScreen = MainCameraController->ProjectWorldLocationToScreen(PlayerLocation, ScreenPosition);
 		if(bCanConvertToScreen)
 		{
 			//Check if player is beyond margin Tolerance
 			const FVector2D ViewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
 
-			if (!(ScreenPosition.X >= -OffScreenHorizontalTolerance && ScreenPosition.X <= ViewportSize.X + OffScreenHorizontalTolerance &&
-				ScreenPosition.Y >= -OffScreenVerticalTolerance && ScreenPosition.Y <= ViewportSize.Y + OffScreenVerticalTolerance))
+			if (IsOutOfBounds(ScreenPosition, ViewportSize))
 			{
 				//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, Character->GetName() + "is out");
 
@@ -86,4 +96,26 @@ void AArenaActor::Tick(float DeltaTime)
 		Character->DestroyPlayer();
 	}
 	CharactersToRemove.Empty();
+}
+
+void AArenaActor::CheckOutOfBoundParachute()
+{
+	FVector ParachuteLocation = Parachute->GetActorLocation();
+	FVector2D ScreenPosition;
+	//Check if player position is a valid screen position
+	bool bCanConvertToScreen = MainCameraController->ProjectWorldLocationToScreen(ParachuteLocation, ScreenPosition);
+
+	if(!bCanConvertToScreen) return;
+
+	const FVector2D ViewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
+	if(IsOutOfBounds(ScreenPosition, ViewportSize))
+	{
+		Parachute->RecenterParachute();
+	}
+}
+
+bool AArenaActor::IsOutOfBounds(FVector2D ScreenPosition, FVector2D ViewportSize) const
+{
+	return !(ScreenPosition.X >= -OffScreenHorizontalTolerance && ScreenPosition.X <= ViewportSize.X + OffScreenHorizontalTolerance &&
+				ScreenPosition.Y >= -OffScreenVerticalTolerance && ScreenPosition.Y <= ViewportSize.Y + OffScreenVerticalTolerance);
 }

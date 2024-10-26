@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Characters/FreeFallCharacter.h"
 #include "GameFramework/Actor.h"
+#include "Other/Parachute.h"
 #include "ArenaActor.generated.h"
 
 class AFreeFallGameMode;
@@ -29,17 +30,33 @@ protected:
 	float NearEdgeScreenTolerance;
 	
 	UPROPERTY()
+	TObjectPtr<APlayerController> MainCameraController;
+	
+	UPROPERTY()
 	TArray<AFreeFallCharacter*> CharactersInsideArena;
 
 	UPROPERTY()
 	TObjectPtr<AParachute> Parachute;
 
+	
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	
 	UFUNCTION()
 	void Init(const AFreeFallGameMode* FreeFallGameMode);
+
+	UFUNCTION()
+	void CheckAndRemoveOutOfBoundPlayers();
+	
+	UFUNCTION()
+	void CheckOutOfBoundParachute();
+
+	bool IsOutOfBounds(FVector2D ScreenPosition, FVector2D ViewportSize) const;
+	
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterDestroyed, AFreeFallCharacter*, Character);
 	UPROPERTY(BlueprintAssignable)
 	FOnCharacterDestroyed OnCharacterDestroyed;
+
+	
 };
