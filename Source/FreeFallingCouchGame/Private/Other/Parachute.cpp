@@ -74,13 +74,12 @@ void AParachute::StealParachute(AFreeFallCharacter* PreviousOwner, AFreeFallChar
 	OnParachuteStolen.Broadcast(PreviousOwner, NextOwner);
 }
 
-void AParachute::DropParachute(AFreeFallCharacter* PreviousOwner)
+AParachute* AParachute::DropParachute(AFreeFallCharacter* PreviousOwner)
 {
-	if(!PreviousOwner) return;
-	
-	//Change Reference between Characters
-	PreviousOwner->Parachute = nullptr;
+	if(!PreviousOwner) return nullptr;
 
+	PreviousOwner->Parachute = nullptr;
+	
 	//Detach from old actor and attach to new one
 	FDetachmentTransformRules DetachmentRules = FDetachmentTransformRules(EDetachmentRule::KeepWorld, false);
 	DetachFromActor(DetachmentRules);
@@ -89,5 +88,14 @@ void AParachute::DropParachute(AFreeFallCharacter* PreviousOwner)
 	Mesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
 	
 	OnParachuteDropped.Broadcast(PreviousOwner);
+
+	return this;
+}
+
+void AParachute::LaunchParacute(FVector Direction)
+{
+	Mesh->SetSimulatePhysics(true);
+	Mesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
+	Mesh->AddImpulse(Direction * LaunchForce);
 }
 

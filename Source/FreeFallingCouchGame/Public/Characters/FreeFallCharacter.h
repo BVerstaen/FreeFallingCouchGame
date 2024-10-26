@@ -256,6 +256,10 @@ protected:
 public:
 	UFUNCTION()
 	USceneComponent* GetParachuteAttachPoint(); 
+
+private:
+	UFUNCTION()
+	void LaunchParachute();
 	
 #pragma endregion
 };

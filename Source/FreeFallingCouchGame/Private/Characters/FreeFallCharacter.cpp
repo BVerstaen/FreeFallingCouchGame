@@ -13,6 +13,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Obstacle/Obstacle.h"
 #include "Other/DiveLevels.h"
+#include "Other/Parachute.h"
 
 
 // Sets default values
@@ -101,6 +102,7 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 
 void AFreeFallCharacter::DestroyPlayer()
 {
+	LaunchParachute();
 	Destroy();
 }
 
@@ -481,6 +483,16 @@ void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent
 USceneComponent* AFreeFallCharacter::GetParachuteAttachPoint()
 {
 	return ParachuteAttachPoint;
+}
+
+void AFreeFallCharacter::LaunchParachute()
+{
+	if(!Parachute) return;
+	AParachute* LooseParachute = Parachute->DropParachute(this);
+
+	FVector DirectionToCenter = (GetActorLocation() - FVector(0, 0, 0)).GetSafeNormal();
+	
+	LooseParachute->LaunchParacute(DirectionToCenter);
 }
 
 #pragma endregion

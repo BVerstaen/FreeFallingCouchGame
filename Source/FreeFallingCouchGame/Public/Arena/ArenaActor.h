@@ -20,13 +20,19 @@ public:
 
 protected:
 	UPROPERTY()
-	float OffScreenTolerance;
+	float OffScreenHorizontalTolerance;
+
+	UPROPERTY()
+	float OffScreenVerticalTolerance;
 	
 	UPROPERTY()
 	float NearEdgeScreenTolerance;
 	
 	UPROPERTY()
 	TArray<AFreeFallCharacter*> CharactersInsideArena;
+
+	UPROPERTY()
+	TObjectPtr<AParachute> Parachute;
 
 public:
 	// Called every frame

@@ -113,6 +113,7 @@ void AFreeFallGameMode::SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints
 	}
 }
 #pragma endregion
+
 #pragma region PreRound
 void AFreeFallGameMode::StartMatch()
 {

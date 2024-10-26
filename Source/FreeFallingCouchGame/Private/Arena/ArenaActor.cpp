@@ -15,7 +15,8 @@ AArenaActor::AArenaActor()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	OffScreenTolerance = 0.f;
+	OffScreenHorizontalTolerance = 0.f;
+	OffScreenVerticalTolerance = 0.f;
 	NearEdgeScreenTolerance = 0.f;
 }
 
@@ -30,7 +31,8 @@ void AArenaActor::Init(const AFreeFallGameMode* FreeFallGameMode)
 
 	//Set off-screen tolerance
 	const UCharactersSettings* CharactersSettings = GetDefault<UCharactersSettings>();
-	OffScreenTolerance = CharactersSettings->MarginAliveOffScreen;
+	OffScreenHorizontalTolerance = CharactersSettings->MarginHorizontalOffScreen;
+	OffScreenVerticalTolerance = CharactersSettings->MarginVerticalOffScreen;
 	NearEdgeScreenTolerance = CharactersSettings->PercentageCloseEdgeScreen;
 }
 
@@ -58,8 +60,8 @@ void AArenaActor::Tick(float DeltaTime)
 			//Check if player is beyond margin Tolerance
 			const FVector2D ViewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
 
-			if (!(ScreenPosition.X >= -OffScreenTolerance && ScreenPosition.X <= ViewportSize.X + OffScreenTolerance &&
-				ScreenPosition.Y >= -OffScreenTolerance && ScreenPosition.Y <= ViewportSize.Y + OffScreenTolerance))
+			if (!(ScreenPosition.X >= -OffScreenHorizontalTolerance && ScreenPosition.X <= ViewportSize.X + OffScreenHorizontalTolerance &&
+				ScreenPosition.Y >= -OffScreenVerticalTolerance && ScreenPosition.Y <= ViewportSize.Y + OffScreenVerticalTolerance))
 			{
 				//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, Character->GetName() + "is out");
 

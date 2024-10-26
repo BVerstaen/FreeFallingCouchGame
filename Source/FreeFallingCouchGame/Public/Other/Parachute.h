@@ -22,6 +22,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> Mesh;
+
+	UPROPERTY(EditAnywhere)
+	float LaunchForce;
 	
 public:
 	// Called every frame
@@ -30,9 +33,17 @@ public:
 	virtual bool CanBeTaken() override;
 	virtual bool CanBeGrabbed() override;
 	virtual void Use(AFreeFallCharacter* Character) override;
+	
 	void StealParachute(AFreeFallCharacter* PreviousOwner, AFreeFallCharacter* NextOwner);
-	void DropParachute(AFreeFallCharacter* PreviousOwner);
+	
+	//Give back reference -> if need it to launch Parachute
+	AParachute* DropParachute(AFreeFallCharacter* PreviousOwner);
 
+	void LaunchParacute(FVector Direction);
+
+	/*
+	 *Delegates
+	 */
 	
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnParachuteGrabbed, AFreeFallCharacter*, Character);
 	UPROPERTY(BlueprintAssignable)
