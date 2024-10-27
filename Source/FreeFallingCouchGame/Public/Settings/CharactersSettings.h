@@ -23,8 +23,11 @@ public:
 	TMap<EFreeFallCharacterStateID, TSubclassOf<UFreeFallCharacterState>> SmashCharacterStates;
 
 	UPROPERTY(Config, EditAnywhere, Category="Ejection")
-	float MarginAliveOffScreen;
+	float MarginHorizontalOffScreen;
 
+	UPROPERTY(Config, EditAnywhere, Category="Ejection")
+	float MarginVerticalOffScreen;
+	
 	UPROPERTY(Config, EditAnywhere, Category="Ejection")
 	float PercentageCloseEdgeScreen;
 	
