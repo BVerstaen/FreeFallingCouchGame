@@ -6,8 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "EventsManager.generated.h"
 
+class AObstacleSpawnerManager;
 class AEventActor;
-class AObstacleSpawner;
 
 UCLASS()
 class FREEFALLINGCOUCHGAME_API AEventsManager : public AActor
@@ -35,10 +35,15 @@ private:
 	void OnEventEnded(AEventActor* TriggeringActor);
 
 	UPROPERTY(EditAnywhere)
-	AObstacleSpawner* ObstacleSpawner = nullptr;
+	AObstacleSpawnerManager* ObstacleSpawnerManager = nullptr;
 
+	//Temps entre chaque Events;
 	UPROPERTY(EditAnywhere)
 	float TimeBetweenEvents = 5.f;
+
+	//Temps entre le Stoppage des Obstacles et L'Event (Les obstacles se stopperont x temps avant l'event)
+	UPROPERTY(EditAnywhere)
+	float ObstacleStopDifferenceTime = 0.f;
 
 	UPROPERTY()
 	float EventClock = 0.f;

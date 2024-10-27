@@ -4,6 +4,7 @@
 #include "Obstacle/Managers/EventsManager.h"
 
 #include "Obstacle/ObstacleSpawner.h"
+#include "Obstacle/ObstacleSpawnerManager.h"
 #include "Obstacle/Events/EventActor.h"
 
 
@@ -37,10 +38,19 @@ void AEventsManager::Tick(float DeltaTime)
 		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red,"No Events Set");
 		return;
 	}
+	if (ObstacleSpawnerManager==nullptr)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red,"EventManager missing reference to ObstacleSpawnerManager");
+		return;
+	}
 
 	if (EventHappening) return;
 	
 	EventClock += DeltaTime;
+	if (EventClock > FMath::Max(TimeBetweenEvents - ObstacleStopDifferenceTime,0) && ObstacleSpawnerManager->IsTimerPlaying())
+	{
+		ObstacleSpawnerManager->PauseTimer();
+	}
 	if (EventClock > TimeBetweenEvents)
 	{
 		//LaunchEvent
@@ -49,7 +59,7 @@ void AEventsManager::Tick(float DeltaTime)
 		EventActor->OnEventEnded.AddDynamic(this, &AEventsManager::OnEventEnded);
 		EventActor->TriggerEvent();
 		EventHappening = true;
-		ObstacleSpawner->PauseSpawner();
+		if (ObstacleSpawnerManager->IsTimerPlaying()) ObstacleSpawnerManager->PauseTimer();
 		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red,"Trigger Event");
 	}
 }
@@ -59,7 +69,7 @@ void AEventsManager::OnEventEnded(AEventActor* TriggeringActor)
 	TriggeringActor->OnEventEnded.RemoveDynamic(this, &AEventsManager::OnEventEnded);
 	EventHappening = false;
 	EventClock = 0.f;
-	ObstacleSpawner->RestartSpawner();
+	ObstacleSpawnerManager->ResumeTimer();
 }
 
 AEventActor* AEventsManager::GetRandomEvent()
