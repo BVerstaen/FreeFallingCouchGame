@@ -417,33 +417,6 @@ void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent
 	AFreeFallCharacter* OtherFreeFallCharacter = Cast<AFreeFallCharacter>(OtherActor);
 	if(OtherFreeFallCharacter)
 	{
-		// //Launch character logic
-		// OldVelocity = GetCharacterMovement()->Velocity;
-		//
-		// //Bounce self 
-		// FVector NewVelocity = (OtherFreeFallCharacter->GetCharacterMovement()->Velocity * BouncePlayerRestitutionMultiplier
-		// 	+ (bShouldKeepRemainingVelocity ? GetCharacterMovement()->Velocity * (1-BouncePlayerRestitutionMultiplier) : FVector::Zero()) )
-		// 	* BouncePlayerMultiplier;
-		// LaunchCharacter(NewVelocity, true, true);
-		//
-		// GEngine->AddOnScreenDebugMessage(
-		// -1,
-		// 3.f,
-		// FColor::Red,
-		// TEXT("Between Char Velocity = " + NewVelocity.ToString())
-		// );
-		//
-		// //Bounce other character
-		// NewVelocity = (OldVelocity * BouncePlayerRestitutionMultiplier
-		// 	+ (bShouldKeepRemainingVelocity ? OtherFreeFallCharacter->GetCharacterMovement()->Velocity * (1-BouncePlayerRestitutionMultiplier) : FVector::Zero()) )
-		// 	* BouncePlayerMultiplier;
-		// OtherFreeFallCharacter->LaunchCharacter(NewVelocity, true, true);
-		//
-		// if(!OtherFreeFallCharacter->bAlreadyCollided)
-		// {
-		// 	OtherFreeFallCharacter->BounceCooldown();
-		// }
-
 		//Get impact direction
 		FVector ImpactDirection = (OtherFreeFallCharacter->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 		
@@ -453,19 +426,16 @@ void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent
 		FVector NewVelocity = (-ImpactDirection * OtherFreeFallCharacter->GetCharacterMovement()->Velocity.Size() * BouncePlayerRestitutionMultiplier
 			+ (bShouldKeepRemainingVelocity ? OldVelocity * (1 - BouncePlayerRestitutionMultiplier) : FVector::Zero()))
 			* BouncePlayerMultiplier;
+		//Neutralize Z bounce velocity
+		NewVelocity.Z = 0;
 		LaunchCharacter(NewVelocity, true, true);
-		
-		GEngine->AddOnScreenDebugMessage(
-			-1,
-			3.f,
-			FColor::Red,
-			TEXT("Between Char Velocity = " + NewVelocity.ToString())
-		);
 
 		//Bounce other character
 		NewVelocity = (ImpactDirection * OldVelocity.Size() * BouncePlayerRestitutionMultiplier
 			+ (bShouldKeepRemainingVelocity ? OtherFreeFallCharacter->GetCharacterMovement()->Velocity * (1 - BouncePlayerRestitutionMultiplier) : FVector::Zero()))
 			* BouncePlayerMultiplier;
+		//Neutralize Z bounce velocity
+		NewVelocity.Z = 0;
 		OtherFreeFallCharacter->LaunchCharacter(NewVelocity, true, true);
 		
 		if (!OtherFreeFallCharacter->bAlreadyCollided)
