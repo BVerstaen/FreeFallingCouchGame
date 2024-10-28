@@ -18,7 +18,7 @@ enum EMatchTypes
 };
 
 UENUM()
-enum EWinConditions	
+enum EWinConditions		
 {
 	OneRemaining,
 	Timed,
