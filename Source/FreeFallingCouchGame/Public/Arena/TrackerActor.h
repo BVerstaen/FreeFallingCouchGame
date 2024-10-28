@@ -51,6 +51,8 @@ private:
 	TObjectPtr<AParachute> CurrentParachute;
 	
 public:
+	ATrackerActor();
+	
 	TArray<int> GetTrackingWinners(ETrackingRewardCategory Category);
 	
 	void Init(AParachute* ParachuteInstance, TArray<AFreeFallCharacter*>& CharactersInsideArena);

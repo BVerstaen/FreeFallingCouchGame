@@ -8,10 +8,16 @@
 FPlayerTrackedData::FPlayerTrackedData() {}
 FPlayerTrackedData::FPlayerTrackedData(const int ID) : PlayerId(ID){}
 
+ATrackerActor::ATrackerActor(): CurrentParachuteHolderIndex(-1)
+{
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = true;
+}
+
 void ATrackerActor::Init(AParachute* ParachuteInstance, TArray<AFreeFallCharacter*>& CharactersInsideArena)
 {
 	//Guard conditions
-	if(ParachuteInstance)
+	if(!ParachuteInstance)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, "No parachute in FreeFallGameMode");
 		return;
@@ -50,15 +56,15 @@ void ATrackerActor::TrackHoldParachute(float DeltaTime)
 {
 	if(CurrentParachuteHolderIndex > 0)
 	{
-		PlayerTrackedDataList[CurrentParachuteHolderIndex].TimeWithParachute += DeltaTime;
+		PlayerTrackedDataList[CurrentParachuteHolderIndex - 1].TimeWithParachute += DeltaTime;
 	}
 }
 
 TArray<int> ATrackerActor::GetTrackingWinners(ETrackingRewardCategory Category)
 {
 	TArray<int> WinningPlayer;
-	int HighestNumberInt = -1;
-	float HighestNumberFloat = -0.1f;
+	int HighestNumberInt = 0;
+	float HighestNumberFloat = 0.f;
 	
 	switch (Category)
 	{
@@ -83,6 +89,7 @@ TArray<int> ATrackerActor::GetTrackingWinners(ETrackingRewardCategory Category)
 	case LongestTimeWithParachute:
 		for(FPlayerTrackedData TrackedData : PlayerTrackedDataList)
 		{
+			GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Yellow, FString::FromInt(TrackedData.PlayerId) + TEXT(" - ") + FString::SanitizeFloat(TrackedData.TimeWithParachute));
 			//In case of equality
 			if(FMath::IsNearlyEqual(TrackedData.TimeWithParachute,HighestNumberFloat) && HighestNumberFloat > 0.0f)
 			{
