@@ -42,4 +42,6 @@ void UMatchParameters::setMatchParameters(int inMaxRounds, float inEventDelay, F
 	EraName = inEraChosen;
 	EventDelay = inEventDelay;
 	MatchType = InMatchType;
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Received Data !");
+	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple, FString::Printf(TEXT("Selected Rounds : %i"), inMaxRounds));
 }

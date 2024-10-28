@@ -13,12 +13,12 @@ UENUM(BlueprintType)
 enum EMatchTypes
 {
 	Classic,
-	TwoVsTwo,
+	Duos,
 	Special,
 };
 
 UENUM()
-enum EWinConditions
+enum EWinConditions	
 {
 	OneRemaining,
 	Timed,
@@ -31,9 +31,14 @@ class FREEFALLINGCOUCHGAME_API UMatchParameters : public UObject
 public:
 	void Init(TSubclassOf<UMatchParameters> UserParameters);
 	const int* getScoreValues() const;
+	UFUNCTION(BlueprintCallable)
 	int getMaxRounds() const;
+	UFUNCTION(BlueprintCallable)
 	float getTimerDelay() const {return EventDelay;}
+	UFUNCTION(BlueprintCallable)
 	FString getEraChosen() const {return EraName;}
+	UFUNCTION(BlueprintCallable)
+	EMatchTypes getMatchType() const {return MatchType;}
 	void setValues(TObjectPtr<UMatchParameters> UserParameters);
 
 	UFUNCTION(BlueprintCallable)
@@ -44,14 +49,15 @@ protected:
 	UPROPERTY(EditAnywhere)
 	int ScoreValue[4] = {1000, 500, 300, 100};
 	// Number of rounds per match
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Match Data")
 	int MaxRounds = 5;
 	// Delay between which events are summoned, if set to 0, events are disabled
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Match Data")
 	float EventDelay = 55.0f;
 	// Selected Era name
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Match Data")
 	FString EraName = "Default";
 	// Current Match Type (Classic, Teams, etc...)
-	EMatchTypes MatchType = Classic;
+	UPROPERTY(EditAnywhere);
+	TEnumAsByte<EMatchTypes> MatchType = Classic;
 };
