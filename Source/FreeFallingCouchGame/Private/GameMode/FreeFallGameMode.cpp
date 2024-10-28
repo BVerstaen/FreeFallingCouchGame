@@ -112,6 +112,27 @@ void AFreeFallGameMode::SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints
 		ID_Player++;
 	}
 }
+
+AParachute* AFreeFallGameMode::RespawnParachute()
+{
+	//Destroy parachute if already exists
+	if(ParachuteInstance)
+		ParachuteInstance->Destroy();
+	
+	//Get map settings & set location
+	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
+	FTransform SpawnTransform = FTransform::Identity;
+	SpawnTransform.SetLocation(MapSettings->ParachuteSpawnLocation);
+
+	//Spawn parachute
+	return GetWorld()->SpawnActorDeferred<AParachute>(MapSettings->ParachuteSubclass, SpawnTransform);
+}
+
+AParachute* AFreeFallGameMode::GetParachuteInstance() const
+{
+	return ParachuteInstance;
+}
+
 #pragma endregion
 
 #pragma region PreRound
@@ -134,6 +155,7 @@ void AFreeFallGameMode::StartRound()
 	TArray<APlayerStart*> PlayerStartsPoints;
 	FindPlayerStartActorsInMap(PlayerStartsPoints);
 	SpawnCharacters(PlayerStartsPoints);
+	ParachuteInstance = RespawnParachute();
 	ArenaActorInstance->Init(this);
 
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------ROUND START--------------------"));

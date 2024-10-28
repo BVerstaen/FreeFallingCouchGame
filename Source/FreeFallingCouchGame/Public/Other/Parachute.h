@@ -25,7 +25,7 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	float LaunchForce;
-
+	
 	FVector StartingLocation;
 	
 public:
@@ -41,7 +41,7 @@ public:
 	//Give back reference -> if need it to launch Parachute
 	AParachute* DropParachute(AFreeFallCharacter* PreviousOwner);
 
-	void RecenterParachute();
+	void RecenterParachute() const;
 
 	/*
 	 *Delegates

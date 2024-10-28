@@ -92,7 +92,7 @@ AParachute* AParachute::DropParachute(AFreeFallCharacter* PreviousOwner)
 	return this;
 }
 
-void AParachute::RecenterParachute()
+void AParachute::RecenterParachute() const
 {
 	Mesh->SetSimulatePhysics(true);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);

@@ -36,10 +36,8 @@ void AArenaActor::Init(const AFreeFallGameMode* FreeFallGameMode)
 	NearEdgeScreenTolerance = CharactersSettings->PercentageCloseEdgeScreen;
 	
 	MainCameraController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-
-	//TEMPORAIRE !!! PARACHUTE A SPAWN DANS GAMEMODE
-	AActor* ParachuteActor = UGameplayStatics::GetActorOfClass(GetWorld(), AParachute::StaticClass());
-	Parachute = Cast<AParachute>(ParachuteActor);
+	
+	Parachute = FreeFallGameMode->GetParachuteInstance();
 }
 
 // Called every frame

@@ -27,6 +27,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	TArray<AFreeFallCharacter*> CharactersInsideArena;
 
+	UFUNCTION()
+	AParachute* GetParachuteInstance() const;
+	
 private:
 	void CreateAndInitsPlayers() const;
 
@@ -40,6 +43,8 @@ private:
 
 	void SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints);
 
+	AParachute* RespawnParachute();
+	
 #pragma region Rounds
 protected:
 	
@@ -54,6 +59,8 @@ protected:
 	// Refs to Objects in Scene
 	UPROPERTY()
 	TObjectPtr<AArenaActor> ArenaActorInstance;
+	UPROPERTY()
+	TObjectPtr<AParachute> ParachuteInstance;
 	// Match Parameters
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UMatchParameters> DefaultParameters = nullptr;
