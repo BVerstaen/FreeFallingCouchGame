@@ -5,11 +5,13 @@
 #include "CoreMinimal.h"
 #include "InputMappingContext.h"
 #include "Arena/ArenaActor.h"
+#include "Arena/TrackerActor.h"
 #include "FreeFallingCouchGame/Public/Match/MatchParameters.h"
 #include "Characters/FreeFallCharacterInputData.h"
 #include "Characters/PlayerMatchData.h"
 #include "GameFramework/GameModeBase.h"
 #include "FreeFallGameMode.generated.h"
+
 
 class AFreeFallCharacter;
 
@@ -59,6 +61,10 @@ protected:
 	// Refs to Objects in Scene
 	UPROPERTY()
 	TObjectPtr<AArenaActor> ArenaActorInstance;
+
+	UPROPERTY()
+	TObjectPtr<ATrackerActor> TrackerActorInstance;
+
 	UPROPERTY()
 	TObjectPtr<AParachute> ParachuteInstance;
 	// Match Parameters

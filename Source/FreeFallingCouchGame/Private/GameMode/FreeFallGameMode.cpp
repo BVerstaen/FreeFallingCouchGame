@@ -15,6 +15,9 @@ void AFreeFallGameMode::BeginPlay()
 	Super::BeginPlay();
 	CreateAndInitsPlayers();
 	ArenaActorInstance = GetWorld()->SpawnActor<AArenaActor>();
+
+	TrackerActorInstance = GetWorld()->SpawnActor<ATrackerActor>();
+
 	//TODO Find way to receive player made modifications
 	StartMatch();
 }
@@ -157,7 +160,8 @@ void AFreeFallGameMode::StartRound()
 	SpawnCharacters(PlayerStartsPoints);
 	ParachuteInstance = RespawnParachute();
 	ArenaActorInstance->Init(this);
-
+	TrackerActorInstance->Init(ParachuteInstance, CharactersInsideArena);
+	
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------ROUND START--------------------"));
 	if(OnStartRound.IsBound())
 	{
