@@ -38,6 +38,7 @@ void AObstacleTransitionClouds::StartTransition()
 void AObstacleTransitionClouds::EndTransition()
 {
 	//Play end transition (clouds moving away)
+	OnEventEnded.Broadcast(this);
 }
 
 void AObstacleTransitionClouds::RandomizePlayersPositions()
@@ -97,4 +98,11 @@ bool AObstacleTransitionClouds::IsNearAnyPlayer(const FVector& SpawnPosition, fl
 	}
 
 	return false;
+}
+
+void AObstacleTransitionClouds::TriggerEvent()
+{
+	Super::TriggerEvent();
+
+	StartTransition();
 }

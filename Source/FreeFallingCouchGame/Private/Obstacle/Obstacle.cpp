@@ -52,3 +52,8 @@ bool AObstacle::CanBeGrabbed()
 {
 	return IsGrabbable;
 }
+
+bool AObstacle::CanBeTaken()
+{
+	return false;
+}
