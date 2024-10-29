@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "FreeFallCharacterGrabbingState"
 #include "GameFramework/Character.h"
+#include "Interface/DiveLayersSensible.h"
+#include "Other/DiveLayersID.h"
 #include "FreeFallCharacter.generated.h"
 
 class AParachute;
@@ -18,7 +20,7 @@ enum class EFreeFallCharacterStateID : uint8;
 class UFreeFallCharacterStateMachine;
 
 UCLASS()
-class FREEFALLINGCOUCHGAME_API AFreeFallCharacter : public ACharacter
+class FREEFALLINGCOUCHGAME_API AFreeFallCharacter : public ACharacter, public IDiveLayersSensible
 {
 	GENERATED_BODY()
 
@@ -126,6 +128,36 @@ private:
 
 	void OnInputDive(const FInputActionValue& Value);
 
+#pragma endregion
+
+#pragma region DiveLayerSensible Interface
+
+public:
+	virtual void ApplyDiveForce(FVector DiveForceDirection, float DiveStrength) override;
+
+	virtual EDiveLayersID GetBoundedLayer() override;
+
+	virtual AActor* GetSelfActor() override;
+
+	virtual FVector GetDivingVelocity() override;
+	
+	virtual bool IsBoundedByLayer() override;
+
+	virtual bool IsDiveForced() override;
+
+protected:
+	UPROPERTY()
+	bool bIsBoundedByLayer = false;
+
+	UPROPERTY()
+	bool bIsDiveForced = true;
+
+	UPROPERTY()
+	EDiveLayersID BoundedLayer = EDiveLayersID::None;
+
+	UPROPERTY()
+	FVector DivingVelocity = FVector::ZeroVector;
+	
 #pragma endregion
 
 #pragma region Input Grab

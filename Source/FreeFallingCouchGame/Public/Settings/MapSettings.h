@@ -34,4 +34,7 @@ public:
 
 	UPROPERTY(Config, EditAnywhere, Category = "Characters")
 	TSubclassOf<AFreeFallCharacter> CharacterClassP3;
+
+	UPROPERTY(Config, EditAnywhere, Category="Diving")
+	float DiveLayerThreshold;
 };

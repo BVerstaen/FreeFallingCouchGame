@@ -65,6 +65,8 @@ void AFreeFallCharacter::BeginPlay()
 	CreateStateMachine();
 	InitStateMachine();
 
+	CameraActor = Cast<ACameraActor>(UGameplayStatics::GetActorOfClass(GetWorld(), ACameraActor::StaticClass()));
+
 	//Setup movement & physics
 	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 	GetCapsuleComponent()->SetSimulatePhysics(false);
@@ -73,9 +75,7 @@ void AFreeFallCharacter::BeginPlay()
 	{
 		CapsuleCollision->OnComponentHit.AddDynamic(this, &AFreeFallCharacter::OnCapsuleCollisionHit);
 	}
-
-	//TODO: Pass this in Gamemode to clean code
-	CameraActor = Cast<ACameraActor>(UGameplayStatics::GetActorOfClass(GetWorld(), ACameraActor::StaticClass()));
+	
 }
 
 // Called every frame
@@ -84,6 +84,9 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	TickStateMachine(DeltaTime);
 
+	//TODO: Delete that when Shader is created
+	SetDiveMaterialColor();
+	
 	//Update physic based on grab
 	switch (GrabbingState)
 	{
@@ -274,6 +277,41 @@ void AFreeFallCharacter::OnInputDive(const FInputActionValue& Value)
 {
 	InputDive = Value.Get<float>();
 }
+
+#pragma endregion
+
+#pragma region DiveLayerSensible Interface
+
+void AFreeFallCharacter::ApplyDiveForce(FVector DiveForceDirection, float DiveStrength)
+{
+	AddMovementInput(DiveForceDirection,DiveStrength / GetCharacterMovement()->MaxFlySpeed);
+}
+
+EDiveLayersID AFreeFallCharacter::GetBoundedLayer()
+{
+	return BoundedLayer;
+}
+
+AActor* AFreeFallCharacter::GetSelfActor()
+{
+	return this;
+}
+
+FVector AFreeFallCharacter::GetDivingVelocity()
+{
+	return DivingVelocity;
+}
+
+bool AFreeFallCharacter::IsBoundedByLayer()
+{
+	return bIsBoundedByLayer;
+}
+
+bool AFreeFallCharacter::IsDiveForced()
+{
+	return bIsDiveForced;
+}
+
 #pragma endregion 
 
 #pragma region Grabbing

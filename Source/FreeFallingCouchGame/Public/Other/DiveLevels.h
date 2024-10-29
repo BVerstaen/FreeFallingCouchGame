@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "DiveLevels.generated.h"
 
+class UMapSettings;
+class IDiveLayersSensible;
 enum class EDiveLayerBoundsID : uint8;
 enum class EDiveLayersID : uint8;
 
@@ -32,7 +34,21 @@ public:
 
 	EDiveLayersID GetDiveLayersFromCoord(float PlayerCoordZ);
 
-
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	FVector3f DiveLevelSize;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	TArray<TScriptInterface<IDiveLayersSensible>> OverlappingSensibleActors;
+
+	UPROPERTY()
+	const UMapSettings* MapSettings;
+
+private:
+	void ApplyDiveForce(TScriptInterface<IDiveLayersSensible> SensibleActor);
+
+	UPROPERTY(EditAnywhere)
+	float DiveForcesStrength;
+
+	UPROPERTY()
+	ACameraActor* CameraActor;
 };

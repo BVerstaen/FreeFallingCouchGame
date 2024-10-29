@@ -37,9 +37,6 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category="InputDive")
 	float InputDiveThreshold;
 
-	UPROPERTY(Config, EditAnywhere, Category="InputDive")
-	float DiveLayerThreshold;
-
 	UPROPERTY(Config, EditAnywhere, Category="Inputs")
 	TSoftObjectPtr<UFreeFallCharacterInputData> InputData;
 

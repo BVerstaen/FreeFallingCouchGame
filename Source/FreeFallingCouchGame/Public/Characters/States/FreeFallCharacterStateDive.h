@@ -38,11 +38,11 @@ class FREEFALLINGCOUCHGAME_API UFreeFallCharacterStateDive : public UFreeFallCha
 	void CheckTargetedLayer();
 
 private:
-	void ApplyDiveForce();
+	//void ApplyDiveForce();
 
 	void ApplyMoveInputs(float DeltaTime);
 
-	bool IsInCenterOfLayer() const;
+	//bool IsInCenterOfLayer() const;
 
 	FString GetLayerName(EDiveLayersID LayerID) const;
 
