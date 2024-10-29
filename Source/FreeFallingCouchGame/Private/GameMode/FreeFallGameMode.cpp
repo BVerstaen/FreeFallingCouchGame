@@ -162,15 +162,15 @@ void AFreeFallGameMode::StartRound()
 	TrackerActorInstance->Init(ParachuteInstance, CharactersInsideArena);
 	
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------ROUND START--------------------"));
-	if(OnStartRound.IsBound())
-	{
-		OnStartRound.Broadcast();
-	}
 	CurrentRound++;
 	if(CurrentParameters->getTimerEventDelay() > 0.f)
 		RoundEventTimer();
 	if(CurrentParameters->getRoundTimer() > 0.f)
 		RoundTimer();
+	if(OnStartRound.IsBound())
+	{
+		OnStartRound.Broadcast();
+	}
 }
 void AFreeFallGameMode::SetupMatch(TSubclassOf<UMatchParameters> UserParameters)
 {

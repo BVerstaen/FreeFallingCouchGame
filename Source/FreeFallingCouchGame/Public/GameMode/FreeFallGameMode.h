@@ -80,10 +80,17 @@ protected:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDResults);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDCallEvent);
 	// Delegate Instance
+	UPROPERTY(BlueprintAssignable, Category = "EventsFreefall")
 	FDStartRound OnStartRound;
+	UPROPERTY(BlueprintAssignable, Category = "EventsFreefall")
 	FDEndRound OnEndRound;
+	UPROPERTY(BlueprintAssignable, Category = "EventsFreefall")
 	FDResults OnResults;
+	UPROPERTY(BlueprintAssignable, Category = "EventsFreefall")
 	FDCallEvent OnCallEvent;
+public:
+	UFUNCTION(BlueprintCallable)
+	FTimerHandle getRoundTimer() const { return RoundTimerHandle; }
 private:
 	//After Initiation, launches the timer and links events
 	void StartRound();
