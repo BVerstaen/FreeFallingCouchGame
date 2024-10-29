@@ -35,13 +35,14 @@ void UMatchParameters::setValues(TObjectPtr<UMatchParameters> UserParameters)
 	}
 }
 
-void UMatchParameters::setMatchParameters(int inMaxRounds, float inEventDelay, FString inEraChosen,
+void UMatchParameters::setMatchParameters(int inMaxRounds, float inEventDelay, float inRoundTimer, FString inEraChosen,
 	EMatchTypes InMatchType)
 {
 	MaxRounds = inMaxRounds;
 	EraName = inEraChosen;
 	EventDelay = inEventDelay;
 	MatchType = InMatchType;
+	RoundTimer = inRoundTimer;
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Received Data !");
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple, FString::Printf(TEXT("Selected Rounds : %i"), inMaxRounds));
 }

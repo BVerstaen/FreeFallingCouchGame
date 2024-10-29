@@ -145,7 +145,7 @@ void AFreeFallGameMode::StartMatch()
 		PlayerMatchData = NewObject<UPlayerMatchData>();
 	PlayerMatchData->resetScoreValue();
 	
-	ArenaActorInstance->OnCharacterDestroyed.AddDynamic(this, &AFreeFallGameMode::CheckEndRound);
+	ArenaActorInstance->OnCharacterDestroyed.AddDynamic(this, &AFreeFallGameMode::CheckEndRoundDeath);
 	SetupMatch(nullptr);
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------MATCH START--------------------"));
 	StartRound();
@@ -168,9 +168,9 @@ void AFreeFallGameMode::StartRound()
 	}
 	CurrentRound++;
 	if(CurrentParameters->getTimerDelay() > 0.f)
-	{
-		RoundEventTimer();	
-	}
+		RoundEventTimer();
+	if(CurrentParameters->getRoundTimer() > 0.f)
+		RoundTimer();
 }
 void AFreeFallGameMode::SetupMatch(TSubclassOf<UMatchParameters> UserParameters)
 {
@@ -191,10 +191,18 @@ void AFreeFallGameMode::SetupMatch(TSubclassOf<UMatchParameters> UserParameters)
 #pragma endregion 
 
 #pragma region DuringRound
-
-void AFreeFallGameMode::CheckEndRound(AFreeFallCharacter* Character)
+void AFreeFallGameMode::CheckEndRoundTimer()
 {
-	//TODO Array of order in which characters got eliminated
+	ClearTimers();
+
+	if(IsValid(TrackerActorInstance))
+	{
+		TrackerActorInstance
+	}
+}
+
+void AFreeFallGameMode::CheckEndRoundDeath(AFreeFallCharacter* Character)
+{
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple,
 		FString::Printf(TEXT("Player number %i was eliminated!"), Character->getIDPlayerLinked()));
 	LossOrder.insert(LossOrder.begin(), Character->getIDPlayerLinked());
@@ -206,23 +214,10 @@ void AFreeFallGameMode::CheckEndRound(AFreeFallCharacter* Character)
 		EndRound();
 	}
 }
-void AFreeFallGameMode::RoundEventTimer()
-{
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "StartTimer");
-	GetWorld()->GetTimerManager().SetTimer(
-		RoundTimerHandle,
-		this,
-		&AFreeFallGameMode::StartEvent,
-		CurrentParameters->getTimerDelay(),
-		true
-		);
-}
-
 void AFreeFallGameMode::StartEvent()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "StartEvent");
 	if(OnCallEvent.IsBound()) OnCallEvent.Broadcast();
-	//Here can be implemented a random function to start random events
 }
 #pragma endregion
 
@@ -260,10 +255,7 @@ FString::Printf(TEXT("%i spot is taken by player id: %i !"), i, Ranking));
 
 void AFreeFallGameMode::EndRound()
 {
-	// Clear Timer
-	if(GetWorldTimerManager().IsTimerActive(RoundTimerHandle))
-		GetWorldTimerManager().ClearTimer(RoundTimerHandle);
-	
+	ClearTimers();
 	// Reset CharactersInside Arena
 	for (auto Element : CharactersInsideArena) { Element->Destroy();}
 	CharactersInsideArena.Empty();
@@ -290,7 +282,7 @@ void AFreeFallGameMode::ShowResults()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "ShowResults");
 	CurrentRound = 0;
-	ArenaActorInstance->OnCharacterDestroyed.RemoveDynamic(this, &AFreeFallGameMode::CheckEndRound);
+	ArenaActorInstance->OnCharacterDestroyed.RemoveDynamic(this, &AFreeFallGameMode::CheckEndRoundDeath);
 
 	//TODO Remove Debug
 	PlayerMatchData->DebugPrintScore();
@@ -301,5 +293,40 @@ void AFreeFallGameMode::ShowResults()
 	}
 	//TODO AwaitUserInput
 	StartMatch();
+}
+#pragma endregion
+//-------------------------------------------TIMERS---------------------------------------------------------
+#pragma region Timers
+
+void AFreeFallGameMode::ClearTimers()
+{
+	if(GetWorldTimerManager().IsTimerActive(EventTimerHandle))
+		GetWorldTimerManager().ClearTimer(EventTimerHandle);
+	if(GetWorldTimerManager().IsTimerActive(RoundTimerHandle))
+		GetWorldTimerManager().ClearTimer(RoundTimerHandle);
+}
+
+void AFreeFallGameMode::RoundEventTimer()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "StartTimer");
+	GetWorld()->GetTimerManager().SetTimer(
+		EventTimerHandle,
+		this,
+		&AFreeFallGameMode::StartEvent,
+		CurrentParameters->getTimerDelay(),
+		true
+		);
+}
+
+void AFreeFallGameMode::RoundTimer()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "StartTimer");
+	GetWorld()->GetTimerManager().SetTimer(
+		RoundTimerHandle,
+		this,
+		&AFreeFallGameMode::CheckEndRoundTimer,
+		CurrentParameters->getRoundTimer(),
+		false
+		);
 }
 #pragma endregion
