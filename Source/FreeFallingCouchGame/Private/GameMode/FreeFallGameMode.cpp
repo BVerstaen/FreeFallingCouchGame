@@ -222,6 +222,7 @@ void AFreeFallGameMode::CheckEndRoundDeath(AFreeFallCharacter* Character)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "One character, remaining, end match!");
 		ArenaActorInstance->OnCharacterDestroyed.RemoveDynamic(this, &AFreeFallGameMode::CheckEndRoundDeath);
+		TrackerActorInstance->RemoveDelegates();
 		AddPoints(SetDeathOrder());
 		EndRound();
 	}
