@@ -65,7 +65,7 @@ public:
 	void AddNbOfStealParachute(AFreeFallCharacter* PreviousOwner, AFreeFallCharacter* NewOwner);
 	
 	UFUNCTION()
-	void AddNbOfElimination(const AFreeFallCharacter* Character);
+	void AddNbOfElimination(int PlayerID);
 	
 	UFUNCTION()
 	void AddNbBonusUsed(const AFreeFallCharacter* Character);

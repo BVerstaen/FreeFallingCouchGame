@@ -37,6 +37,8 @@ void ATrackerActor::Init(AParachute* ParachuteInstance, TArray<AFreeFallCharacte
 		//Create player tracked data list
 		FPlayerTrackedData TrackedData(Character->getIDPlayerLinked());
 		PlayerTrackedDataList.Add(TrackedData);
+
+		Character->OnWasEliminated.AddDynamic(this, &ATrackerActor::ATrackerActor::AddNbOfElimination);
 	}
 
 	//Bind steal parachute
@@ -89,7 +91,6 @@ TArray<int> ATrackerActor::GetTrackingWinners(ETrackingRewardCategory Category)
 	case LongestTimeWithParachute:
 		for(FPlayerTrackedData TrackedData : PlayerTrackedDataList)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Yellow, FString::FromInt(TrackedData.PlayerId) + TEXT(" - ") + FString::SanitizeFloat(TrackedData.TimeWithParachute));
 			//In case of equality
 			if(FMath::IsNearlyEqual(TrackedData.TimeWithParachute,HighestNumberFloat) && HighestNumberFloat > 0.0f)
 			{
@@ -108,6 +109,8 @@ TArray<int> ATrackerActor::GetTrackingWinners(ETrackingRewardCategory Category)
 	case MostElimination:
 		for(FPlayerTrackedData TrackedData : PlayerTrackedDataList)
 		{
+			//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Yellow, FString::FromInt(TrackedData.PlayerId) + TEXT(" - ") + FString::FromInt(TrackedData.NbOfElimination));
+			
 			//In case of equality
 			if(TrackedData.NbOfElimination == HighestNumberInt && HighestNumberInt > 0)
 			{
@@ -157,11 +160,11 @@ void ATrackerActor::AddNbOfStealParachute(AFreeFallCharacter* PreviousOwner, AFr
 	}
 }
 
-void ATrackerActor::AddNbOfElimination(const AFreeFallCharacter* Character)
+void ATrackerActor::AddNbOfElimination(int PlayerID)
 {
 	for(FPlayerTrackedData& TrackedData : PlayerTrackedDataList)
 	{
-		if(TrackedData.PlayerId == Character->getIDPlayerLinked())
+		if(TrackedData.PlayerId == PlayerID)
 		{
 			TrackedData.NbOfElimination++;
 		}
