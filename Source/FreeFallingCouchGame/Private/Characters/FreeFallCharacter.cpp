@@ -323,7 +323,10 @@ bool AFreeFallCharacter::IsInCircularGrab() const
 	//Check if one char of the chain grab is the one I'm grabbing
 	while (CurrentCharacter != nullptr)
 	{
-		if (CurrentCharacter->OtherCharacterGrabbing == this) return true;
+		if (CurrentCharacter->OtherCharacterGrabbing == this)
+		{
+			return true;
+		}
 		CurrentCharacter = CurrentCharacter->OtherCharacterGrabbing;
 	}
 	return false;
@@ -332,13 +335,11 @@ bool AFreeFallCharacter::IsInCircularGrab() const
 void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallCharacter* OtherCharacter, bool bIsCircularGrab) const
 {
 	//Calculate new offset of child actor based on Character rotation
-	if(OtherCharacterGrabbing == OtherCharacter && bIsCircularGrab)
+	if(OtherCharacterGrabbing == OtherCharacter && !bIsCircularGrab)
 	{
 		FVector RotatedOffset = this->GetActorRotation().RotateVector(GrabInitialOffset);
 		FVector NewOtherCharacterPosition = this->GetActorLocation() + RotatedOffset;
-		//Check for any circular grab
-		//if(!IsInCircularGrab())
-		OtherCharacter->SetActorLocation(NewOtherCharacterPosition);		
+		OtherCharacter->SetActorLocation(NewOtherCharacterPosition);
 	}
 	
 	//Get both players velocity
@@ -358,8 +359,8 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallChara
 	OtherCharacter->GetMovementComponent()->Velocity = NewOtherCharacterVelocity;
 
 	//Set other Character rotation
-	if(!(OtherCharacterGrabbedBy == OtherCharacter && OtherCharacterGrabbing) && bIsCircularGrab)
-	{ 
+	if(!(OtherCharacterGrabbedBy == OtherCharacter && OtherCharacterGrabbing) && !bIsCircularGrab)
+	{
 		FRotator TargetRotation = this->GetActorRotation();
 		TargetRotation += GrabDefaultRotationOffset;
 		FRotator NewGrabbedRotation = FMath::RInterpTo(OtherCharacter->GetActorRotation(), TargetRotation, DeltaTime, GrabRotationSpeed);
@@ -370,6 +371,7 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallChara
 void AFreeFallCharacter::UpdateEveryMovementInfluence(float DeltaTime) const
 {
 	bool bIsInCircularGrab = IsInCircularGrab();
+	
 	if(OtherCharacterGrabbedBy)
 		UpdateMovementInfluence(DeltaTime, OtherCharacterGrabbedBy, bIsInCircularGrab);
 	if(OtherCharacterGrabbing)

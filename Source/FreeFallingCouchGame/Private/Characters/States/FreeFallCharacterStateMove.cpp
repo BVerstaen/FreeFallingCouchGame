@@ -67,27 +67,27 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 	FVector CharacterDirection = Character->GetActorForwardVector();
 
 	//Set Orient Rotation To Movement
-	if(Character->GrabbingState == EFreeFallCharacterGrabbingState::GrabPlayer)
+	if(Character->GetCharacterMovement()->bOrientRotationToMovement)
 	{
-		if(Character->GetCharacterMovement()->bOrientRotationToMovement)
+		//Get angle btw Character & movement direction
+		float DotProduct = FVector::DotProduct(MovementDirection, CharacterDirection);
+
+		if(DotProduct > GrabbedOrientationThreshold && Character->OtherCharacterGrabbedBy)
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Grabbed");
+		
+		if((DotProduct > OrientationThreshold && Character->OtherCharacterGrabbing)
+			|| (DotProduct > GrabbedOrientationThreshold && Character->OtherCharacterGrabbedBy))
 		{
-			//Get angle btw Character & movement direction
-			float DotProduct = FVector::DotProduct(MovementDirection, CharacterDirection);
-			if(DotProduct > OrientationThreshold && Character->GrabbingState == EFreeFallCharacterGrabbingState::GrabPlayer
-				|| DotProduct > GrabbedOrientationThreshold && Character->GrabbingState != EFreeFallCharacterGrabbingState::GrabPlayer)
-			{
-				Character->GetCharacterMovement()->bOrientRotationToMovement = false;
-				OldInputDirection = InputMove;
-			}
+			Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+			OldInputDirection = InputMove;
 		}
-		else if(OldInputDirection != InputMove)
-		{
-			//If you change direction -> Restore Orient Rotation Movement
-			Character->GetCharacterMovement()->bOrientRotationToMovement = true;
-		}		
+	}
+	else if(OldInputDirection != InputMove)
+	{
+		//If you change direction -> Restore Orient Rotation Movement
+		Character->GetCharacterMovement()->bOrientRotationToMovement = true;
 	}
 
-	
 	//Change state if other input
 	if (FMathf::Abs(Character->GetInputDive()) > CharactersSettings->InputDiveThreshold)
 	{
