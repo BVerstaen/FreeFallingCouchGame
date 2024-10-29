@@ -224,6 +224,17 @@ void ATrackerActor::DebugPrintResultReward()
 	}
 }
 
+void ATrackerActor::RemoveDelegates()
+{
+	if(CurrentParachute)
+	{
+		CurrentParachute->OnParachuteStolen.RemoveDynamic(this, &ATrackerActor::AddNbOfStealParachute);
+		CurrentParachute->OnParachuteGrabbed.RemoveDynamic(this, &ATrackerActor::StartParachuteTracking);
+		CurrentParachute->OnParachuteStolen.RemoveDynamic(this, &ATrackerActor::ChangeParachuteTracking);
+		CurrentParachute->OnParachuteDropped.RemoveDynamic(this, &ATrackerActor::ATrackerActor::StopParachuteTracking);
+	}
+}
+
 void ATrackerActor::StartParachuteTracking(AFreeFallCharacter* NewOwner)
 {
 	CurrentParachuteHolderIndex = NewOwner->getIDPlayerLinked();

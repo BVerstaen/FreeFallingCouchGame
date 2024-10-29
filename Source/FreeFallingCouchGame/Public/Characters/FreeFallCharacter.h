@@ -169,9 +169,13 @@ private:
 	void BindInputGrabActions(UEnhancedInputComponent* EnhancedInputComponent);
 
 	void OnInputGrab(const FInputActionValue& Value);
-
+	
+	bool IsInCircularGrab();
+	
 	UFUNCTION()
-	void UpdateMovementInfluence(float DeltaTime) const;
+	void UpdateMovementInfluence(float DeltaTime, AFreeFallCharacter* OtherCharacter, bool bIsCircularGrab);
+	UFUNCTION()
+	void UpdateEveryMovementInfluence(float DeltaTime);
 	UFUNCTION()
 	void UpdateObjectPosition(float DeltaTime) const;
 	UFUNCTION()
@@ -180,10 +184,15 @@ private:
 public:
 	bool bInputGrabPressed = false;
 	EFreeFallCharacterGrabbingState GrabbingState;
-	
-	UPROPERTY()
-	TObjectPtr<AFreeFallCharacter> OtherCharacter;
 
+	//The one I grabbed
+	UPROPERTY()
+	TObjectPtr<AFreeFallCharacter> OtherCharacterGrabbing;
+
+	//The one who's grabbing me
+	UPROPERTY()
+	TObjectPtr<AFreeFallCharacter> OtherCharacterGrabbedBy;
+	
 	UPROPERTY()
 	TObjectPtr<AActor> OtherObject;
 
@@ -194,6 +203,7 @@ public:
 	float GrabRotationSpeed;
 	float GrabRotationInfluenceStrength;
 	FRotator GrabDefaultRotationOffset;
+	FRotator GrabCircularRotationOffset;
 
 protected:
 	UPROPERTY(VisibleAnywhere)
@@ -268,7 +278,7 @@ protected:
 	/*A partir de combien de temps un rebond qui mène à un OUT ne compte plus comme une élimination ?*/
 	UPROPERTY(EditAnywhere, Category="Bounce Collision - Elimination")
 	float DelayConsideredAsRecentlyBounced;
-
+	
 	UPROPERTY()
 	int RecentlyBouncedOtherPlayerID;
 

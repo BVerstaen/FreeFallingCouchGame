@@ -72,6 +72,9 @@ public:
 
 	UFUNCTION()
 	void DebugPrintResultReward();
+
+	UFUNCTION()
+	void RemoveDelegates();
 	
 private:
 	UPROPERTY()
