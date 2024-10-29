@@ -102,6 +102,13 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 
 void AFreeFallCharacter::DestroyPlayer()
 {
+	//If was recently bounced -> then send elimination delegate
+	if(bWasRecentlyBounced)
+	{
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Player" + FString::FromInt(getIDPlayerLinked()) + " - got killed by - " + FString::FromInt(RecentlyBouncedOtherPlayerID));
+		if(OnWasEliminated.IsBound())
+			OnWasEliminated.Broadcast(RecentlyBouncedOtherPlayerID);
+	}
 	LaunchParachute();
 	Destroy();
 }
@@ -373,10 +380,24 @@ float AFreeFallCharacter::GetPlayerMass()
 	return PlayerMass;
 }
 
+void AFreeFallCharacter::SetWasRecentlyBouncedTimer(const AFreeFallCharacter* Character)
+{
+	bWasRecentlyBounced = true;
+	RecentlyBouncedOtherPlayerID = Character->getIDPlayerLinked();
+	GetWorldTimerManager().ClearTimer(RecentlyBouncedTimer);
+	GetWorldTimerManager().SetTimer(RecentlyBouncedTimer, this, &AFreeFallCharacter::ResetWasRecentlyBounced, DelayConsideredAsRecentlyBounced);
+}
+
 void AFreeFallCharacter::ResetBounce()
 {
 	bAlreadyCollided = false;
 	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+}
+
+void AFreeFallCharacter::ResetWasRecentlyBounced()
+{
+	GetWorldTimerManager().ClearTimer(RecentlyBouncedTimer);
+	bWasRecentlyBounced = false;
 }
 
 void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
@@ -437,11 +458,13 @@ void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent
 		//Neutralize Z bounce velocity
 		NewVelocity.Z = 0;
 		OtherFreeFallCharacter->LaunchCharacter(NewVelocity, true, true);
-		
+
+		//Activate bounce cooldown & elimination timers
 		if (!OtherFreeFallCharacter->bAlreadyCollided)
-		{
 			OtherFreeFallCharacter->BounceCooldown();
-		}
+		
+		SetWasRecentlyBouncedTimer(OtherFreeFallCharacter);
+		OtherFreeFallCharacter->SetWasRecentlyBouncedTimer(this);
 	}
 
 	BounceCooldown();
