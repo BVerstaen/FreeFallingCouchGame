@@ -3,16 +3,11 @@
 
 #include "Characters/States/FreeFallCharacterStateMove.h"
 
-#include "Camera/CameraActor.h"
 #include "Characters/FreeFallCharacter.h"
 #include "Characters/FreeFallCharacterStateID.h"
 #include "Characters/FreeFallCharacterStateMachine.h"
 #include "Characters/States/FreeFallCharacterStateDive.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/InputSettings.h"
-#include "Kismet/KismetStringLibrary.h"
-#include "Other/DiveLayersID.h"
-#include "Other/DiveLevels.h"
 #include "Settings/CharactersSettings.h"
 
 EFreeFallCharacterStateID UFreeFallCharacterStateMove::GetStateID()
@@ -72,13 +67,14 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 	FVector CharacterDirection = Character->GetActorForwardVector();
 
 	//Set Orient Rotation To Movement
-	if(Character->bIsGrabbing)
+	if(Character->GrabbingState == EFreeFallCharacterGrabbingState::GrabPlayer)
 	{
 		if(Character->GetCharacterMovement()->bOrientRotationToMovement)
 		{
 			//Get angle btw Character & movement direction
 			float DotProduct = FVector::DotProduct(MovementDirection, CharacterDirection);
-			if(DotProduct > OrientationThreshold && Character->bIsGrabbing || DotProduct > GrabbedOrientationThreshold && !Character->bIsGrabbing )
+			if(DotProduct > OrientationThreshold && Character->GrabbingState == EFreeFallCharacterGrabbingState::GrabPlayer
+				|| DotProduct > GrabbedOrientationThreshold && Character->GrabbingState != EFreeFallCharacterGrabbingState::GrabPlayer)
 			{
 				Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 				OldInputDirection = InputMove;

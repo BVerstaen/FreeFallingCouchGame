@@ -20,8 +20,16 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	bool bTimerPlaying;
+
 public:
 	void LaunchSpawn();
+
+	void PauseTimer();
+
+	void ResumeTimer();
+
+	bool IsTimerPlaying();
 
 	/* Liste des spawners d'obstacles*/
 	UPROPERTY(EditAnywhere)

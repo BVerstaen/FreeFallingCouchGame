@@ -41,4 +41,21 @@ void AObstacleSpawnerManager::LaunchSpawn()
 	GetWorldTimerManager().SetTimer(SpawnerTimer, this, &AObstacleSpawnerManager::LaunchSpawn, SpawnDelay, false);
 }
 
+void AObstacleSpawnerManager::PauseTimer()
+{
+	bTimerPlaying = false;
+	GetWorldTimerManager().PauseTimer(SpawnerTimer);
+}
+
+void AObstacleSpawnerManager::ResumeTimer()
+{
+	bTimerPlaying = true;
+	GetWorldTimerManager().UnPauseTimer(SpawnerTimer);
+}
+
+bool AObstacleSpawnerManager::IsTimerPlaying()
+{
+	return bTimerPlaying;
+}
+
 

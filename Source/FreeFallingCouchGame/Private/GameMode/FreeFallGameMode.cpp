@@ -15,6 +15,8 @@ void AFreeFallGameMode::BeginPlay()
 	Super::BeginPlay();
 	CreateAndInitsPlayers();
 	ArenaActorInstance = GetWorld()->SpawnActor<AArenaActor>();
+	TrackerActorInstance = GetWorld()->SpawnActor<ATrackerActor>();
+
 	//TODO Find way to receive player made modifications
 	StartMatch();
 }
@@ -112,7 +114,29 @@ void AFreeFallGameMode::SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints
 		ID_Player++;
 	}
 }
+
+AParachute* AFreeFallGameMode::RespawnParachute()
+{
+	//Destroy parachute if already exists
+	if(ParachuteInstance)
+		ParachuteInstance->Destroy();
+	
+	//Get map settings & set location
+	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
+	FTransform SpawnTransform = FTransform::Identity;
+	SpawnTransform.SetLocation(MapSettings->ParachuteSpawnLocation);
+
+	//Spawn parachute
+	return GetWorld()->SpawnActorDeferred<AParachute>(MapSettings->ParachuteSubclass, SpawnTransform);
+}
+
+AParachute* AFreeFallGameMode::GetParachuteInstance() const
+{
+	return ParachuteInstance;
+}
+
 #pragma endregion
+
 #pragma region PreRound
 void AFreeFallGameMode::StartMatch()
 {
@@ -133,8 +157,10 @@ void AFreeFallGameMode::StartRound()
 	TArray<APlayerStart*> PlayerStartsPoints;
 	FindPlayerStartActorsInMap(PlayerStartsPoints);
 	SpawnCharacters(PlayerStartsPoints);
+	ParachuteInstance = RespawnParachute();
 	ArenaActorInstance->Init(this);
-
+	TrackerActorInstance->Init(ParachuteInstance, CharactersInsideArena);
+	
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------ROUND START--------------------"));
 	if(OnStartRound.IsBound())
 	{
@@ -242,6 +268,9 @@ void AFreeFallGameMode::EndRound()
 	for (auto Element : CharactersInsideArena) { Element->Destroy();}
 	CharactersInsideArena.Empty();
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "EndRound");
+
+	//Just a debug message to make sure the tracker works, meant to be removed
+	TrackerActorInstance->DebugPrintResultReward();
 	
 	// Unlink event (to reapply properly later on, avoiding double linkage)
 	if(OnEndRound.IsBound())

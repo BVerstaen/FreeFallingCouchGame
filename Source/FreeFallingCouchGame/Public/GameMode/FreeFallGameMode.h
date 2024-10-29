@@ -5,11 +5,13 @@
 #include "CoreMinimal.h"
 #include "InputMappingContext.h"
 #include "Arena/ArenaActor.h"
+#include "Arena/TrackerActor.h"
 #include "FreeFallingCouchGame/Public/Match/MatchParameters.h"
 #include "Characters/FreeFallCharacterInputData.h"
 #include "Characters/PlayerMatchData.h"
 #include "GameFramework/GameModeBase.h"
 #include "FreeFallGameMode.generated.h"
+
 
 class AFreeFallCharacter;
 
@@ -27,6 +29,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	TArray<AFreeFallCharacter*> CharactersInsideArena;
 
+	UFUNCTION()
+	AParachute* GetParachuteInstance() const;
+	
 private:
 	void CreateAndInitsPlayers() const;
 
@@ -40,6 +45,8 @@ private:
 
 	void SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints);
 
+	AParachute* RespawnParachute();
+	
 #pragma region Rounds
 protected:
 	
@@ -54,6 +61,12 @@ protected:
 	// Refs to Objects in Scene
 	UPROPERTY()
 	TObjectPtr<AArenaActor> ArenaActorInstance;
+
+	UPROPERTY()
+	TObjectPtr<ATrackerActor> TrackerActorInstance;
+
+	UPROPERTY()
+	TObjectPtr<AParachute> ParachuteInstance;
 	// Match Parameters
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UMatchParameters> DefaultParameters = nullptr;

@@ -40,14 +40,14 @@ public:
 	TObjectPtr<UMaterial> Layer3Material;
 
 	UPROPERTY(EditAnywhere)
-	bool IsGrabbable;
+	bool IsGrabbable = true;
 	
 	/*Sera modifiée par l'Obstacle Spawner*/
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditAnywhere)
 	float Speed;
 
 	/*Sera modifiée par l'Obstacle Spawner*/
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditAnywhere)
 	FVector Direction;
 
 #pragma endregion
@@ -61,4 +61,7 @@ public:
 
 	UFUNCTION()
 	virtual bool CanBeGrabbed() override;
+
+	UFUNCTION()
+	virtual bool CanBeTaken() override;
 };
