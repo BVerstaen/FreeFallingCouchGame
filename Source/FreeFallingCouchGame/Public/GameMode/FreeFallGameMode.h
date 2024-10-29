@@ -7,7 +7,6 @@
 #include "Arena/ArenaActor.h"
 #include "Arena/TrackerActor.h"
 #include "FreeFallingCouchGame/Public/Match/MatchParameters.h"
-#include "Characters/FreeFallCharacterInputData.h"
 #include "Characters/PlayerMatchData.h"
 #include "GameFramework/GameModeBase.h"
 #include "FreeFallGameMode.generated.h"
@@ -54,10 +53,12 @@ protected:
 	UPROPERTY(EditAnywhere)
 	uint8 CurrentRound = 0;
 	FTimerHandle RoundTimerHandle;
+	FTimerHandle EventTimerHandle;
 	//Ranking
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UPlayerMatchData> PlayerMatchData;
-	std::vector<uint8> LossOrder;
+	//std::vector<uint8> LossOrder;
+	TArray<int> LossOrder;
 	// Refs to Objects in Scene
 	UPROPERTY()
 	TObjectPtr<AArenaActor> ArenaActorInstance;
@@ -86,20 +87,24 @@ protected:
 private:
 	//After Initiation, launches the timer and links events
 	void StartRound();
-	// InGame event clock
+	// Timers
 	void RoundEventTimer();
+	void RoundTimer();
+	void ClearTimers();
 	// When Round end condition is reached, unlinks and check if match is over
 	void EndRound();
+	void CheckEndRoundTimer();
 	// When Match is over, calls an event to show
 	// Results UI and buttons to go back to menu (/ restart)
 	void ShowResults();
 	// What RoundEventTimer calls 
 	void StartEvent();
-	//
-	void AddPoints();
+	// Adding points to players
+	TArray<int> SetDeathOrder();
+	void AddPoints(TArray<int> ArrayPlayers);
 	UFUNCTION()
 	// Checks if end condition is reached
-	void CheckEndRound(AFreeFallCharacter* Character);
+	void CheckEndRoundDeath(AFreeFallCharacter* Character);
 	// Sets up the values for the match & rounds to follow
 	void SetupMatch(TSubclassOf<UMatchParameters> UserParameters);
 #pragma endregion
