@@ -2,12 +2,12 @@
 
 #pragma once
 
+#include "FreeFallingCouchGame/Public/Characters/FreeFallCharacterInputData.h"
 #include "CoreMinimal.h"
 #include "Engine/DeveloperSettings.h"
 #include "CharactersSettings.generated.h"
-
 class UInputMappingContext;
-class UFreeFallCharacterInputData;
+//class UFreeFallCharacterInputData;
 class UFreeFallCharacterState;
 enum class EFreeFallCharacterStateID : uint8;
 /**

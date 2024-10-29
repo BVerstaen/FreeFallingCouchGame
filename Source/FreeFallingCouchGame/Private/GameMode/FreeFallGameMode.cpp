@@ -167,7 +167,7 @@ void AFreeFallGameMode::StartRound()
 		OnStartRound.Broadcast();
 	}
 	CurrentRound++;
-	if(CurrentParameters->getTimerDelay() > 0.f)
+	if(CurrentParameters->getTimerEventDelay() > 0.f)
 		RoundEventTimer();
 	if(CurrentParameters->getRoundTimer() > 0.f)
 		RoundTimer();
@@ -191,13 +191,24 @@ void AFreeFallGameMode::SetupMatch(TSubclassOf<UMatchParameters> UserParameters)
 #pragma endregion 
 
 #pragma region DuringRound
+
+void AFreeFallGameMode::StartEvent()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "StartEvent");
+	if(OnCallEvent.IsBound()) OnCallEvent.Broadcast();
+}
+
 void AFreeFallGameMode::CheckEndRoundTimer()
 {
 	ClearTimers();
 
 	if(IsValid(TrackerActorInstance))
 	{
-		TrackerActorInstance
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan,
+			"Timer end, end match!");
+		ArenaActorInstance->OnCharacterDestroyed.RemoveDynamic(this, &AFreeFallGameMode::CheckEndRoundDeath);
+		AddPoints(TrackerActorInstance->GetTrackingWinners(CurrentParameters->getTrackingRewardCategory()));
+		EndRound();
 	}
 }
 
@@ -205,53 +216,42 @@ void AFreeFallGameMode::CheckEndRoundDeath(AFreeFallCharacter* Character)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple,
 		FString::Printf(TEXT("Player number %i was eliminated!"), Character->getIDPlayerLinked()));
-	LossOrder.insert(LossOrder.begin(), Character->getIDPlayerLinked());
+	LossOrder.EmplaceAt(LossOrder[0], Character->getIDPlayerLinked());
 	CharactersInsideArena.Remove(Character);
 	if(CharactersInsideArena.Num() <= 1)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "One character, remaining, end match!");
-		AddPoints();
+		ArenaActorInstance->OnCharacterDestroyed.RemoveDynamic(this, &AFreeFallGameMode::CheckEndRoundDeath);
+		AddPoints(SetDeathOrder());
 		EndRound();
 	}
 }
-void AFreeFallGameMode::StartEvent()
+TArray<int> AFreeFallGameMode::SetDeathOrder()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "StartEvent");
-	if(OnCallEvent.IsBound()) OnCallEvent.Broadcast();
+	TArray<int> RoundRanking;
+	if(CharactersInsideArena.Num() == 1)
+		RoundRanking.Add(CharactersInsideArena[0]->getIDPlayerLinked());
+	// Append lossOrder to RoundRanking
+	RoundRanking.Append(LossOrder);
+	return RoundRanking;
 }
 #pragma endregion
 
 #pragma region PostRound
 
-void AFreeFallGameMode::AddPoints()
+void AFreeFallGameMode::AddPoints(TArray<int> ArrayPlayers)
 {
-	std::vector<uint8> RoundRanking;
-	if(CharactersInsideArena.Num() == 1)
-	{
-		RoundRanking.push_back(CharactersInsideArena[0]->getIDPlayerLinked());
-	}
-	// Append lossOrder to RoundRanking
-	RoundRanking.insert(RoundRanking.end(), LossOrder.begin(), LossOrder.end());
 	if(IsValid(PlayerMatchData))
 	{
 		// Assign points
 		const int*temp = 	CurrentParameters->getScoreValues();
-		for(int x = 0; x < RoundRanking.size(); x++)
-		{
-			PlayerMatchData->setScoreValue(RoundRanking[x], temp[x]);
-		}
-	}
-	// Debug, can and should be removed
-	int i = 1;
-	for(uint8 Ranking : RoundRanking)
-	{
-			GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Yellow,
-FString::Printf(TEXT("%i spot is taken by player id: %i !"), i, Ranking));
-		i++;
+		for (int i  = 0; i< ArrayPlayers.Num(); i++)
+			PlayerMatchData->setScoreValue(ArrayPlayers[i], temp[i]);
 	}
 	// Empty lossOrder
-	LossOrder.clear();
+	LossOrder.Empty();
 }
+
 
 void AFreeFallGameMode::EndRound()
 {
@@ -282,8 +282,7 @@ void AFreeFallGameMode::ShowResults()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "ShowResults");
 	CurrentRound = 0;
-	ArenaActorInstance->OnCharacterDestroyed.RemoveDynamic(this, &AFreeFallGameMode::CheckEndRoundDeath);
-
+	
 	//TODO Remove Debug
 	PlayerMatchData->DebugPrintScore();
 	
@@ -313,7 +312,7 @@ void AFreeFallGameMode::RoundEventTimer()
 		EventTimerHandle,
 		this,
 		&AFreeFallGameMode::StartEvent,
-		CurrentParameters->getTimerDelay(),
+		CurrentParameters->getTimerEventDelay(),
 		true
 		);
 }

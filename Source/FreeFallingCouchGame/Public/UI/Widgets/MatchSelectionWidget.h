@@ -22,8 +22,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "MatchSelectionWidget")
 	void TestCallOnPressed(FString NameElementPressed);
 	UFUNCTION(BlueprintCallable, Category = "MatchSelectionWidget")
-	void ReceiveData(int inMaxRounds = 3, float inEventDelay = 45.0f, FString inEraChosen = "Default",
-		 EMatchTypes InMatchType = Classic);
+	void ReceiveData(int inMaxRounds = 3,float inRoundTimer = 55.0f, float inEventDelay = 45.0f, FString inEraChosen = "Default",
+		 EMatchTypes InMatchType = Classic, ETrackingRewardCategory InTracker = LongestTimeWithParachute);
 protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Match Data")

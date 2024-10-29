@@ -41,8 +41,14 @@ void UMatchSelectionWidget::TestCallOnPressed(FString NameElementPressed)
 
 }
 
-void UMatchSelectionWidget::ReceiveData(int inMaxRounds, float inEventDelay, FString inEraChosen,
-	EMatchTypes InMatchType)
+void UMatchSelectionWidget::ReceiveData(int inMaxRounds,float inRoundTimer, float inEventDelay, FString inEraChosen,
+		 EMatchTypes InMatchType, ETrackingRewardCategory InTracker)
 {
-	PlayerCustomData->setMatchParameters(inMaxRounds, inEventDelay, inEraChosen, InMatchType);
+	PlayerCustomData->setMatchParameters(
+		inMaxRounds,
+		inRoundTimer,
+		inEventDelay,
+		inEraChosen,
+		InMatchType,
+		InTracker);
 }

@@ -57,7 +57,8 @@ protected:
 	//Ranking
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UPlayerMatchData> PlayerMatchData;
-	std::vector<uint8> LossOrder;
+	//std::vector<uint8> LossOrder;
+	TArray<int> LossOrder;
 	// Refs to Objects in Scene
 	UPROPERTY()
 	TObjectPtr<AArenaActor> ArenaActorInstance;
@@ -98,7 +99,9 @@ private:
 	void ShowResults();
 	// What RoundEventTimer calls 
 	void StartEvent();
-	void AddPoints();
+	// Adding points to players
+	TArray<int> SetDeathOrder();
+	void AddPoints(TArray<int> ArrayPlayers);
 	UFUNCTION()
 	// Checks if end condition is reached
 	void CheckEndRoundDeath(AFreeFallCharacter* Character);

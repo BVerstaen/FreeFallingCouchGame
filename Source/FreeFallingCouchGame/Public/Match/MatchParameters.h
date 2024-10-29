@@ -18,13 +18,6 @@ enum EMatchTypes
 	Special,
 };
 
-UENUM()
-enum EWinConditions		
-{
-	OneRemaining,
-	Timed,
-};
-
 UCLASS(Blueprintable)
 class FREEFALLINGCOUCHGAME_API UMatchParameters : public UObject
 {
@@ -36,9 +29,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int getMaxRounds() const;
 	UFUNCTION(BlueprintCallable)
-	float getTimerEventDelay() const {return RoundTimer;}
-	UFUNCTION(BlueprintCallable)
-	float getTimerDelay() const {return EventDelay;}
+	float getTimerEventDelay() const {return EventDelay;}
 	UFUNCTION(BlueprintCallable)
 	float getRoundTimer() const {return RoundTimer;}
 	UFUNCTION(BlueprintCallable)
@@ -47,12 +38,13 @@ public:
 	EMatchTypes getMatchType() const {return MatchType;}
 	UFUNCTION(BlueprintCallable)
 	ETrackingRewardCategory getTrackingRewardCategory() const { return TrackedValue;}
+	
 	// Setter
-	void setValues(TObjectPtr<UMatchParameters> UserParameters);
+	//void setValues(TObjectPtr<UMatchParameters> UserParameters);
 
 	UFUNCTION(BlueprintCallable)
 	void setMatchParameters(int inMaxRounds = 3,float inRoundTimer = 55.0f, float inEventDelay = 45.0f, FString inEraChosen = "Default",
-		 EMatchTypes InMatchType = Classic);
+		 EMatchTypes InMatchType = Classic, ETrackingRewardCategory InTracker = LongestTimeWithParachute);
 protected:
 	// Scores based on your ranking (IN ORDER)
 	UPROPERTY(EditAnywhere)
@@ -71,5 +63,6 @@ protected:
 	// Current Match Type (Classic, Teams, etc...)
 	UPROPERTY(EditAnywhere);
 	TEnumAsByte<EMatchTypes> MatchType = Classic;
+	UPROPERTY(EditAnywhere);
 	TEnumAsByte<ETrackingRewardCategory> TrackedValue = LongestTimeWithParachute;
 };
