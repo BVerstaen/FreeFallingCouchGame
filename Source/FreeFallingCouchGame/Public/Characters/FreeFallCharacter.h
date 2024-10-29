@@ -259,12 +259,36 @@ protected:
 	UPROPERTY()
 	FVector OldVelocity = FVector::ZeroVector;
 
+	UPROPERTY()
+	bool bWasRecentlyBounced;
+
+	/*
+	 *		Eliminations Properties
+	 */
+	
+	/*A partir de combien de temps un rebond qui mène à un OUT ne compte plus comme une élimination ?*/
+	UPROPERTY(EditAnywhere, Category="Bounce Collision - Elimination")
+	float DelayConsideredAsRecentlyBounced;
+
+	UPROPERTY()
+	int RecentlyBouncedOtherPlayerID;
+
+	UPROPERTY()
+	FTimerHandle RecentlyBouncedTimer; 
+
+public:
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FWasEliminated, int, OtherPlayerEliminated);
+	FWasEliminated OnWasEliminated;
+	
 public:
 	UFUNCTION(BlueprintCallable)
 	void BounceCooldown();
-
+	
 	UFUNCTION()
 	float GetPlayerMass();
+
+	UFUNCTION()
+	void SetWasRecentlyBouncedTimer(const AFreeFallCharacter* Character);
 	
 protected:
 	UFUNCTION()
@@ -272,6 +296,9 @@ protected:
 	
 	UFUNCTION()
 	void ResetBounce();
+
+	UFUNCTION()
+	void ResetWasRecentlyBounced();
 	
 #pragma endregion
 

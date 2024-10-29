@@ -43,7 +43,7 @@ public :
 	FVector ObstacleSpawnExtant;
 	
 	/* La direction sera normalisé après donc mettre des nombres entre -1 & 1 */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector ObstacleDirection;
 
 	/* Vitesse minimum de l'obstacle */

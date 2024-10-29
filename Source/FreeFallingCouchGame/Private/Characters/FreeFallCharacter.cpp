@@ -105,6 +105,13 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 
 void AFreeFallCharacter::DestroyPlayer()
 {
+	//If was recently bounced -> then send elimination delegate
+	if(bWasRecentlyBounced)
+	{
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Player" + FString::FromInt(getIDPlayerLinked()) + " - got killed by - " + FString::FromInt(RecentlyBouncedOtherPlayerID));
+		if(OnWasEliminated.IsBound())
+			OnWasEliminated.Broadcast(RecentlyBouncedOtherPlayerID);
+	}
 	LaunchParachute();
 	Destroy();
 }
@@ -411,10 +418,24 @@ float AFreeFallCharacter::GetPlayerMass()
 	return PlayerMass;
 }
 
+void AFreeFallCharacter::SetWasRecentlyBouncedTimer(const AFreeFallCharacter* Character)
+{
+	bWasRecentlyBounced = true;
+	RecentlyBouncedOtherPlayerID = Character->getIDPlayerLinked();
+	GetWorldTimerManager().ClearTimer(RecentlyBouncedTimer);
+	GetWorldTimerManager().SetTimer(RecentlyBouncedTimer, this, &AFreeFallCharacter::ResetWasRecentlyBounced, DelayConsideredAsRecentlyBounced);
+}
+
 void AFreeFallCharacter::ResetBounce()
 {
 	bAlreadyCollided = false;
 	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+}
+
+void AFreeFallCharacter::ResetWasRecentlyBounced()
+{
+	GetWorldTimerManager().ClearTimer(RecentlyBouncedTimer);
+	bWasRecentlyBounced = false;
 }
 
 void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
@@ -455,33 +476,6 @@ void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent
 	AFreeFallCharacter* OtherFreeFallCharacter = Cast<AFreeFallCharacter>(OtherActor);
 	if(OtherFreeFallCharacter)
 	{
-		// //Launch character logic
-		// OldVelocity = GetCharacterMovement()->Velocity;
-		//
-		// //Bounce self 
-		// FVector NewVelocity = (OtherFreeFallCharacter->GetCharacterMovement()->Velocity * BouncePlayerRestitutionMultiplier
-		// 	+ (bShouldKeepRemainingVelocity ? GetCharacterMovement()->Velocity * (1-BouncePlayerRestitutionMultiplier) : FVector::Zero()) )
-		// 	* BouncePlayerMultiplier;
-		// LaunchCharacter(NewVelocity, true, true);
-		//
-		// GEngine->AddOnScreenDebugMessage(
-		// -1,
-		// 3.f,
-		// FColor::Red,
-		// TEXT("Between Char Velocity = " + NewVelocity.ToString())
-		// );
-		//
-		// //Bounce other character
-		// NewVelocity = (OldVelocity * BouncePlayerRestitutionMultiplier
-		// 	+ (bShouldKeepRemainingVelocity ? OtherFreeFallCharacter->GetCharacterMovement()->Velocity * (1-BouncePlayerRestitutionMultiplier) : FVector::Zero()) )
-		// 	* BouncePlayerMultiplier;
-		// OtherFreeFallCharacter->LaunchCharacter(NewVelocity, true, true);
-		//
-		// if(!OtherFreeFallCharacter->bAlreadyCollided)
-		// {
-		// 	OtherFreeFallCharacter->BounceCooldown();
-		// }
-
 		//Get impact direction
 		FVector ImpactDirection = (OtherFreeFallCharacter->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 		
@@ -491,25 +485,24 @@ void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent
 		FVector NewVelocity = (-ImpactDirection * OtherFreeFallCharacter->GetCharacterMovement()->Velocity.Size() * BouncePlayerRestitutionMultiplier
 			+ (bShouldKeepRemainingVelocity ? OldVelocity * (1 - BouncePlayerRestitutionMultiplier) : FVector::Zero()))
 			* BouncePlayerMultiplier;
+		//Neutralize Z bounce velocity
+		NewVelocity.Z = 0;
 		LaunchCharacter(NewVelocity, true, true);
-		
-		GEngine->AddOnScreenDebugMessage(
-			-1,
-			3.f,
-			FColor::Red,
-			TEXT("Between Char Velocity = " + NewVelocity.ToString())
-		);
 
 		//Bounce other character
 		NewVelocity = (ImpactDirection * OldVelocity.Size() * BouncePlayerRestitutionMultiplier
 			+ (bShouldKeepRemainingVelocity ? OtherFreeFallCharacter->GetCharacterMovement()->Velocity * (1 - BouncePlayerRestitutionMultiplier) : FVector::Zero()))
 			* BouncePlayerMultiplier;
+		//Neutralize Z bounce velocity
+		NewVelocity.Z = 0;
 		OtherFreeFallCharacter->LaunchCharacter(NewVelocity, true, true);
-		
+
+		//Activate bounce cooldown & elimination timers
 		if (!OtherFreeFallCharacter->bAlreadyCollided)
-		{
 			OtherFreeFallCharacter->BounceCooldown();
-		}
+		
+		SetWasRecentlyBouncedTimer(OtherFreeFallCharacter);
+		OtherFreeFallCharacter->SetWasRecentlyBouncedTimer(this);
 	}
 
 	BounceCooldown();
