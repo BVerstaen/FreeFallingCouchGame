@@ -39,15 +39,44 @@ void ADiveLevels::Tick(float DeltaTime)
 			OverlappingSensibleActors.Remove(SensibleActor);
 			continue;
 		}
-		/*
-		if (!IsValid(Cast<AActor>(SensibleActor)))
-			GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::White, TEXT("Actor not valid "));
-		*/
 		GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::White, TEXT("List Contains " + SensibleActor->GetSelfActor()->GetName()));
 		if (SensibleActor->IsDiveForced())
 		{
 			ApplyDiveForce(SensibleActor);
 			GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::White, TEXT(" Applying DiveForce to " + SensibleActor->GetSelfActor()->GetName()));
+		}
+		if (SensibleActor->IsBoundedByLayer())
+		{
+			EDiveLayersID BoundingLayer = SensibleActor->GetBoundedLayer();
+			float ZPos = SensibleActor->GetSelfActor()->GetActorLocation().Z;
+			float UpZBound = 0;
+			float DownZBound = 0;
+			float ZVelocity = SensibleActor->GetSelfActor()->GetRootComponent()->ComponentVelocity.Z;
+			if (BoundingLayer==EDiveLayersID::None)
+			{
+				UpZBound = GetDiveBoundZCoord(EDiveLayersID::Top, EDiveLayerBoundsID::Up);
+				DownZBound = GetDiveBoundZCoord(EDiveLayersID::Bottom, EDiveLayerBoundsID::Down);
+			}
+			else
+			{
+				UpZBound = GetDiveBoundZCoord(BoundingLayer, EDiveLayerBoundsID::Up);
+				DownZBound = GetDiveBoundZCoord(BoundingLayer, EDiveLayerBoundsID::Down);
+			}
+			float Force;
+			FVector Direction = GetActorLocation() - CameraActor->GetActorLocation();
+			Direction.Normalize();
+			if (UpZBound - DiveLayerSlowingThreshold < ZPos)
+			{
+				Force = FMath::Clamp((UpZBound - ZPos) / DiveLayerSlowingThreshold,0, 1) * FMath::Abs(ZVelocity);
+				GEngine->AddOnScreenDebugMessage(-1,DeltaTime,FColor::Emerald, TEXT("Force = " + FString::SanitizeFloat(Force)));
+				SensibleActor->GetSelfActor()->GetRootComponent()->ComponentVelocity -= Direction * Force;
+			}
+			if (DownZBound + DiveLayerSlowingThreshold > ZPos)
+			{
+				Force = FMath::Clamp((ZPos - DownZBound) / DiveLayerSlowingThreshold,0, 1) * FMath::Abs(ZVelocity);
+				GEngine->AddOnScreenDebugMessage(-1,DeltaTime,FColor::Emerald, TEXT("Force = " + FString::SanitizeFloat(Force)));
+				SensibleActor->GetSelfActor()->GetRootComponent()->ComponentVelocity += Direction * Force;
+			}
 		}
 	}
 }
@@ -94,7 +123,7 @@ void ADiveLevels::ApplyDiveForce(TScriptInterface<IDiveLayersSensible> SensibleA
 	float ZPosDifference = ZPosition - GetDiveBoundZCoord(CurrentLayer, EDiveLayerBoundsID::Middle);
 	if (FMath::Abs(ZPosDifference) > MapSettings->DiveLayerThreshold)
 	{
-		FVector Direction = (ZPosDifference < 0 ? -1 : 1 ) * (GetActorLocation() - CameraActor->GetActorLocation());
+		FVector Direction = (ZPosDifference < 0 ? -1 : 1 ) * (SensibleActor->GetSelfActor()->GetActorLocation() - CameraActor->GetActorLocation());
 		Direction.Normalize();
 		SensibleActor->ApplyDiveForce(Direction, DiveForcesStrength);
 		GEngine->AddOnScreenDebugMessage(-1, 0.1, FColor::Red, "DiveForces");

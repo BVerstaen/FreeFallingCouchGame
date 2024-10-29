@@ -28,6 +28,8 @@ void UFreeFallCharacterStateDive::StateEnter(EFreeFallCharacterStateID PreviousS
 {
 	Super::StateEnter(PreviousStateID);
 
+	Character->bIsDiveForced = false;
+
 	//Not crash if DiveLevelsActor is not set in scene
 	if (DiveLevelsActor == nullptr)
 	{
@@ -56,6 +58,8 @@ void UFreeFallCharacterStateDive::StateEnter(EFreeFallCharacterStateID PreviousS
 void UFreeFallCharacterStateDive::StateExit(EFreeFallCharacterStateID NextStateID)
 {
 	Super::StateExit(NextStateID);
+
+	Character->bIsDiveForced = true;
 }
 
 void UFreeFallCharacterStateDive::StateTick(float DeltaTime)
@@ -148,7 +152,7 @@ void UFreeFallCharacterStateDive::StateTick(float DeltaTime)
 				CurrentDivePhase = EDivePhase::CrossingLayer;
 				FVector Velocity = Character->GetCharacterMovement()->Velocity;
 				if (Velocity.Z < -1) Character->GetCharacterMovement()->Velocity += Velocity.Z * Direction;
-				Character->GetCharacterMovement()->MaxFlySpeed = DiveLevelsActor->GetDiveSize() / CrossLayerCooldown;
+				//Character->GetCharacterMovement()->MaxFlySpeed = DiveLevelsActor->GetDiveSize() / CrossLayerCooldown;
 				CrossLayerClock = 0.f;
 			}
 		}

@@ -144,10 +144,9 @@ public:
 	virtual bool IsBoundedByLayer() override;
 
 	virtual bool IsDiveForced() override;
-
-protected:
+	
 	UPROPERTY()
-	bool bIsBoundedByLayer = false;
+	bool bIsBoundedByLayer = true;
 
 	UPROPERTY()
 	bool bIsDiveForced = true;

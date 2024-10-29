@@ -46,8 +46,13 @@ public:
 private:
 	void ApplyDiveForce(TScriptInterface<IDiveLayersSensible> SensibleActor);
 
+	//Strength of Dive Forces
 	UPROPERTY(EditAnywhere)
 	float DiveForcesStrength;
+
+	//Tweaking GP, Threshold à partir duquel le player est ralentit jusqu'à l'arrêt;
+	UPROPERTY(EditAnywhere)
+	float DiveLayerSlowingThreshold = 10.f;
 
 	UPROPERTY()
 	ACameraActor* CameraActor;
