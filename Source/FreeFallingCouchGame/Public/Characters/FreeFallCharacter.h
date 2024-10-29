@@ -142,7 +142,7 @@ private:
 	bool IsInCircularGrab();
 	
 	UFUNCTION()
-	void UpdateMovementInfluence(float DeltaTime, AFreeFallCharacter* OtherCharacter, bool bIsCircularGrab) const;
+	void UpdateMovementInfluence(float DeltaTime, AFreeFallCharacter* OtherCharacter, bool bIsCircularGrab);
 	UFUNCTION()
 	void UpdateEveryMovementInfluence(float DeltaTime);
 	UFUNCTION()
@@ -247,7 +247,7 @@ protected:
 	/*A partir de combien de temps un rebond qui mène à un OUT ne compte plus comme une élimination ?*/
 	UPROPERTY(EditAnywhere, Category="Bounce Collision - Elimination")
 	float DelayConsideredAsRecentlyBounced;
-
+	
 	UPROPERTY()
 	int RecentlyBouncedOtherPlayerID;
 

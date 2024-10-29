@@ -314,26 +314,33 @@ void AFreeFallCharacter::OnInputGrab(const FInputActionValue& Value)
 bool AFreeFallCharacter::IsInCircularGrab()
 {
 	AFreeFallCharacter* CurrentCharacter = OtherCharacterGrabbing;
-	if(!CurrentCharacter) return false;
-	
-	//If two char are grabbing -> don't check
-	if (!CurrentCharacter->OtherCharacterGrabbing) return false;
-	
-	CurrentCharacter = CurrentCharacter->OtherCharacterGrabbing;
-	//Check if one char of the chain grab is the one I'm grabbing
-	while (CurrentCharacter != nullptr)
+	if(CurrentCharacter)
 	{
-		if (CurrentCharacter->OtherCharacterGrabbing == this)
+		//If two char are grabbing -> don't check
+		if (CurrentCharacter->OtherCharacterGrabbing)
 		{
-			GrabCircularRotationOffset = GetActorRotation();
-			return true;
+			CurrentCharacter = CurrentCharacter->OtherCharacterGrabbing;
+			//Check if one char of the chain grab is the one I'm grabbing
+			while (CurrentCharacter != nullptr)
+			{
+				if (CurrentCharacter->OtherCharacterGrabbing == this)
+				{
+					if(GrabCircularRotationOffset == FRotator::ZeroRotator)
+					{
+						GrabCircularRotationOffset = GetActorRotation();
+					}
+					return true;
+				}
+				CurrentCharacter = CurrentCharacter->OtherCharacterGrabbing;
+			}
 		}
-		CurrentCharacter = CurrentCharacter->OtherCharacterGrabbing;
 	}
+	
+	GrabCircularRotationOffset = FRotator::ZeroRotator;
 	return false;
 }
 
-void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallCharacter* OtherCharacter, bool bIsCircularGrab) const
+void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallCharacter* OtherCharacter, bool bIsCircularGrab)
 {
 	//Calculate new offset of child actor based on Character rotation
 	if(OtherCharacterGrabbing == OtherCharacter && !bIsCircularGrab)
@@ -367,11 +374,19 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallChara
 		FRotator NewGrabbedRotation = FMath::RInterpTo(OtherCharacter->GetActorRotation(), TargetRotation, DeltaTime, GrabRotationSpeed);
 		OtherCharacter->SetActorRotation(NewGrabbedRotation);
 	}
+	//Set self rotation if is in a circular grab
 	else if(bIsCircularGrab)
 	{
-		FRotator TargetRotation = GrabCircularRotationOffset;
-		FRotator NewGrabbedRotation = FMath::RInterpTo(OtherCharacter->GetActorRotation(), TargetRotation, DeltaTime, GrabRotationSpeed);
-		//SetActorRotation(NewGrabbedRotation);
+		//Calculate Stabilized rotation -> based on GrabCircularRotationOffset
+		float MaxRotationDeviation = 15.0f;  
+		FRotator StabilizedRotation = GrabCircularRotationOffset;
+		StabilizedRotation.Yaw = FMath::Clamp(GetActorRotation().Yaw, 
+											  GrabCircularRotationOffset.Yaw - MaxRotationDeviation,
+											  GrabCircularRotationOffset.Yaw + MaxRotationDeviation);
+        
+		//Interpolation toward the stabilized rotation within clamped range
+		FRotator NewStabilizedRotation = FMath::RInterpTo(GetActorRotation(), StabilizedRotation, DeltaTime, GrabRotationSpeed);
+		SetActorRotation(NewStabilizedRotation);
 	}
 }
 
