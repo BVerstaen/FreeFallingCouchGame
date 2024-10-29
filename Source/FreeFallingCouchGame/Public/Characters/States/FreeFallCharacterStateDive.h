@@ -6,7 +6,17 @@
 #include "Characters/FreeFallCharacterState.h"
 #include "FreeFallCharacterStateDive.generated.h"
 
+enum class EDiveLayersID : uint8;
 class ADiveLevels;
+
+UENUM()
+enum class EDivePhase : uint8
+{
+	ChangingLayer,
+	CrossingLayer,
+	DiveForcesApplying,
+};
+
 /**
  * 
  */
@@ -25,27 +35,67 @@ class FREEFALLINGCOUCHGAME_API UFreeFallCharacterStateDive : public UFreeFallCha
 
 	virtual void StateTick(float DeltaTime) override;
 
+	void CheckTargetedLayer();
+
 private:
 	void ApplyDiveForce();
 
+	void ApplyMoveInputs(float DeltaTime);
+
 	bool IsInCenterOfLayer() const;
 
+	FString GetLayerName(EDiveLayersID LayerID) const;
+
 protected:
+	
 	UPROPERTY(EditAnywhere)
-	float MaxDiveSpeed;
+	float DiveSpeed = 400.f;
 
 	UPROPERTY(EditAnywhere)
-	float StartDiveSpeed;
+	float CrossLayerCooldown = 0.5f;
 
 	UPROPERTY(EditAnywhere)
+	float DiveLayerThreshold = 10.f;
+
+#pragma region MoveInputs
+
+public:
+	void SetMoveStats(float Move_MaxMoveSpeed, float Move_StartMoveSpeed, float Move_ReachMaxSpeedTime, float Move_OrientationThreshold, float* Move_AccelerationAlpha);
+	
+protected:
+	UPROPERTY()
+	float MaxMoveSpeed;
+
+	UPROPERTY()
+	float StartMoveSpeed;
+
+	UPROPERTY()
 	float ReachMaxSpeedTime;
-	
-	UPROPERTY()
-	float AccelerationAlpha;
-	
-	UPROPERTY()
-	float ChangeLayerCooldownTime;
 
+	/*Le seuil à partir duquel le joueur ne bloque plus sa rotation et permet d'être influencé (uniquement si attrape joueur)*/
+	UPROPERTY()
+	float OrientationThreshold;
+
+	FVector2D OldInputDirection;
+
+private:
+	float* AccelerationAlpha;
+
+#pragma endregion
+
+private:
+	UPROPERTY()
+	float EnterDiveLevelThreshold = 5.f;
+	
 	UPROPERTY()
 	ADiveLevels* DiveLevelsActor;
+
+	UPROPERTY()
+	EDivePhase CurrentDivePhase;
+
+	UPROPERTY()
+	EDiveLayersID TargetLayer;
+
+	UPROPERTY()
+	float CrossLayerClock;
 };

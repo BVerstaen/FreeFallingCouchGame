@@ -17,6 +17,8 @@ void UFreeFallCharacterStateIdle::StateEnter(EFreeFallCharacterStateID PreviousS
 {
 	Super::StateEnter(PreviousStateID);
 
+	Character->OnInputGrabEvent.AddDynamic(this, &UFreeFallCharacterStateIdle::OnInputGrab);
+	
 	// GEngine->AddOnScreenDebugMessage(
 	// 	-1,
 	// 	3.f,
@@ -29,6 +31,7 @@ void UFreeFallCharacterStateIdle::StateExit(EFreeFallCharacterStateID NextStateI
 {
 	Super::StateExit(NextStateID);
 
+	Character->OnInputGrabEvent.RemoveDynamic(this, &UFreeFallCharacterStateIdle::OnInputGrab);
 	// GEngine->AddOnScreenDebugMessage(
 	// 	-1,
 	// 	3.f,
@@ -58,4 +61,9 @@ void UFreeFallCharacterStateIdle::StateTick(float DeltaTime)
 		FColor::Cyan,
 		TEXT("Tick State Idle")
 		);
+}
+
+void UFreeFallCharacterStateIdle::OnInputGrab()
+{
+	StateMachine->ChangeState(EFreeFallCharacterStateID::Grab);
 }
