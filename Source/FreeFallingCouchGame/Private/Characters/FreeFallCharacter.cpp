@@ -313,10 +313,13 @@ void AFreeFallCharacter::OnInputGrab(const FInputActionValue& Value)
 
 bool AFreeFallCharacter::IsInCircularGrab() const
 {
-	//If two char are grabbing -> don't check
 	AFreeFallCharacter* CurrentCharacter = OtherCharacterGrabbing;
-	if (CurrentCharacter->OtherCharacterGrabbedBy == this) return false;
+	if(!CurrentCharacter) return false;
 	
+	//If two char are grabbing -> don't check
+	if (!CurrentCharacter->OtherCharacterGrabbing) return false;
+	
+	CurrentCharacter = CurrentCharacter->OtherCharacterGrabbing;
 	//Check if one char of the chain grab is the one I'm grabbing
 	while (CurrentCharacter != nullptr)
 	{
@@ -326,10 +329,10 @@ bool AFreeFallCharacter::IsInCircularGrab() const
 	return false;
 }
 
-void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallCharacter* OtherCharacter) const
+void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallCharacter* OtherCharacter, bool bIsCircularGrab) const
 {
 	//Calculate new offset of child actor based on Character rotation
-	if(OtherCharacterGrabbing == OtherCharacter)
+	if(OtherCharacterGrabbing == OtherCharacter && bIsCircularGrab)
 	{
 		FVector RotatedOffset = this->GetActorRotation().RotateVector(GrabInitialOffset);
 		FVector NewOtherCharacterPosition = this->GetActorLocation() + RotatedOffset;
@@ -355,18 +358,22 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallChara
 	OtherCharacter->GetMovementComponent()->Velocity = NewOtherCharacterVelocity;
 
 	//Set other Character rotation
-	FRotator TargetRotation = this->GetActorRotation();
-	TargetRotation += GrabDefaultRotationOffset;
-	FRotator NewGrabbedRotation = FMath::RInterpTo(OtherCharacter->GetActorRotation(), TargetRotation, DeltaTime, GrabRotationSpeed);
-	OtherCharacter->SetActorRotation(NewGrabbedRotation);
+	if(!(OtherCharacterGrabbedBy == OtherCharacter && OtherCharacterGrabbing) && bIsCircularGrab)
+	{ 
+		FRotator TargetRotation = this->GetActorRotation();
+		TargetRotation += GrabDefaultRotationOffset;
+		FRotator NewGrabbedRotation = FMath::RInterpTo(OtherCharacter->GetActorRotation(), TargetRotation, DeltaTime, GrabRotationSpeed);
+		OtherCharacter->SetActorRotation(NewGrabbedRotation);
+	}
 }
 
 void AFreeFallCharacter::UpdateEveryMovementInfluence(float DeltaTime) const
 {
+	bool bIsInCircularGrab = IsInCircularGrab();
 	if(OtherCharacterGrabbedBy)
-		UpdateMovementInfluence(DeltaTime, OtherCharacterGrabbedBy);
+		UpdateMovementInfluence(DeltaTime, OtherCharacterGrabbedBy, bIsInCircularGrab);
 	if(OtherCharacterGrabbing)
-		UpdateMovementInfluence(DeltaTime, OtherCharacterGrabbing);
+		UpdateMovementInfluence(DeltaTime, OtherCharacterGrabbing, bIsInCircularGrab);
 }
 
 void AFreeFallCharacter::UpdateObjectPosition(float DeltaTime) const

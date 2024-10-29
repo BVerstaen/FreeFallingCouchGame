@@ -142,7 +142,7 @@ private:
 	bool IsInCircularGrab() const;
 	
 	UFUNCTION()
-	void UpdateMovementInfluence(float DeltaTime, AFreeFallCharacter* OtherCharacter) const;
+	void UpdateMovementInfluence(float DeltaTime, AFreeFallCharacter* OtherCharacter, bool bIsCircularGrab) const;
 	UFUNCTION()
 	void UpdateEveryMovementInfluence(float DeltaTime) const;
 	UFUNCTION()
