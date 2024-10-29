@@ -139,8 +139,12 @@ private:
 
 	void OnInputGrab(const FInputActionValue& Value);
 
+	bool IsInCircularGrab() const;
+	
 	UFUNCTION()
-	void UpdateMovementInfluence(float DeltaTime) const;
+	void UpdateMovementInfluence(float DeltaTime, AFreeFallCharacter* OtherCharacter) const;
+	UFUNCTION()
+	void UpdateEveryMovementInfluence(float DeltaTime) const;
 	UFUNCTION()
 	void UpdateObjectPosition(float DeltaTime) const;
 	UFUNCTION()
@@ -149,10 +153,15 @@ private:
 public:
 	bool bInputGrabPressed = false;
 	EFreeFallCharacterGrabbingState GrabbingState;
-	
-	UPROPERTY()
-	TObjectPtr<AFreeFallCharacter> OtherCharacter;
 
+	//The one I grabbed
+	UPROPERTY()
+	TObjectPtr<AFreeFallCharacter> OtherCharacterGrabbing;
+
+	//The one who's grabbing me
+	UPROPERTY()
+	TObjectPtr<AFreeFallCharacter> OtherCharacterGrabbedBy;
+	
 	UPROPERTY()
 	TObjectPtr<AActor> OtherObject;
 

@@ -83,15 +83,14 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	TickStateMachine(DeltaTime);
-
+	UpdateEveryMovementInfluence(DeltaTime);
+	
 	//Update physic based on grab
 	switch (GrabbingState)
 	{
 	case EFreeFallCharacterGrabbingState::None:
 	case EFreeFallCharacterGrabbingState::GrabHeavierObject:
-		break;
 	case EFreeFallCharacterGrabbingState::GrabPlayer:
-		UpdateMovementInfluence(DeltaTime);
 		break;
 	case EFreeFallCharacterGrabbingState::GrabObject:
 		UpdateObjectPosition(DeltaTime);
@@ -312,27 +311,42 @@ void AFreeFallCharacter::OnInputGrab(const FInputActionValue& Value)
 	OnInputGrabEvent.Broadcast();
 }
 
-void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime) const
+bool AFreeFallCharacter::IsInCircularGrab() const
 {
-	if(OtherCharacter == nullptr) return;
+	//If two char are grabbing -> don't check
+	AFreeFallCharacter* CurrentCharacter = OtherCharacterGrabbing;
+	if (CurrentCharacter->OtherCharacterGrabbedBy == this) return false;
+	
+	//Check if one char of the chain grab is the one I'm grabbing
+	while (CurrentCharacter != nullptr)
+	{
+		if (CurrentCharacter->OtherCharacterGrabbing == this) return true;
+		CurrentCharacter = CurrentCharacter->OtherCharacterGrabbing;
+	}
+	return false;
+}
 
+void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallCharacter* OtherCharacter) const
+{
 	//Calculate new offset of child actor based on Character rotation
-	if(GrabbingState == EFreeFallCharacterGrabbingState::GrabPlayer)
+	if(OtherCharacterGrabbing == OtherCharacter)
 	{
 		FVector RotatedOffset = this->GetActorRotation().RotateVector(GrabInitialOffset);
 		FVector NewOtherCharacterPosition = this->GetActorLocation() + RotatedOffset;
+		//Check for any circular grab
+		//if(!IsInCircularGrab())
 		OtherCharacter->SetActorLocation(NewOtherCharacterPosition);		
 	}
 	
-    //Get both players velocity
-    FVector CharacterVelocity = GetVelocity();
-    FVector OtherCharacterVelocity = OtherCharacter->GetVelocity();
+	//Get both players velocity
+	FVector CharacterVelocity = GetVelocity();
+	FVector OtherCharacterVelocity = OtherCharacter->GetVelocity();
 	
 	//Mutual influence of movements
 	FVector DirectionToOther = (OtherCharacter->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 	FVector CombinedMovement = (CharacterVelocity + OtherCharacterVelocity) * 0.5f;
 	FVector PerpendicularForce = FVector::CrossProduct(CharacterVelocity, DirectionToOther) * GrabRotationInfluenceStrength;
-    	
+	
 	//Calculate new velocities based on combined forces
 	FVector NewCharacterVelocity = CombinedMovement + PerpendicularForce * DeltaTime;
 	FVector NewOtherCharacterVelocity = CombinedMovement - PerpendicularForce * DeltaTime;
@@ -345,6 +359,14 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime) const
 	TargetRotation += GrabDefaultRotationOffset;
 	FRotator NewGrabbedRotation = FMath::RInterpTo(OtherCharacter->GetActorRotation(), TargetRotation, DeltaTime, GrabRotationSpeed);
 	OtherCharacter->SetActorRotation(NewGrabbedRotation);
+}
+
+void AFreeFallCharacter::UpdateEveryMovementInfluence(float DeltaTime) const
+{
+	if(OtherCharacterGrabbedBy)
+		UpdateMovementInfluence(DeltaTime, OtherCharacterGrabbedBy);
+	if(OtherCharacterGrabbing)
+		UpdateMovementInfluence(DeltaTime, OtherCharacterGrabbing);
 }
 
 void AFreeFallCharacter::UpdateObjectPosition(float DeltaTime) const
