@@ -138,13 +138,13 @@ private:
 	void BindInputGrabActions(UEnhancedInputComponent* EnhancedInputComponent);
 
 	void OnInputGrab(const FInputActionValue& Value);
-
-	bool IsInCircularGrab() const;
+	
+	bool IsInCircularGrab();
 	
 	UFUNCTION()
 	void UpdateMovementInfluence(float DeltaTime, AFreeFallCharacter* OtherCharacter, bool bIsCircularGrab) const;
 	UFUNCTION()
-	void UpdateEveryMovementInfluence(float DeltaTime) const;
+	void UpdateEveryMovementInfluence(float DeltaTime);
 	UFUNCTION()
 	void UpdateObjectPosition(float DeltaTime) const;
 	UFUNCTION()
@@ -172,6 +172,7 @@ public:
 	float GrabRotationSpeed;
 	float GrabRotationInfluenceStrength;
 	FRotator GrabDefaultRotationOffset;
+	FRotator GrabCircularRotationOffset;
 
 protected:
 	UPROPERTY(VisibleAnywhere)

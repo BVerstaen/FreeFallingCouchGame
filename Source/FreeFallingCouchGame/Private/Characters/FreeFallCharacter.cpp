@@ -311,7 +311,7 @@ void AFreeFallCharacter::OnInputGrab(const FInputActionValue& Value)
 	OnInputGrabEvent.Broadcast();
 }
 
-bool AFreeFallCharacter::IsInCircularGrab() const
+bool AFreeFallCharacter::IsInCircularGrab()
 {
 	AFreeFallCharacter* CurrentCharacter = OtherCharacterGrabbing;
 	if(!CurrentCharacter) return false;
@@ -325,6 +325,7 @@ bool AFreeFallCharacter::IsInCircularGrab() const
 	{
 		if (CurrentCharacter->OtherCharacterGrabbing == this)
 		{
+			GrabCircularRotationOffset = GetActorRotation();
 			return true;
 		}
 		CurrentCharacter = CurrentCharacter->OtherCharacterGrabbing;
@@ -366,9 +367,15 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallChara
 		FRotator NewGrabbedRotation = FMath::RInterpTo(OtherCharacter->GetActorRotation(), TargetRotation, DeltaTime, GrabRotationSpeed);
 		OtherCharacter->SetActorRotation(NewGrabbedRotation);
 	}
+	else if(bIsCircularGrab)
+	{
+		FRotator TargetRotation = GrabCircularRotationOffset;
+		FRotator NewGrabbedRotation = FMath::RInterpTo(OtherCharacter->GetActorRotation(), TargetRotation, DeltaTime, GrabRotationSpeed);
+		//SetActorRotation(NewGrabbedRotation);
+	}
 }
 
-void AFreeFallCharacter::UpdateEveryMovementInfluence(float DeltaTime) const
+void AFreeFallCharacter::UpdateEveryMovementInfluence(float DeltaTime)
 {
 	bool bIsInCircularGrab = IsInCircularGrab();
 	
