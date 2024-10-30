@@ -46,7 +46,6 @@ void AArenaActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	CheckAndRemoveOutOfBoundPlayers();
-	CheckOutOfBoundParachute();
 }
 
 void AArenaActor::CheckAndRemoveOutOfBoundPlayers()
@@ -96,6 +95,7 @@ void AArenaActor::CheckAndRemoveOutOfBoundPlayers()
 	CharactersToRemove.Empty();
 }
 
+
 void AArenaActor::CheckOutOfBoundParachute()
 {
 	FVector ParachuteLocation = Parachute->GetActorLocation();
@@ -108,7 +108,7 @@ void AArenaActor::CheckOutOfBoundParachute()
 	const FVector2D ViewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
 	if(IsOutOfBounds(ScreenPosition, ViewportSize))
 	{
-		Parachute->RecenterParachute();
+		//Parachute->RecenterParachute();
 	}
 }
 

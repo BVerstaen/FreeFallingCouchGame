@@ -10,6 +10,7 @@
 /**
  * 
  */
+
 UCLASS()
 class FREEFALLINGCOUCHGAME_API AObstacleSpawner : public AActor
 {
@@ -61,7 +62,7 @@ public :
 	/* Delay maximum entre 2 spawns */
 	UPROPERTY(EditAnywhere)
 	float ObstacleMaxTimer;
-	
+
 #pragma endregion
 	
 private:

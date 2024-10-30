@@ -38,7 +38,7 @@ void ATrackerActor::Init(AParachute* ParachuteInstance, TArray<AFreeFallCharacte
 		FPlayerTrackedData TrackedData(Character->getIDPlayerLinked());
 		PlayerTrackedDataList.Add(TrackedData);
 
-		Character->OnWasEliminated.AddDynamic(this, &ATrackerActor::ATrackerActor::AddNbOfElimination);
+		Character->OnWasEliminated.AddDynamic(this, &ATrackerActor::AddNbOfElimination);
 	}
 
 	//Bind steal parachute
@@ -160,11 +160,11 @@ void ATrackerActor::AddNbOfStealParachute(AFreeFallCharacter* PreviousOwner, AFr
 	}
 }
 
-void ATrackerActor::AddNbOfElimination(int PlayerID)
+void ATrackerActor::AddNbOfElimination(AFreeFallCharacter* PreviousOwner, AFreeFallCharacter* NextOwner)
 {
 	for(FPlayerTrackedData& TrackedData : PlayerTrackedDataList)
 	{
-		if(TrackedData.PlayerId == PlayerID)
+		if(TrackedData.PlayerId == NextOwner->getIDPlayerLinked())
 		{
 			TrackedData.NbOfElimination++;
 		}
@@ -233,6 +233,27 @@ void ATrackerActor::RemoveDelegates()
 		CurrentParachute->OnParachuteStolen.RemoveDynamic(this, &ATrackerActor::ChangeParachuteTracking);
 		CurrentParachute->OnParachuteDropped.RemoveDynamic(this, &ATrackerActor::ATrackerActor::StopParachuteTracking);
 	}
+}
+
+TArray<int> ATrackerActor::GiveWinners()
+{
+	TArray<int> WinnersList;
+	
+	//Categories of awards
+	TArray<ETrackingRewardCategory> Categories = {
+		MostStealParachute,
+		LongestTimeWithParachute,
+		MostElimination,
+		MostBonusUsed
+	};
+
+	for(ETrackingRewardCategory Category : Categories)
+	{
+		TArray<int> CategoryWinners = GetTrackingWinners(Category);
+		WinnersList.Append(CategoryWinners);
+	}
+
+	return WinnersList;
 }
 
 void ATrackerActor::StartParachuteTracking(AFreeFallCharacter* NewOwner)

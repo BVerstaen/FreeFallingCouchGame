@@ -20,9 +20,6 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category="Parachute")
 	TSubclassOf<AParachute> ParachuteSubclass;
 	
-	UPROPERTY(Config, EditAnywhere, Category="Parachute")
-	FVector ParachuteSpawnLocation;
-	
 	UPROPERTY(Config, EditAnywhere, Category = "Characters")
 	TSubclassOf<AFreeFallCharacter> CharacterClassP0;
 
