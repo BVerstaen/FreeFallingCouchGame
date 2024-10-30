@@ -46,7 +46,6 @@ void AArenaActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	CheckAndRemoveOutOfBoundPlayers();
-	CheckOutOfBoundParachute();
 }
 
 void AArenaActor::CheckAndRemoveOutOfBoundPlayers()
@@ -95,6 +94,7 @@ void AArenaActor::CheckAndRemoveOutOfBoundPlayers()
 	}
 	CharactersToRemove.Empty();
 }
+
 
 void AArenaActor::CheckOutOfBoundParachute()
 {

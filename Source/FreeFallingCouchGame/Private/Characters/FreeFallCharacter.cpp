@@ -106,9 +106,13 @@ void AFreeFallCharacter::DestroyPlayer()
 	{
 		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Player" + FString::FromInt(getIDPlayerLinked()) + " - got killed by - " + FString::FromInt(RecentlyBouncedOtherPlayerID));
 		if(OnWasEliminated.IsBound())
-			OnWasEliminated.Broadcast(RecentlyBouncedOtherPlayerID);
+			OnWasEliminated.Broadcast(this, RecentlyBouncedOtherPlayer);
 	}
-	LaunchParachute();
+	else
+	{
+		if(!Parachute) return;
+		Parachute->DropParachute(this);		
+	}
 	Destroy();
 }
 
@@ -433,10 +437,10 @@ float AFreeFallCharacter::GetPlayerMass()
 	return PlayerMass;
 }
 
-void AFreeFallCharacter::SetWasRecentlyBouncedTimer(const AFreeFallCharacter* Character)
+void AFreeFallCharacter::SetWasRecentlyBouncedTimer(AFreeFallCharacter* Character)
 {
 	bWasRecentlyBounced = true;
-	RecentlyBouncedOtherPlayerID = Character->getIDPlayerLinked();
+	RecentlyBouncedOtherPlayer = Character;
 	GetWorldTimerManager().ClearTimer(RecentlyBouncedTimer);
 	GetWorldTimerManager().SetTimer(RecentlyBouncedTimer, this, &AFreeFallCharacter::ResetWasRecentlyBounced, DelayConsideredAsRecentlyBounced);
 }
@@ -529,13 +533,6 @@ void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent
 USceneComponent* AFreeFallCharacter::GetParachuteAttachPoint()
 {
 	return ParachuteAttachPoint;
-}
-
-void AFreeFallCharacter::LaunchParachute()
-{
-	if(!Parachute) return;
-	AParachute* LooseParachute = Parachute->DropParachute(this);
-	LooseParachute->RecenterParachute();
 }
 
 #pragma endregion
