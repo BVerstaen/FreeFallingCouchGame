@@ -44,7 +44,9 @@ private:
 
 	void SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints);
 
-	AParachute* RespawnParachute();
+	AParachute* RespawnParachute(FVector SpawnLocation);
+
+	FVector ParachuteSpawnLocation;
 	
 #pragma region Rounds
 protected:

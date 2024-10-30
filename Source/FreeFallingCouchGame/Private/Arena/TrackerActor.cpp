@@ -235,6 +235,27 @@ void ATrackerActor::RemoveDelegates()
 	}
 }
 
+TArray<int> ATrackerActor::GiveWinners()
+{
+	TArray<int> WinnersList;
+	
+	//Categories of awards
+	TArray<ETrackingRewardCategory> Categories = {
+		MostStealParachute,
+		LongestTimeWithParachute,
+		MostElimination,
+		MostBonusUsed
+	};
+
+	for(ETrackingRewardCategory Category : Categories)
+	{
+		TArray<int> CategoryWinners = GetTrackingWinners(Category);
+		WinnersList.Append(CategoryWinners);
+	}
+
+	return WinnersList;
+}
+
 void ATrackerActor::StartParachuteTracking(AFreeFallCharacter* NewOwner)
 {
 	CurrentParachuteHolderIndex = NewOwner->getIDPlayerLinked();

@@ -17,6 +17,18 @@ void AFreeFallGameMode::BeginPlay()
 	ArenaActorInstance = GetWorld()->SpawnActor<AArenaActor>();
 	TrackerActorInstance = GetWorld()->SpawnActor<ATrackerActor>();
 
+	//Find Parachute Spawnlocation then destroy dummy parachute
+	AParachute* Parachute = Cast<AParachute>(UGameplayStatics::GetActorOfClass(GetWorld(), AParachute::StaticClass()));
+	if(Parachute)
+	{
+		ParachuteSpawnLocation = Parachute->GetActorLocation();
+		Parachute->Destroy();		
+	}
+	else
+	{
+		ParachuteSpawnLocation = FVector(0, 0, 0);
+	}
+	
 	//TODO Find way to receive player made modifications
 	StartMatch();
 }
@@ -115,7 +127,7 @@ void AFreeFallGameMode::SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints
 	}
 }
 
-AParachute* AFreeFallGameMode::RespawnParachute()
+AParachute* AFreeFallGameMode::RespawnParachute(FVector SpawnLocation)
 {
 	//Destroy parachute if already exists
 	if(ParachuteInstance)
@@ -124,7 +136,7 @@ AParachute* AFreeFallGameMode::RespawnParachute()
 	//Get map settings & set location
 	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
 	FTransform SpawnTransform = FTransform::Identity;
-	SpawnTransform.SetLocation(MapSettings->ParachuteSpawnLocation);
+	SpawnTransform.SetLocation(SpawnLocation);
 
 	//Spawn parachute
 	return GetWorld()->SpawnActorDeferred<AParachute>(MapSettings->ParachuteSubclass, SpawnTransform);
@@ -157,7 +169,7 @@ void AFreeFallGameMode::StartRound()
 	TArray<APlayerStart*> PlayerStartsPoints;
 	FindPlayerStartActorsInMap(PlayerStartsPoints);
 	SpawnCharacters(PlayerStartsPoints);
-	ParachuteInstance = RespawnParachute();
+	ParachuteInstance = RespawnParachute(ParachuteSpawnLocation);
 	ArenaActorInstance->Init(this);
 	TrackerActorInstance->Init(ParachuteInstance, CharactersInsideArena);
 	
@@ -245,7 +257,7 @@ void AFreeFallGameMode::AddPoints(TArray<int> ArrayPlayers)
 	if(IsValid(PlayerMatchData))
 	{
 		// Assign points
-		const int*temp = 	CurrentParameters->getScoreValues();
+		const int*temp = CurrentParameters->getScoreValues();
 		for (int i  = 0; i< ArrayPlayers.Num(); i++)
 			PlayerMatchData->setScoreValue(ArrayPlayers[i], temp[i]);
 	}
@@ -262,6 +274,12 @@ void AFreeFallGameMode::EndRound()
 	CharactersInsideArena.Empty();
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "EndRound");
 
+	//Give extra points for rewards
+	TArray<int> ExtraPoints = TrackerActorInstance->GiveWinners();
+	for(int ExtraPointWinner : ExtraPoints)
+	{
+		PlayerMatchData->setScoreValue(ExtraPointWinner, 1);
+	}
 	//Just a debug message to make sure the tracker works, meant to be removed
 	TrackerActorInstance->DebugPrintResultReward();
 	

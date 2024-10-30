@@ -16,7 +16,6 @@ ADiveLevels::ADiveLevels()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	MapSettings = GetDefault<UMapSettings>();
 }
 
 // Called when the game starts or when spawned
@@ -25,6 +24,7 @@ void ADiveLevels::BeginPlay()
 	Super::BeginPlay();
 
 	CameraActor = Cast<ACameraActor>(UGameplayStatics::GetActorOfClass(GetWorld(), ACameraActor::StaticClass()));
+	MapSettings = GetDefault<UMapSettings>();
 }
 
 // Called every frame

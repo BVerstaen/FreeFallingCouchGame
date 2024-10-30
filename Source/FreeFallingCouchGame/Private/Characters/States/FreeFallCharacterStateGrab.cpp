@@ -93,7 +93,7 @@ AFreeFallCharacter* UFreeFallCharacterStateGrab::FindPlayerToGrab() const
 														traceObjectTypes,
 														false,
 														ignoreActors,
-														EDrawDebugTrace::None,
+														EDrawDebugTrace::ForOneFrame,
 														HitResult,
 														true);
 	
