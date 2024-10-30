@@ -67,6 +67,15 @@ void AObstacleSpawner::SpawnObstacle()
 	float ObstacleSpeed = FMath::RandRange(ObstacleMinSpeed, ObstacleMaxSpeed);
 	SpawningObstacle->Speed = ObstacleSpeed;
 	SpawningObstacle->Direction = ObstacleDirection;
+	//Rotate Obstacle
+	FVector ObstacleFinalTorqueRotation = FVector(
+		FMath::RandRange(ObstacleMinTorqueRotation.X, ObstacleMaxTorqueRotation.X) * 100,
+		FMath::RandRange(ObstacleMinTorqueRotation.Y, ObstacleMaxTorqueRotation.Y) * 100,
+		FMath::RandRange(ObstacleMinTorqueRotation.Z, ObstacleMaxTorqueRotation.Z) * 100
+		);
+	if(SpawningObstacle->Mesh)
+		SpawningObstacle->Mesh->AddTorqueInDegrees(ObstacleFinalTorqueRotation, NAME_None, true);
+	
 	SpawningObstacle->FinishSpawning(SpawnTransform);
 
 	GetWorldTimerManager().ClearTimer(SpawnTimer);
