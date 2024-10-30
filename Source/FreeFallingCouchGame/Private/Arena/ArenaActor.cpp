@@ -108,7 +108,7 @@ void AArenaActor::CheckOutOfBoundParachute()
 	const FVector2D ViewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
 	if(IsOutOfBounds(ScreenPosition, ViewportSize))
 	{
-		Parachute->RecenterParachute();
+		//Parachute->RecenterParachute();
 	}
 }
 

@@ -75,6 +75,9 @@ public:
 
 	UFUNCTION()
 	void RemoveDelegates();
+
+	UFUNCTION()
+	TArray<int> GiveWinners();
 	
 private:
 	UPROPERTY()
