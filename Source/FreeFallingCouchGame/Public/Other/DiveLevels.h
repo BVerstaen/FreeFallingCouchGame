@@ -6,6 +6,9 @@
 #include "GameFramework/Actor.h"
 #include "DiveLevels.generated.h"
 
+class UMapSettings;
+class IDiveLayersSensible;
+enum class EDiveLayerBoundsID : uint8;
 enum class EDiveLayersID : uint8;
 
 UCLASS()
@@ -25,11 +28,32 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	
-	float GetDiveBoundZCoord(EDiveLayersID Layer, bool UpBound);
+	float GetDiveBoundZCoord(EDiveLayersID Layer, EDiveLayerBoundsID Bound);
+
+	float GetDiveSize();
 
 	EDiveLayersID GetDiveLayersFromCoord(float PlayerCoordZ);
 
-
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	FVector3f DiveLevelSize;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	TArray<TScriptInterface<IDiveLayersSensible>> OverlappingSensibleActors;
+
+	UPROPERTY()
+	const UMapSettings* MapSettings;
+
+private:
+	void ApplyDiveForce(TScriptInterface<IDiveLayersSensible> SensibleActor);
+
+	//Strength of Dive Forces
+	UPROPERTY(EditAnywhere)
+	float DiveForcesStrength;
+
+	//Tweaking GP, Threshold à partir duquel le player est ralentit jusqu'à l'arrêt;
+	UPROPERTY(EditAnywhere)
+	float DiveLayerSlowingThreshold = 10.f;
+
+	UPROPERTY()
+	ACameraActor* CameraActor;
 };

@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Obstacle/Events/EventActor.h"
 #include "ObstacleTransitionClouds.generated.h"
 
 class AFreeFallCharacter;
 
 UCLASS()
-class FREEFALLINGCOUCHGAME_API AObstacleTransitionClouds : public AActor
+class FREEFALLINGCOUCHGAME_API AObstacleTransitionClouds : public AEventActor
 {
 	GENERATED_BODY()
 
@@ -21,15 +22,19 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	/*Distance minimum entre les joueurs*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float DistanceTolerance;
 
+	/*Distance minimum entre les joueurs*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector SpawnExtent;
 
+	/*Delay de la transition avant le TP des joueurs*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float DelayAfterStartTransition;
-	
+
+	/*Delay de la transition après le TP des joueurs*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float DelayBeforeEndTransition;
 public:
@@ -41,4 +46,6 @@ public:
 	void RandomizePlayersPositions();
 	UFUNCTION(BlueprintCallable)
 	bool IsNearAnyPlayer(const FVector& SpawnPosition, float Tolerance, TArray<FVector>& SpawnedPositionList);
+
+	virtual void TriggerEvent() override;
 };

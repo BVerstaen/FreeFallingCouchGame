@@ -15,6 +15,8 @@ void AFreeFallGameMode::BeginPlay()
 	Super::BeginPlay();
 	CreateAndInitsPlayers();
 	ArenaActorInstance = GetWorld()->SpawnActor<AArenaActor>();
+	TrackerActorInstance = GetWorld()->SpawnActor<ATrackerActor>();
+
 	//TODO Find way to receive player made modifications
 	StartMatch();
 }
@@ -112,7 +114,29 @@ void AFreeFallGameMode::SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints
 		ID_Player++;
 	}
 }
+
+AParachute* AFreeFallGameMode::RespawnParachute()
+{
+	//Destroy parachute if already exists
+	if(ParachuteInstance)
+		ParachuteInstance->Destroy();
+	
+	//Get map settings & set location
+	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
+	FTransform SpawnTransform = FTransform::Identity;
+	SpawnTransform.SetLocation(MapSettings->ParachuteSpawnLocation);
+
+	//Spawn parachute
+	return GetWorld()->SpawnActorDeferred<AParachute>(MapSettings->ParachuteSubclass, SpawnTransform);
+}
+
+AParachute* AFreeFallGameMode::GetParachuteInstance() const
+{
+	return ParachuteInstance;
+}
+
 #pragma endregion
+
 #pragma region PreRound
 void AFreeFallGameMode::StartMatch()
 {
@@ -121,7 +145,7 @@ void AFreeFallGameMode::StartMatch()
 		PlayerMatchData = NewObject<UPlayerMatchData>();
 	PlayerMatchData->resetScoreValue();
 	
-	ArenaActorInstance->OnCharacterDestroyed.AddDynamic(this, &AFreeFallGameMode::CheckEndRound);
+	ArenaActorInstance->OnCharacterDestroyed.AddDynamic(this, &AFreeFallGameMode::CheckEndRoundDeath);
 	SetupMatch(nullptr);
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------MATCH START--------------------"));
 	StartRound();
@@ -133,18 +157,20 @@ void AFreeFallGameMode::StartRound()
 	TArray<APlayerStart*> PlayerStartsPoints;
 	FindPlayerStartActorsInMap(PlayerStartsPoints);
 	SpawnCharacters(PlayerStartsPoints);
-	ArenaActorInstance->Init();
-
+	ParachuteInstance = RespawnParachute();
+	ArenaActorInstance->Init(this);
+	TrackerActorInstance->Init(ParachuteInstance, CharactersInsideArena);
+	
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------ROUND START--------------------"));
 	if(OnStartRound.IsBound())
 	{
 		OnStartRound.Broadcast();
 	}
 	CurrentRound++;
-	if(CurrentParameters->getTimerDelay() > 0.f)
-	{
-		RoundEventTimer();	
-	}
+	if(CurrentParameters->getTimerEventDelay() > 0.f)
+		RoundEventTimer();
+	if(CurrentParameters->getRoundTimer() > 0.f)
+		RoundTimer();
 }
 void AFreeFallGameMode::SetupMatch(TSubclassOf<UMatchParameters> UserParameters)
 {
@@ -166,82 +192,78 @@ void AFreeFallGameMode::SetupMatch(TSubclassOf<UMatchParameters> UserParameters)
 
 #pragma region DuringRound
 
-void AFreeFallGameMode::CheckEndRound(AFreeFallCharacter* Character)
-{
-	//TODO Array of order in which characters got eliminated
-	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple,
-		FString::Printf(TEXT("Player number %i was eliminated!"), Character->getIDPlayerLinked()));
-	LossOrder.insert(LossOrder.begin(), Character->getIDPlayerLinked());
-	CharactersInsideArena.Remove(Character);
-	if(CharactersInsideArena.Num() <= 1)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "One character, remaining, end match!");
-		AddPoints();
-		EndRound();
-	}
-}
-void AFreeFallGameMode::RoundEventTimer()
-{
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "StartTimer");
-	GetWorld()->GetTimerManager().SetTimer(
-		RoundTimerHandle,
-		this,
-		&AFreeFallGameMode::StartEvent,
-		CurrentParameters->getTimerDelay(),
-		true
-		);
-}
-
 void AFreeFallGameMode::StartEvent()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "StartEvent");
 	if(OnCallEvent.IsBound()) OnCallEvent.Broadcast();
-	//Here can be implemented a random function to start random events
+}
+
+void AFreeFallGameMode::CheckEndRoundTimer()
+{
+	ClearTimers();
+
+	if(IsValid(TrackerActorInstance))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan,
+			"Timer end, end match!");
+		ArenaActorInstance->OnCharacterDestroyed.RemoveDynamic(this, &AFreeFallGameMode::CheckEndRoundDeath);
+		AddPoints(TrackerActorInstance->GetTrackingWinners(CurrentParameters->getTrackingRewardCategory()));
+		EndRound();
+	}
+}
+
+void AFreeFallGameMode::CheckEndRoundDeath(AFreeFallCharacter* Character)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple,
+		FString::Printf(TEXT("Player number %i was eliminated!"), Character->getIDPlayerLinked()));
+	LossOrder.EmplaceAt(LossOrder[0], Character->getIDPlayerLinked());
+	CharactersInsideArena.Remove(Character);
+	if(CharactersInsideArena.Num() <= 1)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "One character, remaining, end match!");
+		ArenaActorInstance->OnCharacterDestroyed.RemoveDynamic(this, &AFreeFallGameMode::CheckEndRoundDeath);
+		TrackerActorInstance->RemoveDelegates();
+		AddPoints(SetDeathOrder());
+		EndRound();
+	}
+}
+TArray<int> AFreeFallGameMode::SetDeathOrder()
+{
+	TArray<int> RoundRanking;
+	if(CharactersInsideArena.Num() == 1)
+		RoundRanking.Add(CharactersInsideArena[0]->getIDPlayerLinked());
+	// Append lossOrder to RoundRanking
+	RoundRanking.Append(LossOrder);
+	return RoundRanking;
 }
 #pragma endregion
 
 #pragma region PostRound
 
-void AFreeFallGameMode::AddPoints()
+void AFreeFallGameMode::AddPoints(TArray<int> ArrayPlayers)
 {
-	std::vector<uint8> RoundRanking;
-	if(CharactersInsideArena.Num() == 1)
-	{
-		RoundRanking.push_back(CharactersInsideArena[0]->getIDPlayerLinked());
-	}
-	// Append lossOrder to RoundRanking
-	RoundRanking.insert(RoundRanking.end(), LossOrder.begin(), LossOrder.end());
 	if(IsValid(PlayerMatchData))
 	{
 		// Assign points
 		const int*temp = 	CurrentParameters->getScoreValues();
-		for(int x = 0; x < RoundRanking.size(); x++)
-		{
-			PlayerMatchData->setScoreValue(RoundRanking[x], temp[x]);
-		}
-	}
-	// Debug, can and should be removed
-	int i = 1;
-	for(uint8 Ranking : RoundRanking)
-	{
-			GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Yellow,
-FString::Printf(TEXT("%i spot is taken by player id: %i !"), i, Ranking));
-		i++;
+		for (int i  = 0; i< ArrayPlayers.Num(); i++)
+			PlayerMatchData->setScoreValue(ArrayPlayers[i], temp[i]);
 	}
 	// Empty lossOrder
-	LossOrder.clear();
+	LossOrder.Empty();
 }
+
 
 void AFreeFallGameMode::EndRound()
 {
-	// Clear Timer
-	if(GetWorldTimerManager().IsTimerActive(RoundTimerHandle))
-		GetWorldTimerManager().ClearTimer(RoundTimerHandle);
-	
+	ClearTimers();
 	// Reset CharactersInside Arena
 	for (auto Element : CharactersInsideArena) { Element->Destroy();}
 	CharactersInsideArena.Empty();
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "EndRound");
+
+	//Just a debug message to make sure the tracker works, meant to be removed
+	TrackerActorInstance->DebugPrintResultReward();
 	
 	// Unlink event (to reapply properly later on, avoiding double linkage)
 	if(OnEndRound.IsBound())
@@ -261,8 +283,7 @@ void AFreeFallGameMode::ShowResults()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "ShowResults");
 	CurrentRound = 0;
-	ArenaActorInstance->OnCharacterDestroyed.RemoveDynamic(this, &AFreeFallGameMode::CheckEndRound);
-
+	
 	//TODO Remove Debug
 	PlayerMatchData->DebugPrintScore();
 	
@@ -272,5 +293,40 @@ void AFreeFallGameMode::ShowResults()
 	}
 	//TODO AwaitUserInput
 	StartMatch();
+}
+#pragma endregion
+//-------------------------------------------TIMERS---------------------------------------------------------
+#pragma region Timers
+
+void AFreeFallGameMode::ClearTimers()
+{
+	if(GetWorldTimerManager().IsTimerActive(EventTimerHandle))
+		GetWorldTimerManager().ClearTimer(EventTimerHandle);
+	if(GetWorldTimerManager().IsTimerActive(RoundTimerHandle))
+		GetWorldTimerManager().ClearTimer(RoundTimerHandle);
+}
+
+void AFreeFallGameMode::RoundEventTimer()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "StartTimer");
+	GetWorld()->GetTimerManager().SetTimer(
+		EventTimerHandle,
+		this,
+		&AFreeFallGameMode::StartEvent,
+		CurrentParameters->getTimerEventDelay(),
+		true
+		);
+}
+
+void AFreeFallGameMode::RoundTimer()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "StartTimer");
+	GetWorld()->GetTimerManager().SetTimer(
+		RoundTimerHandle,
+		this,
+		&AFreeFallGameMode::CheckEndRoundTimer,
+		CurrentParameters->getRoundTimer(),
+		false
+		);
 }
 #pragma endregion

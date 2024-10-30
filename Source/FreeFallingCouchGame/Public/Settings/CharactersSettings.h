@@ -2,12 +2,12 @@
 
 #pragma once
 
+#include "FreeFallingCouchGame/Public/Characters/FreeFallCharacterInputData.h"
 #include "CoreMinimal.h"
 #include "Engine/DeveloperSettings.h"
 #include "CharactersSettings.generated.h"
-
 class UInputMappingContext;
-class UFreeFallCharacterInputData;
+//class UFreeFallCharacterInputData;
 class UFreeFallCharacterState;
 enum class EFreeFallCharacterStateID : uint8;
 /**
@@ -23,8 +23,11 @@ public:
 	TMap<EFreeFallCharacterStateID, TSubclassOf<UFreeFallCharacterState>> SmashCharacterStates;
 
 	UPROPERTY(Config, EditAnywhere, Category="Ejection")
-	float MarginAliveOffScreen;
+	float MarginHorizontalOffScreen;
 
+	UPROPERTY(Config, EditAnywhere, Category="Ejection")
+	float MarginVerticalOffScreen;
+	
 	UPROPERTY(Config, EditAnywhere, Category="Ejection")
 	float PercentageCloseEdgeScreen;
 	
@@ -34,14 +37,9 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category="InputDive")
 	float InputDiveThreshold;
 
-	UPROPERTY(Config, EditAnywhere, Category="InputDive")
-	float DiveDistance;
-
 	UPROPERTY(Config, EditAnywhere, Category="Inputs")
 	TSoftObjectPtr<UFreeFallCharacterInputData> InputData;
 
 	UPROPERTY(Config, EditAnywhere, Category="Inputs")
 	TSoftObjectPtr<UInputMappingContext> InputMappingContext;
-
-	
 };
