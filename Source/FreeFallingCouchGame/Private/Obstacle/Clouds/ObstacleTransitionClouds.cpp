@@ -31,6 +31,7 @@ void AObstacleTransitionClouds::BeginPlay()
 void AObstacleTransitionClouds::StartTransition()
 {
 	//Wait for end of animation before randomizing player
+	OnTransitionStarted();
 	FTimerHandle TimerHandle;
 	GetWorldTimerManager().SetTimer(TimerHandle, this, &AObstacleTransitionClouds::RandomizePlayersPositions, DelayAfterStartTransition, false);
 }
@@ -83,6 +84,7 @@ void AObstacleTransitionClouds::RandomizePlayersPositions()
 	//Wait a bit for randomizing effect
 	FTimerHandle TimerHandle;
 	GetWorldTimerManager().SetTimer(TimerHandle, this, &AObstacleTransitionClouds::EndTransition, DelayBeforeEndTransition, false);
+	OnTransitionCompleted();
 }
 
 bool AObstacleTransitionClouds::IsNearAnyPlayer(const FVector& SpawnPosition, float Tolerance, TArray<FVector>& SpawnedPositionList)
