@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Interface/GrabbableInterface.h"
 #include "GameFramework/Actor.h"
+#include "UI/BaseWarningActor.h"
 #include "Obstacle.generated.h"
 
 UCLASS()
@@ -52,7 +53,7 @@ public:
 
 #pragma endregion
 
-public:
+	
 	UFUNCTION(BlueprintCallable)
 	UStaticMeshComponent* GetMesh();
 
@@ -64,4 +65,7 @@ public:
 
 	UFUNCTION()
 	virtual bool CanBeTaken() override;
+
+	UFUNCTION()
+	void SetupWarning(FVector ImpulseVector);
 };
