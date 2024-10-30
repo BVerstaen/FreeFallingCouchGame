@@ -28,6 +28,8 @@ void UFreeFallCharacterStateDive::StateEnter(EFreeFallCharacterStateID PreviousS
 {
 	Super::StateEnter(PreviousStateID);
 
+	Character->bIsDiveForced = false;
+
 	//Not crash if DiveLevelsActor is not set in scene
 	if (DiveLevelsActor == nullptr)
 	{
@@ -56,6 +58,8 @@ void UFreeFallCharacterStateDive::StateEnter(EFreeFallCharacterStateID PreviousS
 void UFreeFallCharacterStateDive::StateExit(EFreeFallCharacterStateID NextStateID)
 {
 	Super::StateExit(NextStateID);
+
+	Character->bIsDiveForced = true;
 }
 
 void UFreeFallCharacterStateDive::StateTick(float DeltaTime)
@@ -87,14 +91,14 @@ void UFreeFallCharacterStateDive::StateTick(float DeltaTime)
 	if (FMath::Abs(InputDive) < CharactersSettings->InputMoveThreshold)
 	{
 		CurrentDivePhase = EDivePhase::DiveForcesApplying;
+		/*
 		if (!IsInCenterOfLayer())
 		{
 			//Dive Force Apply when Character is not in Center
-			ApplyDiveForce();
+			//ApplyDiveForce();
 			Character->SetDiveMaterialColor();
 
-		}
-		else
+		}*/
 		{
 			//If Character is in Center, ChangeState to Idle or Move;
 			if (FMath::Abs(Character->GetInputMove().X) > CharactersSettings->InputMoveThreshold ||
@@ -118,7 +122,7 @@ void UFreeFallCharacterStateDive::StateTick(float DeltaTime)
 			FColor::Blue,
 			CurrentDivePhase == EDivePhase::DiveForcesApplying ? "DiveForcesApplying" :
 			CurrentDivePhase == EDivePhase::ChangingLayer ? "ChangingLayer" : "CrossingLayer");
-		FVector Direction = Character->GetCameraActor()->GetActorForwardVector();
+		FVector Direction = Character->GetActorLocation() - Character->GetCameraActor()->GetActorLocation();
 		Direction.Normalize();
 		if (DiveLevelsActor->GetDiveBoundZCoord(TargetLayer, EDiveLayerBoundsID::Up) - DiveLayerThreshold > Character->GetActorLocation().Z && InputDive < 0)
 		{
@@ -148,7 +152,7 @@ void UFreeFallCharacterStateDive::StateTick(float DeltaTime)
 				CurrentDivePhase = EDivePhase::CrossingLayer;
 				FVector Velocity = Character->GetCharacterMovement()->Velocity;
 				if (Velocity.Z < -1) Character->GetCharacterMovement()->Velocity += Velocity.Z * Direction;
-				Character->GetCharacterMovement()->MaxFlySpeed = DiveLevelsActor->GetDiveSize() / CrossLayerCooldown;
+				//Character->GetCharacterMovement()->MaxFlySpeed = DiveLevelsActor->GetDiveSize() / CrossLayerCooldown;
 				CrossLayerClock = 0.f;
 			}
 		}
@@ -202,7 +206,7 @@ void UFreeFallCharacterStateDive::CheckTargetedLayer()
 	Character->GetCharacterMovement()->MaxFlySpeed = DiveSpeed;
 }
 
-
+/*
 void UFreeFallCharacterStateDive::ApplyDiveForce()
 {
 	float ZPosition = Character->GetActorLocation().Z;
@@ -216,7 +220,7 @@ void UFreeFallCharacterStateDive::ApplyDiveForce()
 		Character->AddMovementInput(Direction, ZPosDifference < 0 ? -1 : 1);
 	}
 	GEngine->AddOnScreenDebugMessage(-1, 0.1, FColor::Red, "DiveForces");
-}
+}*/
 
 void UFreeFallCharacterStateDive::ApplyMoveInputs(float DeltaTime)
 {
@@ -267,14 +271,14 @@ void UFreeFallCharacterStateDive::ApplyMoveInputs(float DeltaTime)
 	}
 }
 
+/*
 bool UFreeFallCharacterStateDive::IsInCenterOfLayer() const
 {
 	float ZPosition = Character->GetActorLocation().Z;
 	EDiveLayersID CurrentLayer = Character->GetDiveLevelsActor()->GetDiveLayersFromCoord(ZPosition);
 
-	return FMath::Abs(ZPosition - DiveLevelsActor->GetDiveBoundZCoord(CurrentLayer, EDiveLayerBoundsID::Middle))
-	< CharactersSettings->DiveLayerThreshold;
-}
+	return FMath::Abs(ZPosition - DiveLevelsActor->GetDiveBoundZCoord(CurrentLayer, EDiveLayerBoundsID::Middle)) < 0.1;
+}*/
 
 FString UFreeFallCharacterStateDive::GetLayerName(EDiveLayersID LayerID) const
 {

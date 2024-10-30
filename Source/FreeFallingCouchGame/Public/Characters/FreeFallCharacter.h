@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "FreeFallCharacterGrabbingState"
 #include "GameFramework/Character.h"
+#include "Interface/DiveLayersSensible.h"
+#include "Other/DiveLayersID.h"
 #include "FreeFallCharacter.generated.h"
 
 class AParachute;
@@ -18,7 +20,7 @@ enum class EFreeFallCharacterStateID : uint8;
 class UFreeFallCharacterStateMachine;
 
 UCLASS()
-class FREEFALLINGCOUCHGAME_API AFreeFallCharacter : public ACharacter
+class FREEFALLINGCOUCHGAME_API AFreeFallCharacter : public ACharacter, public IDiveLayersSensible
 {
 	GENERATED_BODY()
 
@@ -128,6 +130,35 @@ private:
 
 #pragma endregion
 
+#pragma region DiveLayerSensible Interface
+
+public:
+	virtual void ApplyDiveForce(FVector DiveForceDirection, float DiveStrength) override;
+
+	virtual EDiveLayersID GetBoundedLayer() override;
+
+	virtual AActor* GetSelfActor() override;
+
+	virtual FVector GetDivingVelocity() override;
+	
+	virtual bool IsBoundedByLayer() override;
+
+	virtual bool IsDiveForced() override;
+	
+	UPROPERTY()
+	bool bIsBoundedByLayer = true;
+
+	UPROPERTY()
+	bool bIsDiveForced = true;
+
+	UPROPERTY()
+	EDiveLayersID BoundedLayer = EDiveLayersID::None;
+
+	UPROPERTY()
+	FVector DivingVelocity = FVector::ZeroVector;
+	
+#pragma endregion
+
 #pragma region Input Grab
 
 public:
@@ -138,9 +169,13 @@ private:
 	void BindInputGrabActions(UEnhancedInputComponent* EnhancedInputComponent);
 
 	void OnInputGrab(const FInputActionValue& Value);
-
+	
+	bool IsInCircularGrab();
+	
 	UFUNCTION()
-	void UpdateMovementInfluence(float DeltaTime) const;
+	void UpdateMovementInfluence(float DeltaTime, AFreeFallCharacter* OtherCharacter, bool bIsCircularGrab);
+	UFUNCTION()
+	void UpdateEveryMovementInfluence(float DeltaTime);
 	UFUNCTION()
 	void UpdateObjectPosition(float DeltaTime) const;
 	UFUNCTION()
@@ -149,10 +184,15 @@ private:
 public:
 	bool bInputGrabPressed = false;
 	EFreeFallCharacterGrabbingState GrabbingState;
-	
-	UPROPERTY()
-	TObjectPtr<AFreeFallCharacter> OtherCharacter;
 
+	//The one I grabbed
+	UPROPERTY()
+	TObjectPtr<AFreeFallCharacter> OtherCharacterGrabbing;
+
+	//The one who's grabbing me
+	UPROPERTY()
+	TObjectPtr<AFreeFallCharacter> OtherCharacterGrabbedBy;
+	
 	UPROPERTY()
 	TObjectPtr<AActor> OtherObject;
 
@@ -163,6 +203,7 @@ public:
 	float GrabRotationSpeed;
 	float GrabRotationInfluenceStrength;
 	FRotator GrabDefaultRotationOffset;
+	FRotator GrabCircularRotationOffset;
 
 protected:
 	UPROPERTY(VisibleAnywhere)
@@ -237,7 +278,7 @@ protected:
 	/*A partir de combien de temps un rebond qui mène à un OUT ne compte plus comme une élimination ?*/
 	UPROPERTY(EditAnywhere, Category="Bounce Collision - Elimination")
 	float DelayConsideredAsRecentlyBounced;
-
+	
 	UPROPERTY()
 	int RecentlyBouncedOtherPlayerID;
 
