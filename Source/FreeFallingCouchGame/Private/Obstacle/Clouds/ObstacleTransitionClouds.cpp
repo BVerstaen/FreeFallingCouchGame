@@ -31,6 +31,7 @@ void AObstacleTransitionClouds::BeginPlay()
 void AObstacleTransitionClouds::StartTransition()
 {
 	//Wait for end of animation before randomizing player
+	OnTransitionStarted();
 	FTimerHandle TimerHandle;
 	GetWorldTimerManager().SetTimer(TimerHandle, this, &AObstacleTransitionClouds::RandomizePlayersPositions, DelayAfterStartTransition, false);
 }
@@ -38,6 +39,7 @@ void AObstacleTransitionClouds::StartTransition()
 void AObstacleTransitionClouds::EndTransition()
 {
 	//Play end transition (clouds moving away)
+	OnTransitionCompleted();
 	OnEventEnded.Broadcast(this);
 }
 

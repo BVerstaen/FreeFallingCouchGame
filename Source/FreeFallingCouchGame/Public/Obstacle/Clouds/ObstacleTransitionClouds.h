@@ -38,6 +38,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float DelayBeforeEndTransition;
 public:
+	UFUNCTION(BlueprintImplementableEvent, Category = "CloudTransitionEvent")
+	void OnTransitionStarted();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "CloudTransitionEvent")
+	void OnTransitionCompleted();
+	
 	UFUNCTION(BlueprintCallable)
 	void StartTransition();
 	UFUNCTION(BlueprintCallable)
