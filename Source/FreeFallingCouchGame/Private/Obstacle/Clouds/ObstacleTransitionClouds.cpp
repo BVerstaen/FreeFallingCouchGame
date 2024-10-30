@@ -39,7 +39,6 @@ void AObstacleTransitionClouds::StartTransition()
 void AObstacleTransitionClouds::EndTransition()
 {
 	//Play end transition (clouds moving away)
-	OnTransitionCompleted();
 	OnEventEnded.Broadcast(this);
 }
 
@@ -85,6 +84,7 @@ void AObstacleTransitionClouds::RandomizePlayersPositions()
 	//Wait a bit for randomizing effect
 	FTimerHandle TimerHandle;
 	GetWorldTimerManager().SetTimer(TimerHandle, this, &AObstacleTransitionClouds::EndTransition, DelayBeforeEndTransition, false);
+	OnTransitionCompleted();
 }
 
 bool AObstacleTransitionClouds::IsNearAnyPlayer(const FVector& SpawnPosition, float Tolerance, TArray<FVector>& SpawnedPositionList)
