@@ -245,7 +245,7 @@ void AFreeFallGameMode::AddPoints(TArray<int> ArrayPlayers)
 	if(IsValid(PlayerMatchData))
 	{
 		// Assign points
-		const int*temp = 	CurrentParameters->getScoreValues();
+		const int*temp = CurrentParameters->getScoreValues();
 		for (int i  = 0; i< ArrayPlayers.Num(); i++)
 			PlayerMatchData->setScoreValue(ArrayPlayers[i], temp[i]);
 	}
@@ -262,6 +262,12 @@ void AFreeFallGameMode::EndRound()
 	CharactersInsideArena.Empty();
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "EndRound");
 
+	//Give extra points for rewards
+	TArray<int> ExtraPoints = TrackerActorInstance->GiveWinners();
+	for(int ExtraPointWinner : ExtraPoints)
+	{
+		PlayerMatchData->setScoreValue(ExtraPointWinner, 1);
+	}
 	//Just a debug message to make sure the tracker works, meant to be removed
 	TrackerActorInstance->DebugPrintResultReward();
 	
