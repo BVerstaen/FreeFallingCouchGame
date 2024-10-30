@@ -152,7 +152,8 @@ void UFreeFallCharacterStateDive::StateTick(float DeltaTime)
 				CurrentDivePhase = EDivePhase::CrossingLayer;
 				FVector Velocity = Character->GetCharacterMovement()->Velocity;
 				if (Velocity.Z < -1) Character->GetCharacterMovement()->Velocity += Velocity.Z * Direction;
-				//Character->GetCharacterMovement()->MaxFlySpeed = DiveLevelsActor->GetDiveSize() / CrossLayerCooldown;
+				if (DiveLevelsActor->GetDiveLayersFromCoord(Character->GetActorLocation().Z) == EDiveLayersID::Middle)
+					Character->GetCharacterMovement()->MaxFlySpeed = DiveLevelsActor->GetDiveSize() / CrossLayerCooldown;
 				CrossLayerClock = 0.f;
 			}
 		}
