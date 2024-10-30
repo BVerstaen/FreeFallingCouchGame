@@ -271,7 +271,10 @@ void AFreeFallGameMode::EndRound()
 	ClearTimers();
 	// Reset CharactersInside Arena
 
-	//Quick fix for extra players
+	/*
+	 *Quick fix for extra players
+	 *  Need to be removed
+	 */
 	TArray<AActor*> PlayersToDestroy;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AFreeFallCharacter::StaticClass(), PlayersToDestroy);
 	for (auto Element : PlayersToDestroy) { Element->Destroy();}
