@@ -280,13 +280,13 @@ protected:
 	float DelayConsideredAsRecentlyBounced;
 	
 	UPROPERTY()
-	int RecentlyBouncedOtherPlayerID;
+	AFreeFallCharacter* RecentlyBouncedOtherPlayer;
 
 	UPROPERTY()
 	FTimerHandle RecentlyBouncedTimer; 
 
 public:
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FWasEliminated, int, OtherPlayerEliminated);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FWasEliminated, AFreeFallCharacter*, PreviousOwner, AFreeFallCharacter*, NextOwner);
 	FWasEliminated OnWasEliminated;
 	
 public:
@@ -297,7 +297,7 @@ public:
 	float GetPlayerMass();
 
 	UFUNCTION()
-	void SetWasRecentlyBouncedTimer(const AFreeFallCharacter* Character);
+	void SetWasRecentlyBouncedTimer(AFreeFallCharacter* Character);
 	
 protected:
 	UFUNCTION()
@@ -324,10 +324,6 @@ protected:
 public:
 	UFUNCTION()
 	USceneComponent* GetParachuteAttachPoint(); 
-
-private:
-	UFUNCTION()
-	void LaunchParachute();
 	
 #pragma endregion
 };

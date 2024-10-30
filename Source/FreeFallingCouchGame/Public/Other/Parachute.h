@@ -41,12 +41,17 @@ public:
 	//Give back reference -> if need it to launch Parachute
 	AParachute* DropParachute(AFreeFallCharacter* PreviousOwner);
 
+	UE_DEPRECATED(5.3, "Function is depreciated, no need to RecenterParachute anymore")
 	void RecenterParachute() const;
+
+private:
+	UFUNCTION()
+	void GiveToMurderer(AFreeFallCharacter* PreviousOwner, AFreeFallCharacter* NextOwner);
 
 	/*
 	 *Delegates
 	 */
-	
+public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnParachuteGrabbed, AFreeFallCharacter*, Character);
 	UPROPERTY(BlueprintAssignable)
 	FOnParachuteGrabbed OnParachuteGrabbed;

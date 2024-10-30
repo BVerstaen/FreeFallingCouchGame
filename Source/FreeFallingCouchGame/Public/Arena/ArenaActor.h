@@ -48,7 +48,8 @@ public:
 
 	UFUNCTION()
 	void CheckAndRemoveOutOfBoundPlayers();
-	
+
+	UE_DEPRECATED(5.3, "Function is depreciated, no need to CheckOutOfBoundParachute anymore")
 	UFUNCTION()
 	void CheckOutOfBoundParachute();
 

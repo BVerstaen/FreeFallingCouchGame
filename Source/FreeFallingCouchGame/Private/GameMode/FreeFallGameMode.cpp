@@ -162,15 +162,15 @@ void AFreeFallGameMode::StartRound()
 	TrackerActorInstance->Init(ParachuteInstance, CharactersInsideArena);
 	
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------ROUND START--------------------"));
-	if(OnStartRound.IsBound())
-	{
-		OnStartRound.Broadcast();
-	}
 	CurrentRound++;
 	if(CurrentParameters->getTimerEventDelay() > 0.f)
 		RoundEventTimer();
 	if(CurrentParameters->getRoundTimer() > 0.f)
 		RoundTimer();
+	if(OnStartRound.IsBound())
+	{
+		OnStartRound.Broadcast();
+	}
 }
 void AFreeFallGameMode::SetupMatch(TSubclassOf<UMatchParameters> UserParameters)
 {
@@ -216,7 +216,7 @@ void AFreeFallGameMode::CheckEndRoundDeath(AFreeFallCharacter* Character)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple,
 		FString::Printf(TEXT("Player number %i was eliminated!"), Character->getIDPlayerLinked()));
-	LossOrder.EmplaceAt(LossOrder[0], Character->getIDPlayerLinked());
+	LossOrder.Insert(Character->getIDPlayerLinked(), 0);
 	CharactersInsideArena.Remove(Character);
 	if(CharactersInsideArena.Num() <= 1)
 	{

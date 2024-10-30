@@ -54,6 +54,8 @@ void AParachute::Use(AFreeFallCharacter* Character)
 	Mesh->SetSimulatePhysics(false);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+	Character->OnWasEliminated.AddDynamic(this, &AParachute::GiveToMurderer);
+	
 	OnParachuteGrabbed.Broadcast(Character);
 }
 
@@ -84,9 +86,10 @@ AParachute* AParachute::DropParachute(AFreeFallCharacter* PreviousOwner)
 	FDetachmentTransformRules DetachmentRules = FDetachmentTransformRules(EDetachmentRule::KeepWorld, false);
 	DetachFromActor(DetachmentRules);
 
-	Mesh->SetSimulatePhysics(true);
+	SetActorLocation(StartingLocation);
+	Mesh->SetSimulatePhysics(false);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
-	
+
 	OnParachuteDropped.Broadcast(PreviousOwner);
 
 	return this;
@@ -99,5 +102,12 @@ void AParachute::RecenterParachute() const
 
 	FVector Direction = (StartingLocation - GetActorLocation()).GetSafeNormal();
 	Mesh->AddImpulse(Direction * LaunchForce);
+}
+
+void AParachute::GiveToMurderer(AFreeFallCharacter* PreviousOwner, AFreeFallCharacter* NextOwner)
+{
+	//Drop then give parachute to murderer
+	DropParachute(PreviousOwner);
+	Use(NextOwner);
 }
 
