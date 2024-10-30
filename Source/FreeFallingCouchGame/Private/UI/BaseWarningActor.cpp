@@ -13,6 +13,9 @@ ABaseWarningActor::ABaseWarningActor()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	RootArrow = CreateDefaultSubobject<USceneComponent>(TEXT("RootArrow"));
+	RootBody = CreateDefaultSubobject<USceneComponent>(TEXT("RootMain"));
+	RootComponent = RootBody;
+	RootArrow->SetupAttachment(RootBody);
 	SetupWidgets();
 }
 
@@ -32,9 +35,10 @@ void ABaseWarningActor::SetupWidgets()
 	}
 	
 	Body = CreateDefaultSubobject<UWidgetComponent>(TEXT("Body"));
-	Body->SetupAttachment(RootComponent);
+	Body->SetupAttachment(this->RootBody);
 	Body->SetWidgetSpace(EWidgetSpace::World);
 	Body->SetDrawSize(FVector2D(500.0f, 500.0f));
+	Arrow->SetRelativeScale3D(FVector(0.5f, 0.5f, 0.5f));
 	Body->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
 	static ConstructorHelpers::FClassFinder<UUserWidget> WidgetClassBody
 	(TEXT("/Game/_Content/BP/UI/TestWarning/WBP_SideWarning"));

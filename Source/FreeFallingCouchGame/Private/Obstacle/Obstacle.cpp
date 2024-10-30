@@ -49,13 +49,13 @@ void AObstacle::SetupWarning(FVector ImpulseVector)
 	RV_TraceParams.bTraceComplex = true;
 	RV_TraceParams.bReturnPhysicalMaterial = false;
 
-	FVector EndLocation = GetActorLocation() + (ImpulseVector.GetSafeNormal() * 5000.0f);
+	FVector EndLocation = GetActorLocation() + (ImpulseVector.GetSafeNormal() * 15000.0f);
 	// Shoot linetrace
 	GetWorld()->LineTraceMultiByChannel(
 		RV_Hits,
 		GetActorLocation(),
 		EndLocation,
-		ECC_WorldDynamic,
+		ECC_GameTraceChannel2,
 		RV_TraceParams
 		);
 	DrawDebugLine(GetWorld(), GetActorLocation(), EndLocation, FColor::Red, false, 2.0f);

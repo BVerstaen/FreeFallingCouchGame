@@ -36,6 +36,8 @@ protected:
 	UWidgetComponent *Body;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USceneComponent* RootArrow;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USceneComponent* RootBody;
 	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
