@@ -34,7 +34,27 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float ReachMaxSpeedTime;
 
+	/*Le seuil à partir duquel le joueur ne bloque plus sa rotation et permet d'être influencé (uniquement si attrape joueur)*/
+	UPROPERTY(EditAnywhere, Category="Grab Threshold")
+	float OrientationThreshold;
+	
+	/*Le seuil à partir duquel le joueur ne bloque plus sa rotation et permet d'être influencé (uniquement si attrape joueur)*/
+	UPROPERTY(EditAnywhere, Category="Grab Threshold")
+	float GrabbedOrientationThreshold;
+
+	
+	
+	FVector2D OldInputDirection;
+	
 private:
 	UPROPERTY()
 	float AccelerationAlpha;
+
+#pragma region  Input Event
+	
+private:
+	UFUNCTION()
+	void OnInputGrab();
+	
+#pragma endregion
 };

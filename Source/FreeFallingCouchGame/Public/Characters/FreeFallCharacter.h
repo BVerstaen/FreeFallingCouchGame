@@ -3,9 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "FreeFallCharacterGrabbingState"
 #include "GameFramework/Character.h"
+#include "Interface/DiveLayersSensible.h"
+#include "Other/DiveLayersID.h"
 #include "FreeFallCharacter.generated.h"
 
+class AParachute;
+enum class EDiveLayersID : uint8;
+class ADiveLevels;
 struct FInputActionValue;
 class UInputMappingContext;
 class UFreeFallCharacterInputData;
@@ -14,7 +20,7 @@ enum class EFreeFallCharacterStateID : uint8;
 class UFreeFallCharacterStateMachine;
 
 UCLASS()
-class FREEFALLINGCOUCHGAME_API AFreeFallCharacter : public ACharacter
+class FREEFALLINGCOUCHGAME_API AFreeFallCharacter : public ACharacter, public IDiveLayersSensible
 {
 	GENERATED_BODY()
 
@@ -34,6 +40,9 @@ public:
 
 #pragma endregion
 
+public:
+	void DestroyPlayer();
+	
 #pragma region StateMachine
 public:
 	void CreateStateMachine();
@@ -45,8 +54,11 @@ public:
 protected:
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<UFreeFallCharacterStateMachine> StateMachine;
-
+	
 public:
+	TObjectPtr<UFreeFallCharacterStateMachine> GetStateMachine() const;
+	
+	UPROPERTY(EditAnywhere)
 	TMap<EFreeFallCharacterStateID, TSubclassOf<UFreeFallCharacterState>> FreeFallCharacterStatesOverride;
 
 #pragma endregion
@@ -84,14 +96,32 @@ private:
 
 public:
 	float GetInputDive() const;
-	float GetDefaultZPosition() const;
+
+	UFUNCTION(BlueprintCallable)
+	void SetDiveMaterialColor();
+	
+	ADiveLevels* GetDiveLevelsActor() const;
+	float GetDiveLayerForceStrength() const;
+	ACameraActor* GetCameraActor() const;
+
+	UPROPERTY(EditAnywhere)
+	TMap<EDiveLayersID, FLinearColor> DiveLevelsColors;
 
 protected:
 	UPROPERTY()
 	float InputDive = 0.f;
 
+	UPROPERTY(EditAnywhere)
+	float DiveLayerForceStrength = 1.f;
+
+	UPROPERTY(BlueprintReadWrite)
+	UMaterialInstanceDynamic* DiveMaterialInstance;
+
 	UPROPERTY()
-	float DefaultZPosition = 0.f;
+	ADiveLevels* DiveLevelsActor;
+
+	UPROPERTY()
+	ACameraActor* CameraActor;
 	
 private:
 	void BindInputDiveAxisAndActions(UEnhancedInputComponent* EnhancedInputComponent);
@@ -100,11 +130,200 @@ private:
 
 #pragma endregion
 
+#pragma region DiveLayerSensible Interface
+
+public:
+	virtual void ApplyDiveForce(FVector DiveForceDirection, float DiveStrength) override;
+
+	virtual EDiveLayersID GetBoundedLayer() override;
+
+	virtual AActor* GetSelfActor() override;
+
+	virtual FVector GetDivingVelocity() override;
+	
+	virtual bool IsBoundedByLayer() override;
+
+	virtual bool IsDiveForced() override;
+	
+	UPROPERTY()
+	bool bIsBoundedByLayer = true;
+
+	UPROPERTY()
+	bool bIsDiveForced = true;
+
+	UPROPERTY()
+	EDiveLayersID BoundedLayer = EDiveLayersID::None;
+
+	UPROPERTY()
+	FVector DivingVelocity = FVector::ZeroVector;
+	
+#pragma endregion
+
+#pragma region Input Grab
+
+public:
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInputGrabbing);
+	FInputGrabbing OnInputGrabEvent;
+	
+private:
+	void BindInputGrabActions(UEnhancedInputComponent* EnhancedInputComponent);
+
+	void OnInputGrab(const FInputActionValue& Value);
+	
+	bool IsInCircularGrab();
+	
+	UFUNCTION()
+	void UpdateMovementInfluence(float DeltaTime, AFreeFallCharacter* OtherCharacter, bool bIsCircularGrab);
+	UFUNCTION()
+	void UpdateEveryMovementInfluence(float DeltaTime);
+	UFUNCTION()
+	void UpdateObjectPosition(float DeltaTime) const;
+	UFUNCTION()
+	void UpdateHeavyObjectPosition(float DeltaTime);
+	
+public:
+	bool bInputGrabPressed = false;
+	EFreeFallCharacterGrabbingState GrabbingState;
+
+	//The one I grabbed
+	UPROPERTY()
+	TObjectPtr<AFreeFallCharacter> OtherCharacterGrabbing;
+
+	//The one who's grabbing me
+	UPROPERTY()
+	TObjectPtr<AFreeFallCharacter> OtherCharacterGrabbedBy;
+	
+	UPROPERTY()
+	TObjectPtr<AActor> OtherObject;
+
+	FVector GrabHeavyObjectRelativeLocationPoint;
+	
+	//Fields are set by Grab State
+	FVector GrabInitialOffset;
+	float GrabRotationSpeed;
+	float GrabRotationInfluenceStrength;
+	FRotator GrabDefaultRotationOffset;
+	FRotator GrabCircularRotationOffset;
+
+protected:
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USceneComponent> ObjectGrabPoint;
+
+public :
+	TObjectPtr<USceneComponent> GetObjectGrabPoint() const;
+	
+#pragma endregion 
+
 #pragma region IDPlayer
 protected:
 	uint8 ID_PlayerLinked = -1;
 public:
 	int getIDPlayerLinked() const { return ID_PlayerLinked; }
 	void setIDPlayerLinked(int InID) { ID_PlayerLinked = InID; }
+#pragma endregion
+
+#pragma region Bounce Collision
+protected:
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UCapsuleComponent> CapsuleCollision;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bAlreadyCollided = false;
+
+	/*Cooldown entre 2 rebonds*/
+	UPROPERTY(EditAnywhere, Category="Bounce Collision")
+	float BounceCooldownDelay = .1f;
+	
+	/*Combien JE donne à l'autre joueur / l'autre obstacle (je garde 1 - X)*/
+	UPROPERTY(EditAnywhere, Category="Bounce Collision")
+	float BouncePlayerRestitutionMultiplier = 1.f;
+
+	/*Dois-je garder ma vélocité restante ou non ?*/
+	UPROPERTY(EditAnywhere, Category="Bounce Collision")
+	bool bShouldKeepRemainingVelocity = false;
+	
+	/*Multiplicateur de rebondissement entre les joueurs*/
+	UPROPERTY(EditAnywhere, Category="Bounce Collision - Between players")
+	float BouncePlayerMultiplier = 1.f;
+
+	/*Multiplicateur de rebondissement entre joueur / objets*/
+	UPROPERTY(EditAnywhere, Category="Bounce Collision - Player / Object")
+	float BounceObstacleMultiplier = 1.f;
+
+	/*Combien L'obstacle avec qui je collisionne donne à mon joueur (il garde 1 - X)*/
+	UPROPERTY(EditAnywhere, Category="Bounce Collision - Player / Object")
+	float BounceObstacleRestitutionMultiplier = 1.f;
+
+	/*Dois-je considerer la masse de l'objet dans les calcules de rebond ?
+	 * Coté joueur -> ObstacleMass / PlayerMass
+	 * Coté objet -> PlayerMass / ObstacleMass 
+	 */
+	UPROPERTY(EditAnywhere, Category="Bounce Collision - Player / Object")
+	bool bShouldConsiderMassObject = false;
+	
+	/*La masse du joueur (sert pour les collisions entre objets)*/
+	UPROPERTY(EditAnywhere, Category="Bounce Collision - Player / Object")
+	float PlayerMass;
+	
+	UPROPERTY()
+	FVector OldVelocity = FVector::ZeroVector;
+
+	UPROPERTY()
+	bool bWasRecentlyBounced;
+
+	/*
+	 *		Eliminations Properties
+	 */
+	
+	/*A partir de combien de temps un rebond qui mène à un OUT ne compte plus comme une élimination ?*/
+	UPROPERTY(EditAnywhere, Category="Bounce Collision - Elimination")
+	float DelayConsideredAsRecentlyBounced;
+	
+	UPROPERTY()
+	AFreeFallCharacter* RecentlyBouncedOtherPlayer;
+
+	UPROPERTY()
+	FTimerHandle RecentlyBouncedTimer; 
+
+public:
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FWasEliminated, AFreeFallCharacter*, PreviousOwner, AFreeFallCharacter*, NextOwner);
+	FWasEliminated OnWasEliminated;
+	
+public:
+	UFUNCTION(BlueprintCallable)
+	void BounceCooldown();
+	
+	UFUNCTION()
+	float GetPlayerMass();
+
+	UFUNCTION()
+	void SetWasRecentlyBouncedTimer(AFreeFallCharacter* Character);
+	
+protected:
+	UFUNCTION()
+	void OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	
+	UFUNCTION()
+	void ResetBounce();
+
+	UFUNCTION()
+	void ResetWasRecentlyBounced();
+	
+#pragma endregion
+
+#pragma region Parachute
+
+public:
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<AParachute> Parachute;
+
+protected:
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USceneComponent> ParachuteAttachPoint;
+
+public:
+	UFUNCTION()
+	USceneComponent* GetParachuteAttachPoint(); 
+	
 #pragma endregion
 };

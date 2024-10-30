@@ -5,12 +5,15 @@
 #include "CoreMinimal.h"
 #include "InputMappingContext.h"
 #include "Arena/ArenaActor.h"
+#include "Arena/TrackerActor.h"
 #include "FreeFallingCouchGame/Public/Match/MatchParameters.h"
-#include "Characters/FreeFallCharacterInputData.h"
+#include "Characters/PlayerMatchData.h"
 #include "GameFramework/GameModeBase.h"
 #include "FreeFallGameMode.generated.h"
 
+
 class AFreeFallCharacter;
+
 class APlayerStart;
 
 UCLASS()
@@ -25,6 +28,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	TArray<AFreeFallCharacter*> CharactersInsideArena;
 
+	UFUNCTION()
+	AParachute* GetParachuteInstance() const;
+	
 private:
 	void CreateAndInitsPlayers() const;
 
@@ -38,17 +44,32 @@ private:
 
 	void SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints);
 
+	AParachute* RespawnParachute(FVector SpawnLocation);
+
+	FVector ParachuteSpawnLocation;
+	
 #pragma region Rounds
 protected:
 	
 	
 	UPROPERTY(EditAnywhere)
 	uint8 CurrentRound = 0;
-	//FVector<uint8> LossOrder;
 	FTimerHandle RoundTimerHandle;
+	FTimerHandle EventTimerHandle;
+	//Ranking
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UPlayerMatchData> PlayerMatchData;
+	//std::vector<uint8> LossOrder;
+	TArray<int> LossOrder;
 	// Refs to Objects in Scene
 	UPROPERTY()
 	TObjectPtr<AArenaActor> ArenaActorInstance;
+
+	UPROPERTY()
+	TObjectPtr<ATrackerActor> TrackerActorInstance;
+
+	UPROPERTY()
+	TObjectPtr<AParachute> ParachuteInstance;
 	// Match Parameters
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UMatchParameters> DefaultParameters = nullptr;
@@ -61,25 +82,38 @@ protected:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDResults);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDCallEvent);
 	// Delegate Instance
+	UPROPERTY(BlueprintAssignable, Category = "EventsFreefall")
 	FDStartRound OnStartRound;
+	UPROPERTY(BlueprintAssignable, Category = "EventsFreefall")
 	FDEndRound OnEndRound;
+	UPROPERTY(BlueprintAssignable, Category = "EventsFreefall")
 	FDResults OnResults;
+	UPROPERTY(BlueprintAssignable, Category = "EventsFreefall")
 	FDCallEvent OnCallEvent;
+public:
+	UFUNCTION(BlueprintCallable)
+	FTimerHandle getRoundTimer() const { return RoundTimerHandle; }
 private:
 	//After Initiation, launches the timer and links events
 	void StartRound();
-	// InGame event clock
+	// Timers
 	void RoundEventTimer();
+	void RoundTimer();
+	void ClearTimers();
 	// When Round end condition is reached, unlinks and check if match is over
 	void EndRound();
+	void CheckEndRoundTimer();
 	// When Match is over, calls an event to show
 	// Results UI and buttons to go back to menu (/ restart)
 	void ShowResults();
 	// What RoundEventTimer calls 
 	void StartEvent();
+	// Adding points to players
+	TArray<int> SetDeathOrder();
+	void AddPoints(TArray<int> ArrayPlayers);
 	UFUNCTION()
 	// Checks if end condition is reached
-	void CheckEndRound(AFreeFallCharacter* Character);
+	void CheckEndRoundDeath(AFreeFallCharacter* Character);
 	// Sets up the values for the match & rounds to follow
 	void SetupMatch(TSubclassOf<UMatchParameters> UserParameters);
 #pragma endregion

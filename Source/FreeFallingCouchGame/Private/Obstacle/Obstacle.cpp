@@ -16,6 +16,9 @@ AObstacle::AObstacle()
 	//Initialize parameters
 	Speed = 0.0f;
 	Direction = FVector::ZeroVector;
+
+	Mesh->SetSimulatePhysics(true);
+	Mesh->SetEnableGravity(false);
 }
 
 // Called when the game starts or when spawned
@@ -23,12 +26,13 @@ void AObstacle::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	Mesh->SetSimulatePhysics(true);
-	Mesh->SetEnableGravity(false);
 
 	Direction.Normalize();
 	FVector ImpulseVector = Direction * Speed;
-	Mesh->AddImpulse(ImpulseVector, NAME_None, true);
+	if(Mesh != nullptr)
+	{
+		Mesh->AddImpulse(ImpulseVector, NAME_None, true);
+	}
 }
 
 UStaticMeshComponent* AObstacle::GetMesh()
@@ -42,4 +46,14 @@ void AObstacle::ResetLaunch()
 	Direction.Normalize();
 	FVector ImpulseVector = Direction * Speed;
 	Mesh->AddImpulse(ImpulseVector, NAME_None, true);
+}
+
+bool AObstacle::CanBeGrabbed()
+{
+	return IsGrabbable;
+}
+
+bool AObstacle::CanBeTaken()
+{
+	return false;
 }

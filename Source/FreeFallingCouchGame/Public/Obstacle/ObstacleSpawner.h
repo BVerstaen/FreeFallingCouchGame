@@ -10,6 +10,7 @@
 /**
  * 
  */
+
 UCLASS()
 class FREEFALLINGCOUCHGAME_API AObstacleSpawner : public AActor
 {
@@ -43,7 +44,7 @@ public :
 	FVector ObstacleSpawnExtant;
 	
 	/* La direction sera normalisé après donc mettre des nombres entre -1 & 1 */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector ObstacleDirection;
 
 	/* Vitesse minimum de l'obstacle */
@@ -61,7 +62,7 @@ public :
 	/* Delay maximum entre 2 spawns */
 	UPROPERTY(EditAnywhere)
 	float ObstacleMaxTimer;
-	
+
 #pragma endregion
 	
 private:
@@ -74,5 +75,7 @@ public:
 	UFUNCTION(BlueprintCallable, CallInEditor)
 	void PauseSpawner();
 	UFUNCTION(BlueprintCallable, CallInEditor)
-	void ResumeSpawner();
+	void RestartSpawner();
+
+	bool bPlaySpawnTimer;
 };

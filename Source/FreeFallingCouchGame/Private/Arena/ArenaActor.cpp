@@ -5,6 +5,7 @@
 
 #include "Characters/FreeFallCharacter.h"
 #include "GameMode/FreeFallGameMode.h"
+#include "Kismet/GameplayStatics.h"
 #include "Settings/CharactersSettings.h"
 
 
@@ -14,27 +15,29 @@ AArenaActor::AArenaActor()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	OffScreenTolerance = 0.f;
+	OffScreenHorizontalTolerance = 0.f;
+	OffScreenVerticalTolerance = 0.f;
+	NearEdgeScreenTolerance = 0.f;
 }
 
-// Called when the game starts or when spawned
-void AArenaActor::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
-void AArenaActor::Init()
+void AArenaActor::Init(const AFreeFallGameMode* FreeFallGameMode)
 {
 	//Set existing characters
-	AFreeFallGameMode* FreeFallGameMode = Cast<AFreeFallGameMode>(GetWorld()->GetAuthGameMode());
+	if(FreeFallGameMode == nullptr) return;
+	if(FreeFallGameMode->CharactersInsideArena.Num() <= 0) GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "No Existing Character in Arena");
 	
-	if(FreeFallGameMode->CharactersInsideArena.Num() <= 0) GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "T niqué");
 	CharactersInsideArena.Empty();
 	CharactersInsideArena.Append(FreeFallGameMode->CharactersInsideArena);
 
 	//Set off-screen tolerance
 	const UCharactersSettings* CharactersSettings = GetDefault<UCharactersSettings>();
-	OffScreenTolerance = CharactersSettings->DelayAliveOffScreen;
+	OffScreenHorizontalTolerance = CharactersSettings->MarginHorizontalOffScreen;
+	OffScreenVerticalTolerance = CharactersSettings->MarginVerticalOffScreen;
+	NearEdgeScreenTolerance = CharactersSettings->PercentageCloseEdgeScreen;
+	
+	MainCameraController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	
+	Parachute = FreeFallGameMode->GetParachuteInstance();
 }
 
 // Called every frame
@@ -42,30 +45,75 @@ void AArenaActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	CheckAndRemoveOutOfBoundPlayers();
+}
+
+void AArenaActor::CheckAndRemoveOutOfBoundPlayers()
+{
 	TArray<AFreeFallCharacter*> CharactersToRemove;
-	//Check if character was rendered on screen
-	for(AFreeFallCharacter* Character : CharactersInsideArena)
+	
+	//Check if character was rendered on screen (inverted loop to avoid indexation problems)
+	for(int i = CharactersInsideArena.Num() - 1; i > -1; i--)
 	{
+		AFreeFallCharacter* Character = CharactersInsideArena[i];
 		if(Character == nullptr) continue;
 		
-		if(!Character->WasRecentlyRendered(OffScreenTolerance))
+		FVector PlayerLocation = Character->GetActorLocation();
+		FVector2D ScreenPosition;
+		
+		//Check if player position is a valid screen position
+		bool bCanConvertToScreen = MainCameraController->ProjectWorldLocationToScreen(PlayerLocation, ScreenPosition);
+		if(bCanConvertToScreen)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, Character->GetName() + "is out");
+			//Check if player is beyond margin Tolerance
+			const FVector2D ViewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
 
-			//Destroy current player
-			if(OnCharacterDestroyed.IsBound())
-				OnCharacterDestroyed.Broadcast(Character);
-			
-			CharactersToRemove.Add(Character);
-			Character->Destroy();
+			if (IsOutOfBounds(ScreenPosition, ViewportSize))
+			{
+				//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, Character->GetName() + "is out");
+
+				//Destroy current player
+				if(OnCharacterDestroyed.IsBound())
+					OnCharacterDestroyed.Broadcast(Character);
+
+				CharactersToRemove.Add(Character);
+			}
+			else if (!(ScreenPosition.X >= ViewportSize.X * NearEdgeScreenTolerance && ScreenPosition.X <= ViewportSize.X - ViewportSize.X * NearEdgeScreenTolerance &&
+				ScreenPosition.Y >= ViewportSize.Y * NearEdgeScreenTolerance && ScreenPosition.Y <= ViewportSize.Y - ViewportSize.Y * NearEdgeScreenTolerance))
+			{
+				//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Is Near Edge of Screen");
+			}
 		}
 	}
 
-	//Check if there's any characters to remove
-	if(CharactersToRemove.Num() > 0)
+	//Remove & destroy actors
+	for (AFreeFallCharacter* Character : CharactersToRemove)
 	{
-		for(AFreeFallCharacter* Character : CharactersToRemove)
-			CharactersInsideArena.Remove(Character);
-		CharactersToRemove.Empty();
+		CharactersInsideArena.Remove(Character);
+		Character->DestroyPlayer();
 	}
+	CharactersToRemove.Empty();
+}
+
+
+void AArenaActor::CheckOutOfBoundParachute()
+{
+	FVector ParachuteLocation = Parachute->GetActorLocation();
+	FVector2D ScreenPosition;
+	//Check if player position is a valid screen position
+	bool bCanConvertToScreen = MainCameraController->ProjectWorldLocationToScreen(ParachuteLocation, ScreenPosition);
+
+	if(!bCanConvertToScreen) return;
+
+	const FVector2D ViewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
+	if(IsOutOfBounds(ScreenPosition, ViewportSize))
+	{
+		//Parachute->RecenterParachute();
+	}
+}
+
+bool AArenaActor::IsOutOfBounds(FVector2D ScreenPosition, FVector2D ViewportSize) const
+{
+	return !(ScreenPosition.X >= -OffScreenHorizontalTolerance && ScreenPosition.X <= ViewportSize.X + OffScreenHorizontalTolerance &&
+				ScreenPosition.Y >= -OffScreenVerticalTolerance && ScreenPosition.Y <= ViewportSize.Y + OffScreenVerticalTolerance);
 }
