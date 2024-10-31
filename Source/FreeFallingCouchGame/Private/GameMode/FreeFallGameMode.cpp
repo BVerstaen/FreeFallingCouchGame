@@ -270,14 +270,8 @@ void AFreeFallGameMode::EndRound()
 {
 	ClearTimers();
 	// Reset CharactersInside Arena
-
-	/*
-	 *Quick fix for extra players
-	 *  Need to be removed
-	 */
-	TArray<AActor*> PlayersToDestroy;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AFreeFallCharacter::StaticClass(), PlayersToDestroy);
-	for (auto Element : PlayersToDestroy) { Element->Destroy();}
+	
+	for (AFreeFallCharacter* Element : CharactersInsideArena) { Element->Destroy();}
 	
 	CharactersInsideArena.Empty();
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "EndRound");

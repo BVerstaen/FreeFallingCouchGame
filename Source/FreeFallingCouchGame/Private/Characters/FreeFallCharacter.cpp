@@ -113,9 +113,12 @@ void AFreeFallCharacter::DestroyPlayer()
 	}
 	else
 	{
-		if(!Parachute) return;
-		Parachute->DropParachute(this);		
+		if(Parachute)
+		{
+			Parachute->DropParachute(this);
+		}
 	}
+	
 	Destroy();
 }
 
