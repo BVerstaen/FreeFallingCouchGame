@@ -3,6 +3,8 @@
 
 #include "Obstacle/Obstacle.h"
 
+#include "InputBehavior.h"
+
 
 // Sets default values
 AObstacle::AObstacle()
@@ -32,7 +34,57 @@ void AObstacle::BeginPlay()
 	if(Mesh != nullptr)
 	{
 		Mesh->AddImpulse(ImpulseVector, NAME_None, true);
+		// Shoot raytrace to set warning
+		//SetupWarning(ImpulseVector);
 	}
+}
+
+
+void AObstacle::SetupWarning(FVector ImpulseVector)
+{
+	//Setup parameters
+	TArray<FHitResult> RV_Hits;
+	//FHitResult RV_Hit(ForceInit);
+	FCollisionQueryParams RV_TraceParams = FCollisionQueryParams(FName(TEXT("RV_Trace")), true, this);
+	RV_TraceParams.bTraceComplex = true;
+	RV_TraceParams.bReturnPhysicalMaterial = false;
+
+	FVector EndLocation = GetActorLocation() + (ImpulseVector.GetSafeNormal() * 15000.0f);
+	// Shoot linetrace
+	GetWorld()->LineTraceMultiByChannel(
+		RV_Hits,
+		GetActorLocation(),
+		EndLocation,
+		ECC_GameTraceChannel2,
+		RV_TraceParams
+		);
+	DrawDebugLine(GetWorld(), GetActorLocation(), EndLocation, FColor::Red, false, 2.0f);
+	if(!RV_Hits.IsEmpty())
+	{
+		if (RV_Hits.GetData()[0].IsValidBlockingHit())
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Hit detected"));
+			DrawDebugLine(GetWorld(), GetActorLocation(), EndLocation, FColor::Green, false, 5.0f, 0, 5.0f);
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No hit detected"));
+			DrawDebugLine(GetWorld(), GetActorLocation(), EndLocation, FColor::Red, false, 5.0f, 0, 5.0f);
+		}
+		// Initiate Warning actor
+		TSubclassOf<ABaseWarningActor> ThingToSpawn = ABaseWarningActor::StaticClass();
+		
+		FTransform SpawnTransform = GetTransform();
+		FVector OriginPoint = RV_Hits.GetData()[0].Location;
+		SpawnTransform.SetLocation(OriginPoint);
+		ABaseWarningActor* LinkedWarningActor = GetWorld()->SpawnActorDeferred<ABaseWarningActor>(
+			ThingToSpawn,
+			SpawnTransform
+			);
+		LinkedWarningActor->SetHitResult(RV_Hits.GetData()[0]);
+		LinkedWarningActor->SetLinkedObstacle(this);
+		LinkedWarningActor->FinishSpawning(SpawnTransform);
+	} 
 }
 
 void AObstacle::ResetLaunch()
@@ -53,6 +105,8 @@ bool AObstacle::CanBeTaken()
 	return false;
 }
 
+#pragma region Bounceable
+
 FVector AObstacle::GetVelocity()
 {
 	return Mesh->GetPhysicsLinearVelocity();
@@ -72,3 +126,5 @@ void AObstacle::AddBounceForce(FVector Velocity)
 {
 	Mesh->AddForce(Velocity);
 }
+
+#pragma endregion

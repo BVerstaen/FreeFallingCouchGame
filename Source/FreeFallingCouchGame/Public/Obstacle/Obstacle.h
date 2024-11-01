@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Interface/GrabbableInterface.h"
 #include "GameFramework/Actor.h"
+#include "UI/BaseWarningActor.h"
 #include "Interface/BounceableInterface.h"
 #include "Obstacle.generated.h"
 
@@ -53,7 +54,6 @@ public:
 
 #pragma endregion
 
-public:
 	UFUNCTION(BlueprintCallable)
 	void ResetLaunch();
 
@@ -62,6 +62,9 @@ public:
 
 	UFUNCTION()
 	virtual bool CanBeTaken() override;
+
+	UFUNCTION()
+	void SetupWarning(FVector ImpulseVector);
 
 #pragma region Bounceable
 public:
