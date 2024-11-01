@@ -271,7 +271,11 @@ void AFreeFallGameMode::EndRound()
 	ClearTimers();
 	// Reset CharactersInside Arena
 	
-	for (AFreeFallCharacter* Element : CharactersInsideArena) { Element->Destroy();}
+	for (AFreeFallCharacter* Element : CharactersInsideArena)
+	{
+		if(Element)
+			Element->Destroy();
+	}
 	
 	CharactersInsideArena.Empty();
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "EndRound");
