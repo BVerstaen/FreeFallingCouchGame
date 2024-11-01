@@ -262,7 +262,7 @@ void UFreeFallCharacterStateGrab::ObjectGrab() const
 	if(const AObstacle* FoundObstacle = Cast<AObstacle>(FoundActor))
 	{
 		//Check who's heavier
-		if(FoundObstacle->Mesh->GetMass() > Character->GetPlayerMass())
+		if(FoundObstacle->Mesh->GetMass() > Character->GetMass())
 		{
 			Character->GrabbingState = EFreeFallCharacterGrabbingState::GrabHeavierObject;
 			Character->GetMovementComponent()->Velocity = FVector(0, 0, 0);

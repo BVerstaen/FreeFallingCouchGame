@@ -473,11 +473,6 @@ void AFreeFallCharacter::BounceCooldown()
 	GetWorldTimerManager().SetTimer(TimerHandle, this, &AFreeFallCharacter::ResetBounce, BounceCooldownDelay, false);
 }
 
-float AFreeFallCharacter::GetPlayerMass()
-{
-	return PlayerMass;
-}
-
 void AFreeFallCharacter::SetWasRecentlyBouncedTimer(AFreeFallCharacter* Character)
 {
 	bWasRecentlyBounced = true;
@@ -498,75 +493,98 @@ void AFreeFallCharacter::ResetWasRecentlyBounced()
 	bWasRecentlyBounced = false;
 }
 
-void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
-                                               UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+float AFreeFallCharacter::GetMass()
 {
-	if(bAlreadyCollided) return; //Return if cooldown isn't over
+	return PlayerMass;
+}
+
+FVector AFreeFallCharacter::GetVelocity()
+{
+	return GetCharacterMovement()->Velocity;
+}
+
+EBounceParameters AFreeFallCharacter::GetBounceParameterType()
+{
+	return Player;
+}
+
+void AFreeFallCharacter::AddBounceForce(FVector Velocity)
+{
+	LaunchCharacter(Velocity, true, true);
+}
+
+AFreeFallCharacter* AFreeFallCharacter::CollidedWithPlayer()
+{
+	return this;
+}
+
+void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBounceableInterface> OtherBounceableInterface, float SelfRestitutionMultiplier, float OtherRestitutionMultiplier, float GlobalMultiplier,
+                                       bool bShouldConsiderMass, bool bShouldKeepRemainVelocity)
+{
+	//Get old velocity
+	FVector OldVelocity = GetVelocity();
 	
-	//Cast to smaller obstacle
-	AObstacle* OtherObstacle = Cast<AObstacle>(OtherActor);
-	if(OtherObstacle)
+	//Get impact direction
+	FVector ImpactDirection = (OtherActor->GetActorLocation() - GetActorLocation()).GetSafeNormal(); 
+
+	//Bounce self
+	//Player bounce
+	FVector NewVelocity = (-ImpactDirection * OtherBounceableInterface->GetVelocity().Size() * OtherRestitutionMultiplier
+		* (bShouldConsiderMass ? OtherBounceableInterface->GetMass() / GetMass() : 1)
+		+ (bShouldKeepRemainVelocity ? OldVelocity * (1 - SelfRestitutionMultiplier) : FVector::Zero())) 
+		* GlobalMultiplier;
+	//Neutralize Z bounce velocity
+	NewVelocity.Z = 0;
+	AddBounceForce(NewVelocity);
+
+	//Bounce other character
+	NewVelocity = (ImpactDirection * OldVelocity.Size() * SelfRestitutionMultiplier
+			* (bShouldConsiderMass ? GetMass() / OtherBounceableInterface->GetMass() : 1)
+			+ (bShouldKeepRemainVelocity ? OtherBounceableInterface->GetVelocity() * (1 - OtherRestitutionMultiplier) : FVector::Zero())) 
+			* GlobalMultiplier;
+	//Neutralize Z bounce velocity
+	NewVelocity.Z = 0;
+	OtherBounceableInterface->AddBounceForce(NewVelocity);
+	
+	//Check if collided with players
+	if(AFreeFallCharacter* OtherFreeFallCharacter = OtherBounceableInterface->CollidedWithPlayer())
 	{
-		// Récupération du mesh de l'obstacle
-		UStaticMeshComponent* ObstacleMesh = OtherObstacle->GetMesh();
-
-		//Get impact direction
-		FVector ImpactDirection = (ObstacleMesh->GetComponentLocation() - GetActorLocation()).GetSafeNormal();
-
-		//Player bounce
-		FVector PlayerVelocity = (-ImpactDirection * ObstacleMesh->GetPhysicsLinearVelocity().Size() * BounceObstacleRestitutionMultiplier
-			* (bShouldConsiderMassObject ? ObstacleMesh->GetMass() / PlayerMass : 1)
-			+ (bShouldKeepRemainingVelocity ? GetCharacterMovement()->Velocity * (1 - BouncePlayerRestitutionMultiplier) : FVector::Zero())) 
-			* BouncePlayerMultiplier;
-		
-		PlayerVelocity.Z = 0;
-		LaunchCharacter(PlayerVelocity, true, true);
-
-		//Obstacle Bounce
-		FVector ObjectVelocity = (ImpactDirection * GetCharacterMovement()->Velocity.Size() * BouncePlayerRestitutionMultiplier
-			* (bShouldConsiderMassObject ? PlayerMass / ObstacleMesh->GetMass() : 1)
-			+ (bShouldKeepRemainingVelocity ? ObstacleMesh->GetPhysicsLinearVelocity() * (1 - BounceObstacleRestitutionMultiplier) : FVector::Zero())) 
-			* BounceObstacleMultiplier;
-		
-		ObjectVelocity.Z = 0;
-		ObstacleMesh->AddForce(ObjectVelocity);
-	}
-
-	//Cast to bigger FreefallCharacter
-	AFreeFallCharacter* OtherFreeFallCharacter = Cast<AFreeFallCharacter>(OtherActor);
-	if(OtherFreeFallCharacter)
-	{
-		//Get impact direction
-		FVector ImpactDirection = (OtherFreeFallCharacter->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-		
-		OldVelocity = GetCharacterMovement()->Velocity;
-
-		//Bounce self
-		FVector NewVelocity = (-ImpactDirection * OtherFreeFallCharacter->GetCharacterMovement()->Velocity.Size() * BouncePlayerRestitutionMultiplier
-			+ (bShouldKeepRemainingVelocity ? OldVelocity * (1 - BouncePlayerRestitutionMultiplier) : FVector::Zero()))
-			* BouncePlayerMultiplier;
-		//Neutralize Z bounce velocity
-		NewVelocity.Z = 0;
-		LaunchCharacter(NewVelocity, true, true);
-
-		//Bounce other character
-		NewVelocity = (ImpactDirection * OldVelocity.Size() * BouncePlayerRestitutionMultiplier
-			+ (bShouldKeepRemainingVelocity ? OtherFreeFallCharacter->GetCharacterMovement()->Velocity * (1 - BouncePlayerRestitutionMultiplier) : FVector::Zero()))
-			* BouncePlayerMultiplier;
-		//Neutralize Z bounce velocity
-		NewVelocity.Z = 0;
-		OtherFreeFallCharacter->LaunchCharacter(NewVelocity, true, true);
-
 		//Activate bounce cooldown & elimination timers
 		if (!OtherFreeFallCharacter->bAlreadyCollided)
 			OtherFreeFallCharacter->BounceCooldown();
 		
 		SetWasRecentlyBouncedTimer(OtherFreeFallCharacter);
 		OtherFreeFallCharacter->SetWasRecentlyBouncedTimer(this);
-	}
 
-	BounceCooldown();
+		BounceCooldown();
+	}
 }
+
+
+void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
+                                               UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if(bAlreadyCollided) return; //Return if cooldown isn't over
+
+	//Check if have bouncable interface
+	if(!OtherActor->Implements<UBounceableInterface>()) return;
+	TScriptInterface<IBounceableInterface> OtherBounceableInterface = TScriptInterface<IBounceableInterface>(OtherActor);
+	
+	switch (OtherBounceableInterface->GetBounceParameterType())
+	{
+	case Obstacle:
+		BounceRoutine(OtherActor, OtherBounceableInterface, BouncePlayerRestitutionMultiplier,
+			BounceObstacleRestitutionMultiplier, BounceObstacleMultiplier, bShouldConsiderMassObject, bShouldKeepRemainingVelocity);
+		break;
+	case Player:
+		BounceRoutine(OtherActor, OtherBounceableInterface, BouncePlayerRestitutionMultiplier,
+	BouncePlayerRestitutionMultiplier, BouncePlayerMultiplier, false, bShouldKeepRemainingVelocity);
+		break;
+	}
+	
+}
+
+
 #pragma endregion 
 
 #pragma region Parachute Fucntions

@@ -35,11 +35,6 @@ void AObstacle::BeginPlay()
 	}
 }
 
-UStaticMeshComponent* AObstacle::GetMesh()
-{
-	return Mesh;
-}
-
 void AObstacle::ResetLaunch()
 {
 	Mesh->SetAllPhysicsLinearVelocity(FVector::ZeroVector, false);
@@ -56,4 +51,24 @@ bool AObstacle::CanBeGrabbed()
 bool AObstacle::CanBeTaken()
 {
 	return false;
+}
+
+FVector AObstacle::GetVelocity()
+{
+	return Mesh->GetPhysicsLinearVelocity();
+}
+
+float AObstacle::GetMass()
+{
+	return Mesh->GetMass();
+}
+
+EBounceParameters AObstacle::GetBounceParameterType()
+{
+	return Obstacle;
+}
+
+void AObstacle::AddBounceForce(FVector Velocity)
+{
+	Mesh->AddForce(Velocity);
 }

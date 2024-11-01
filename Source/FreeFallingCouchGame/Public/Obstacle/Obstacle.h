@@ -5,10 +5,11 @@
 #include "CoreMinimal.h"
 #include "Interface/GrabbableInterface.h"
 #include "GameFramework/Actor.h"
+#include "Interface/BounceableInterface.h"
 #include "Obstacle.generated.h"
 
 UCLASS()
-class FREEFALLINGCOUCHGAME_API AObstacle : public AActor, public IGrabbableInterface
+class FREEFALLINGCOUCHGAME_API AObstacle : public AActor, public IGrabbableInterface, public IBounceableInterface
 {
 	GENERATED_BODY()
 
@@ -54,9 +55,6 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable)
-	UStaticMeshComponent* GetMesh();
-
-	UFUNCTION(BlueprintCallable)
 	void ResetLaunch();
 
 	UFUNCTION()
@@ -64,4 +62,13 @@ public:
 
 	UFUNCTION()
 	virtual bool CanBeTaken() override;
+
+#pragma region Bounceable
+public:
+	virtual FVector GetVelocity() override;
+	virtual float GetMass() override;
+	virtual EBounceParameters GetBounceParameterType() override;
+	virtual void AddBounceForce(FVector Velocity) override;
+	
+#pragma endregion 
 };
