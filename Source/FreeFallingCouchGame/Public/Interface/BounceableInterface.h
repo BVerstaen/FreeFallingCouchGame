@@ -35,7 +35,7 @@ public:
 	virtual float GetMass() = 0;
 	virtual EBounceParameters GetBounceParameterType() = 0;
 	
-	virtual void AddBounceForce(FVector Velocity);
+	virtual void AddBounceForce(FVector Velocity) = 0;
 
-	virtual AFreeFallCharacter* CollidedWithPlayer();
+	virtual AFreeFallCharacter* CollidedWithPlayer() = 0;
 };
