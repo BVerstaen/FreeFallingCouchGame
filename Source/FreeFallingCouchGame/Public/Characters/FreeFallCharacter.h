@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "Interface/DiveLayersSensible.h"
 #include "Other/DiveLayersID.h"
+#include "Interface/BounceableInterface.h"
 #include "FreeFallCharacter.generated.h"
 
 class AParachute;
@@ -20,7 +21,7 @@ enum class EFreeFallCharacterStateID : uint8;
 class UFreeFallCharacterStateMachine;
 
 UCLASS()
-class FREEFALLINGCOUCHGAME_API AFreeFallCharacter : public ACharacter, public IDiveLayersSensible
+class FREEFALLINGCOUCHGAME_API AFreeFallCharacter : public ACharacter, public IDiveLayersSensible, public IBounceableInterface
 {
 	GENERATED_BODY()
 
@@ -264,9 +265,6 @@ protected:
 	/*La masse du joueur (sert pour les collisions entre objets)*/
 	UPROPERTY(EditAnywhere, Category="Bounce Collision - Player / Object")
 	float PlayerMass;
-	
-	UPROPERTY()
-	FVector OldVelocity = FVector::ZeroVector;
 
 	UPROPERTY()
 	bool bWasRecentlyBounced;
@@ -292,9 +290,6 @@ public:
 public:
 	UFUNCTION(BlueprintCallable)
 	void BounceCooldown();
-	
-	UFUNCTION()
-	float GetPlayerMass();
 
 	UFUNCTION()
 	void SetWasRecentlyBouncedTimer(AFreeFallCharacter* Character);
@@ -302,12 +297,25 @@ public:
 protected:
 	UFUNCTION()
 	void OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
 	
 	UFUNCTION()
 	void ResetBounce();
 
 	UFUNCTION()
 	void ResetWasRecentlyBounced();
+
+
+public:
+	virtual float GetMass() override;
+	virtual FVector GetVelocity() override;
+	virtual EBounceParameters GetBounceParameterType() override;
+	virtual void AddBounceForce(FVector Velocity) override;
+	virtual AFreeFallCharacter* CollidedWithPlayer() override;
+	
+	UFUNCTION()
+	void BounceRoutine(AActor* OtherActor, TScriptInterface<IBounceableInterface> OtherBounceableInterface, float SelfRestitutionMultiplier, float OtherRestitutionMultiplier, float GlobalMultiplier, bool bShouldConsiderMass, bool bShouldKeepRemainVelocity);
+
 	
 #pragma endregion
 
