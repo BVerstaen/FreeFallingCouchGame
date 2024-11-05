@@ -3,12 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Camera/CameraComponent.h"
 #include "Characters/FreeFallCharacter.h"
 #include "GameFramework/Actor.h"
 #include "Other/Parachute.h"
 #include "ArenaActor.generated.h"
 
 class AFreeFallGameMode;
+
+//TODO Transform Arena Actor to tickable Object
 
 UCLASS()
 class FREEFALLINGCOUCHGAME_API AArenaActor : public AActor
@@ -38,6 +41,9 @@ protected:
 	UPROPERTY()
 	TObjectPtr<AParachute> Parachute;
 
+	UPROPERTY()
+	TObjectPtr<UCameraComponent> CameraMain;
+
 	
 public:
 	// Called every frame
@@ -46,6 +52,8 @@ public:
 	UFUNCTION()
 	void Init(const AFreeFallGameMode* FreeFallGameMode);
 
+	UCameraComponent* FindCameraByTag(const FName& Tag) const;
+	
 	UFUNCTION()
 	void CheckAndRemoveOutOfBoundPlayers();
 
@@ -53,8 +61,12 @@ public:
 	UFUNCTION()
 	void CheckOutOfBoundParachute();
 
-	bool IsOutOfBounds(FVector2D ScreenPosition, FVector2D ViewportSize) const;
+	bool IsOutOfBounds(FVector2D ScreenPosition, FVector2D ViewportSizeMin, FVector2D ViewportSizeMax) const;
+
+	bool IsNearOutOfBounds(FVector2D ScreenPosition, FVector2D ViewportSizeMin, FVector2D ViewportSizeMax) const;
 	
+	void GetViewportBounds(FVector2D& OutViewportBoundsMin, FVector2D& OutViewportBoundsMax);
+
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterDestroyed, AFreeFallCharacter*, Character);
 	UPROPERTY(BlueprintAssignable)
 	FOnCharacterDestroyed OnCharacterDestroyed;

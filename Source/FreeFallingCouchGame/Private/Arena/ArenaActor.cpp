@@ -38,6 +38,56 @@ void AArenaActor::Init(const AFreeFallGameMode* FreeFallGameMode)
 	MainCameraController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	
 	Parachute = FreeFallGameMode->GetParachuteInstance();
+
+	CameraMain = FindCameraByTag("CameraMain");
+	if(!CameraMain)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Can't find the main camera! Add \"CameraMain\" tag to main camera!");
+}
+
+UCameraComponent* AArenaActor::FindCameraByTag(const FName& Tag) const
+{
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsWithTag(GetWorld(), Tag, FoundActors);
+	
+	//Go through each found actor and return the first UCameraComponent
+	for (AActor* FoundActor : FoundActors)
+	{
+		if (FoundActor)
+		{
+			if (UCameraComponent* FoundCameraComponent = FoundActor->FindComponentByClass<UCameraComponent>())
+			{
+				return FoundCameraComponent;
+			}
+		}
+	}
+	
+	return nullptr;
+}
+
+void AArenaActor::GetViewportBounds(FVector2D& OutViewportBoundsMin, FVector2D& OutViewportBoundsMax)
+{
+	//Find Viewport
+	UGameViewportClient* ViewportClient = GetWorld()->GetGameViewport();
+	if (ViewportClient == nullptr) return;
+
+	FViewport* Viewport = ViewportClient->Viewport;
+	if (Viewport == nullptr) return;
+
+	//Calculate Viewport Rect according to Camera Aspect Ratio and Viewport ViewRect
+	FIntRect ViewRect(
+		Viewport->GetInitialPositionXY(),
+		Viewport->GetInitialPositionXY() + Viewport->GetSizeXY()
+	);
+
+	
+	FIntRect ViewportRect = Viewport->CalculateViewExtents(CameraMain->AspectRatio, ViewRect);
+
+	//Fill Output parameters with Viewport Rect
+	OutViewportBoundsMin.X = ViewportRect.Min.X;
+	OutViewportBoundsMin.Y = ViewportRect.Min.Y;
+
+	OutViewportBoundsMax.X = ViewportRect.Max.X;
+	OutViewportBoundsMax.Y = ViewportRect.Max.Y;
 }
 
 // Called every frame
@@ -66,9 +116,11 @@ void AArenaActor::CheckAndRemoveOutOfBoundPlayers()
 		if(bCanConvertToScreen)
 		{
 			//Check if player is beyond margin Tolerance
-			const FVector2D ViewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
-
-			if (IsOutOfBounds(ScreenPosition, ViewportSize))
+			FVector2D ViewportSizeMin;
+			FVector2D ViewportSizeMax;
+			GetViewportBounds(ViewportSizeMin, ViewportSizeMax);
+			
+			if (IsOutOfBounds(ScreenPosition, ViewportSizeMin, ViewportSizeMax))
 			{
 				//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, Character->GetName() + "is out");
 
@@ -78,8 +130,7 @@ void AArenaActor::CheckAndRemoveOutOfBoundPlayers()
 
 				CharactersToRemove.Add(Character);
 			}
-			else if (!(ScreenPosition.X >= ViewportSize.X * NearEdgeScreenTolerance && ScreenPosition.X <= ViewportSize.X - ViewportSize.X * NearEdgeScreenTolerance &&
-				ScreenPosition.Y >= ViewportSize.Y * NearEdgeScreenTolerance && ScreenPosition.Y <= ViewportSize.Y - ViewportSize.Y * NearEdgeScreenTolerance))
+			else if (IsNearOutOfBounds(ScreenPosition, ViewportSizeMin, ViewportSizeMax))
 			{
 				//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Is Near Edge of Screen");
 			}
@@ -105,15 +156,25 @@ void AArenaActor::CheckOutOfBoundParachute()
 
 	if(!bCanConvertToScreen) return;
 
-	const FVector2D ViewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
-	if(IsOutOfBounds(ScreenPosition, ViewportSize))
+	FVector2D ViewportSizeMin;
+	FVector2D ViewportSizeMax;
+	GetViewportBounds(ViewportSizeMin, ViewportSizeMax);
+	
+	if(IsOutOfBounds(ScreenPosition, ViewportSizeMin, ViewportSizeMax))
 	{
 		//Parachute->RecenterParachute();
 	}
 }
 
-bool AArenaActor::IsOutOfBounds(FVector2D ScreenPosition, FVector2D ViewportSize) const
+bool AArenaActor::IsOutOfBounds(FVector2D ScreenPosition, FVector2D ViewportSizeMin, FVector2D ViewportSizeMax) const
 {
-	return !(ScreenPosition.X >= -OffScreenHorizontalTolerance && ScreenPosition.X <= ViewportSize.X + OffScreenHorizontalTolerance &&
-				ScreenPosition.Y >= -OffScreenVerticalTolerance && ScreenPosition.Y <= ViewportSize.Y + OffScreenVerticalTolerance);
+	return !(ScreenPosition.X >= -OffScreenHorizontalTolerance + ViewportSizeMin.X && ScreenPosition.X <= ViewportSizeMax.X + OffScreenHorizontalTolerance &&
+				ScreenPosition.Y >= -OffScreenVerticalTolerance + ViewportSizeMin.Y && ScreenPosition.Y <= ViewportSizeMax.Y + OffScreenVerticalTolerance);
+}
+
+bool AArenaActor::IsNearOutOfBounds(FVector2D ScreenPosition, FVector2D ViewportSizeMin, FVector2D ViewportSizeMax) const
+{
+	FVector2D ViewportSize = ViewportSizeMax - ViewportSizeMin;
+	return !(ScreenPosition.X >= ViewportSize.X * NearEdgeScreenTolerance && ScreenPosition.X <= ViewportSize.X - ViewportSize.X * NearEdgeScreenTolerance &&
+				ScreenPosition.Y >= ViewportSize.Y * NearEdgeScreenTolerance && ScreenPosition.Y <= ViewportSize.Y - ViewportSize.Y * NearEdgeScreenTolerance);
 }
