@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Arena/ArenaActor.h"
+#include "Arena/ArenaObject.h"
 
 #include "Characters/FreeFallCharacter.h"
 #include "GameMode/FreeFallGameMode.h"
@@ -10,17 +10,14 @@
 
 
 // Sets default values
-AArenaActor::AArenaActor()
+UArenaObject::UArenaObject()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
 	OffScreenHorizontalTolerance = 0.f;
 	OffScreenVerticalTolerance = 0.f;
 	NearEdgeScreenTolerance = 0.f;
 }
 
-void AArenaActor::Init(const AFreeFallGameMode* FreeFallGameMode)
+void UArenaObject::Init(const AFreeFallGameMode* FreeFallGameMode)
 {
 	//Set existing characters
 	if(FreeFallGameMode == nullptr) return;
@@ -44,7 +41,7 @@ void AArenaActor::Init(const AFreeFallGameMode* FreeFallGameMode)
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Can't find the main camera! Add \"CameraMain\" tag to main camera!");
 }
 
-UCameraComponent* AArenaActor::FindCameraByTag(const FName& Tag) const
+UCameraComponent* UArenaObject::FindCameraByTag(const FName& Tag) const
 {
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsWithTag(GetWorld(), Tag, FoundActors);
@@ -64,7 +61,7 @@ UCameraComponent* AArenaActor::FindCameraByTag(const FName& Tag) const
 	return nullptr;
 }
 
-void AArenaActor::GetViewportBounds(FVector2D& OutViewportBoundsMin, FVector2D& OutViewportBoundsMax)
+void UArenaObject::GetViewportBounds(FVector2D& OutViewportBoundsMin, FVector2D& OutViewportBoundsMax)
 {
 	//Find Viewport
 	UGameViewportClient* ViewportClient = GetWorld()->GetGameViewport();
@@ -91,14 +88,17 @@ void AArenaActor::GetViewportBounds(FVector2D& OutViewportBoundsMin, FVector2D& 
 }
 
 // Called every frame
-void AArenaActor::Tick(float DeltaTime)
+void UArenaObject::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
+	if (LastFrameNumberWeTicked == GFrameCounter)
+		return;
 
 	CheckAndRemoveOutOfBoundPlayers();
+
+	LastFrameNumberWeTicked = GFrameCounter;
 }
 
-void AArenaActor::CheckAndRemoveOutOfBoundPlayers()
+void UArenaObject::CheckAndRemoveOutOfBoundPlayers()
 {
 	TArray<AFreeFallCharacter*> CharactersToRemove;
 	
@@ -147,7 +147,7 @@ void AArenaActor::CheckAndRemoveOutOfBoundPlayers()
 }
 
 
-void AArenaActor::CheckOutOfBoundParachute()
+void UArenaObject::CheckOutOfBoundParachute()
 {
 	FVector ParachuteLocation = Parachute->GetActorLocation();
 	FVector2D ScreenPosition;
@@ -166,13 +166,13 @@ void AArenaActor::CheckOutOfBoundParachute()
 	}
 }
 
-bool AArenaActor::IsOutOfBounds(FVector2D ScreenPosition, FVector2D ViewportSizeMin, FVector2D ViewportSizeMax) const
+bool UArenaObject::IsOutOfBounds(FVector2D ScreenPosition, FVector2D ViewportSizeMin, FVector2D ViewportSizeMax) const
 {
 	return !(ScreenPosition.X >= -OffScreenHorizontalTolerance + ViewportSizeMin.X && ScreenPosition.X <= ViewportSizeMax.X + OffScreenHorizontalTolerance &&
 				ScreenPosition.Y >= -OffScreenVerticalTolerance + ViewportSizeMin.Y && ScreenPosition.Y <= ViewportSizeMax.Y + OffScreenVerticalTolerance);
 }
 
-bool AArenaActor::IsNearOutOfBounds(FVector2D ScreenPosition, FVector2D ViewportSizeMin, FVector2D ViewportSizeMax) const
+bool UArenaObject::IsNearOutOfBounds(FVector2D ScreenPosition, FVector2D ViewportSizeMin, FVector2D ViewportSizeMax) const
 {
 	FVector2D ViewportSize = ViewportSizeMax - ViewportSizeMin;
 	return !(ScreenPosition.X >= ViewportSize.X * NearEdgeScreenTolerance && ScreenPosition.X <= ViewportSize.X - ViewportSize.X * NearEdgeScreenTolerance &&

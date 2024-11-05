@@ -14,7 +14,7 @@ void AFreeFallGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 	CreateAndInitsPlayers();
-	ArenaActorInstance = GetWorld()->SpawnActor<AArenaActor>();
+	ArenaActorInstance = NewObject<UArenaObject>(GetWorld());
 	TrackerActorInstance = GetWorld()->SpawnActor<ATrackerActor>();
 
 	//Find Parachute Spawnlocation then destroy dummy parachute

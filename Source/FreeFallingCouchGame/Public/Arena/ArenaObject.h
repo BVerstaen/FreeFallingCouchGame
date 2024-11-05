@@ -7,20 +7,30 @@
 #include "Characters/FreeFallCharacter.h"
 #include "GameFramework/Actor.h"
 #include "Other/Parachute.h"
-#include "ArenaActor.generated.h"
+#include "ArenaObject.generated.h"
 
 class AFreeFallGameMode;
 
 //TODO Transform Arena Actor to tickable Object
 
 UCLASS()
-class FREEFALLINGCOUCHGAME_API AArenaActor : public AActor
+class FREEFALLINGCOUCHGAME_API UArenaObject : public UObject, public FTickableGameObject
 {
 	GENERATED_BODY()
 
+#pragma region Init
+
 public:
 	// Sets default values for this actor's properties
-	AArenaActor();
+	UArenaObject();
+	UFUNCTION()
+	void Init(const AFreeFallGameMode* FreeFallGameMode);
+
+	UCameraComponent* FindCameraByTag(const FName& Tag) const;
+
+#pragma endregion
+
+#pragma region Properties
 
 protected:
 	UPROPERTY()
@@ -44,16 +54,11 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UCameraComponent> CameraMain;
 
+#pragma endregion 
 	
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+#pragma region Check Out Of Bounds
 	
-	UFUNCTION()
-	void Init(const AFreeFallGameMode* FreeFallGameMode);
-
-	UCameraComponent* FindCameraByTag(const FName& Tag) const;
-	
+public :
 	UFUNCTION()
 	void CheckAndRemoveOutOfBoundPlayers();
 
@@ -70,6 +75,22 @@ public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterDestroyed, AFreeFallCharacter*, Character);
 	UPROPERTY(BlueprintAssignable)
 	FOnCharacterDestroyed OnCharacterDestroyed;
+	
+#pragma endregion 
+	
+#pragma region Tickable Properties
 
+public:
+	virtual void Tick(float DeltaTime) override;
+	virtual ETickableTickType GetTickableTickType() const override { return ETickableTickType::Always; }
+	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(FMyTickableThing, STATGROUP_Tickables); }
+	virtual bool IsTickableWhenPaused() const override { return false; }
+	virtual bool IsTickableInEditor() const override { return false; } 
+	
+private:
+	//To check if we call it multiple frames
+	uint32 LastFrameNumberWeTicked = INDEX_NONE;
+
+#pragma endregion
 	
 };

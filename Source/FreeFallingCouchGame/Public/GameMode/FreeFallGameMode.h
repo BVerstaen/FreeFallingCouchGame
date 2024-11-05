@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "InputMappingContext.h"
-#include "Arena/ArenaActor.h"
+#include "Arena/ArenaObject.h"
 #include "Arena/TrackerActor.h"
 #include "FreeFallingCouchGame/Public/Match/MatchParameters.h"
 #include "Characters/PlayerMatchData.h"
@@ -63,7 +63,7 @@ protected:
 	TArray<int> LossOrder;
 	// Refs to Objects in Scene
 	UPROPERTY()
-	TObjectPtr<AArenaActor> ArenaActorInstance;
+	TObjectPtr<UArenaObject> ArenaActorInstance;
 
 	UPROPERTY()
 	TObjectPtr<ATrackerActor> TrackerActorInstance;
