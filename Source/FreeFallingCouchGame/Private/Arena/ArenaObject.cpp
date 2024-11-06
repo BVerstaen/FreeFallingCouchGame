@@ -76,8 +76,9 @@ void UArenaObject::GetViewportBounds(FVector2D& OutViewportBoundsMin, FVector2D&
 		Viewport->GetInitialPositionXY() + Viewport->GetSizeXY()
 	);
 
-	
-	FIntRect ViewportRect = Viewport->CalculateViewExtents(CameraMain->AspectRatio, ViewRect);
+	FIntRect ViewportRect;
+	if(CameraMain)
+		ViewportRect = Viewport->CalculateViewExtents(CameraMain->AspectRatio, ViewRect);
 
 	//Fill Output parameters with Viewport Rect
 	OutViewportBoundsMin.X = ViewportRect.Min.X;

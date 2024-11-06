@@ -12,6 +12,7 @@
 #include "FreeFallGameMode.generated.h"
 
 
+class ULevelStreamingDynamic;
 class AFreeFallCharacter;
 
 class APlayerStart;
@@ -25,13 +26,23 @@ public:
 	virtual void BeginPlay() override;
 	void StartMatch();
 
+	UFUNCTION()
+	void Init();
+	
 	UPROPERTY(EditAnywhere)
 	TArray<AFreeFallCharacter*> CharactersInsideArena;
-
+	
+	UPROPERTY()
+	ULevelStreamingDynamic* StreamingLevel;
+	
 	UFUNCTION()
 	AParachute* GetParachuteInstance() const;
+
+	void Tick(float DeltaSeconds) override;
 	
 private:
+	void CreatePlayerStarts();
+	
 	void CreateAndInitsPlayers() const;
 
 	UFreeFallCharacterInputData* LoadInputDataFromConfig();

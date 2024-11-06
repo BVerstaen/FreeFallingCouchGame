@@ -6,6 +6,7 @@
 #include "Engine/DeveloperSettings.h"
 #include "MapSettings.generated.h"
 
+class ALevelInstance;
 class AParachute;
 class AFreeFallCharacter;
 /**
@@ -17,6 +18,13 @@ class FREEFALLINGCOUCHGAME_API UMapSettings : public UDeveloperSettings
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(Config, EditAnywhere, Category = "Map")
+	TArray<TSoftObjectPtr<UWorld>> PlayerStartsLevels;
+
+	//TEMPORAIRE !! A Remplacer par le nombre de mannette connecté dans Character Selection screen
+	UPROPERTY(Config, EditAnywhere, Category = "Map")
+	int NumberOfPlayers;
+	
 	UPROPERTY(Config, EditAnywhere, Category="Parachute")
 	TSubclassOf<AParachute> ParachuteSubclass;
 	

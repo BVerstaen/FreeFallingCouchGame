@@ -5,6 +5,7 @@
 
 #include "LocalMultiplayerSubsystem.h"
 #include "Characters/FreeFallCharacter.h"
+#include "Engine/LevelStreamingDynamic.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 #include "Settings/CharactersSettings.h"
@@ -13,6 +14,12 @@
 void AFreeFallGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+	CreatePlayerStarts();
+
+}
+
+void AFreeFallGameMode::Init()
+{
 	CreateAndInitsPlayers();
 	ArenaActorInstance = NewObject<UArenaObject>(GetWorld());
 	TrackerActorInstance = GetWorld()->SpawnActor<ATrackerActor>();
@@ -22,7 +29,7 @@ void AFreeFallGameMode::BeginPlay()
 	if(Parachute)
 	{
 		ParachuteSpawnLocation = Parachute->GetActorLocation();
-		Parachute->Destroy();		
+		Parachute->Destroy();
 	}
 	else
 	{
@@ -32,6 +39,7 @@ void AFreeFallGameMode::BeginPlay()
 	//TODO Find way to receive player made modifications
 	StartMatch();
 }
+
 #pragma region CharacterSpawn
 void AFreeFallGameMode::CreateAndInitsPlayers() const
 {
@@ -43,6 +51,37 @@ void AFreeFallGameMode::CreateAndInitsPlayers() const
 
 	LocalMultiplayerSubsystem->CreateAndInitPlayers(ELocalMultiplayerInputMappingType::InGame);
 }
+
+void AFreeFallGameMode::CreatePlayerStarts()
+{
+	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
+	if (MapSettings == nullptr) return;
+
+	const TArray<TSoftObjectPtr<UWorld>>& WorldList = MapSettings->PlayerStartsLevels;
+	int NumberOfPlayers = MapSettings->NumberOfPlayers;
+	if(NumberOfPlayers <= 1)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Number of player is below 2, NumberOfPlayers need at least 2");
+		return;
+	}
+	TSoftObjectPtr<UWorld> PlayerStartLevelToLoad = WorldList[NumberOfPlayers - 2];
+	
+	bool LoadSuccessful = false;
+	StreamingLevel = ULevelStreamingDynamic::LoadLevelInstanceBySoftObjectPtr(GetWorld(), PlayerStartLevelToLoad, FVector::Zero(), FRotator::ZeroRotator, LoadSuccessful);
+	if(!LoadSuccessful)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Load not successful");
+		return;
+	}
+
+	StreamingLevel->OnLevelLoaded.AddDynamic(this, &AFreeFallGameMode::Init);
+}
+
+void AFreeFallGameMode::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+}
+
 
 UFreeFallCharacterInputData* AFreeFallGameMode::LoadInputDataFromConfig()
 {
@@ -64,16 +103,14 @@ UInputMappingContext* AFreeFallGameMode::LoadInputMappingContextFromConfig()
 
 void AFreeFallGameMode::FindPlayerStartActorsInMap(TArray<APlayerStart*>& ResultsActors)
 {
-	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), FoundActors);
-
-	for (int i = 0; i < FoundActors.Num(); ++i)
+	ULevel* LevelInstance = StreamingLevel->GetLoadedLevel();
+	for (AActor* Actor : LevelInstance->Actors)
 	{
-		APlayerStart* PlayerStartActor = Cast<APlayerStart>(FoundActors[i]);
-		
-		if (PlayerStartActor == nullptr) continue;
-		
-		ResultsActors.Add(PlayerStartActor);
+		if (APlayerStart* PlayerStartActor = Cast<APlayerStart>(Actor))
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, PlayerStartActor->GetName());
+			ResultsActors.Add(PlayerStartActor);
+		}
 	}
 }
 
@@ -162,6 +199,7 @@ void AFreeFallGameMode::StartMatch()
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------MATCH START--------------------"));
 	StartRound();
 }
+
 void AFreeFallGameMode::StartRound()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple, FString::Printf(TEXT("Current Round: %i"), CurrentRound));
