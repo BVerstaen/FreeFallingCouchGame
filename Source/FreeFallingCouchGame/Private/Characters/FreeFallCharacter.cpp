@@ -392,7 +392,7 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallChara
 	{
 		FVector RotatedOffset = this->GetActorRotation().RotateVector(GrabInitialOffset);
 		FVector NewOtherCharacterPosition = this->GetActorLocation() + RotatedOffset;
-		OtherCharacter->SetActorLocation(NewOtherCharacterPosition);
+		OtherCharacter->SetActorLocation(NewOtherCharacterPosition, true);
 	}
 	
 	//Get both players velocity
