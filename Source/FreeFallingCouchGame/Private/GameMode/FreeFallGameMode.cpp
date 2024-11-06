@@ -111,7 +111,6 @@ void AFreeFallGameMode::FindPlayerStartActorsInMap(TArray<APlayerStart*>& Result
 	// }
 	for (ULevelStreaming* StreamingLevel :  GetWorld()->GetStreamingLevels())
 	{
-		GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Red, StreamingLevel->IsLevelVisible() ? "Yes" : "No");
 		if (StreamingLevel && StreamingLevel->IsLevelLoaded())
 		{
 			ULevel* LoadedLevel = StreamingLevel->GetLoadedLevel();

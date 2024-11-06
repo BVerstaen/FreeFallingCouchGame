@@ -44,6 +44,7 @@ void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousS
 				break;
 			
 			case EFreeFallCharacterGrabbingState::GrabObject:
+			case EFreeFallCharacterGrabbingState::GrabHeavierObject:
 				ReleaseObjectGrab(PreviousStateID);
 				break;
 			
@@ -199,6 +200,7 @@ void UFreeFallCharacterStateGrab::ReleaseObjectGrab(EFreeFallCharacterStateID Pr
 		}
 		
 		//Null reference
+		Character->GrabbingState = EFreeFallCharacterGrabbingState::None;
 		Character->OtherObject = nullptr;
 	}
 	
@@ -279,7 +281,7 @@ void UFreeFallCharacterStateGrab::ObjectGrab() const
 		{
 			Character->GrabbingState = EFreeFallCharacterGrabbingState::GrabHeavierObject;
 			Character->GetMovementComponent()->Velocity = FVector(0, 0, 0);
-			Character->GrabHeavyObjectRelativeLocationPoint = FoundObstacle->GetActorLocation() - Character->GetActorLocation();
+			Character->GrabHeavyObjectRelativeLocationPoint = Character->GetActorLocation() - FoundObstacle->GetActorLocation();
 		}
 		else
 		{

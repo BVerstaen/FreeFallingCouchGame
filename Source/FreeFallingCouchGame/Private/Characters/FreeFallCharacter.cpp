@@ -92,8 +92,10 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 	switch (GrabbingState)
 	{
 	case EFreeFallCharacterGrabbingState::None:
-	case EFreeFallCharacterGrabbingState::GrabHeavierObject:
 	case EFreeFallCharacterGrabbingState::GrabPlayer:
+		break;
+	case EFreeFallCharacterGrabbingState::GrabHeavierObject:
+		UpdateHeavyObjectPosition(DeltaTime);
 		break;
 	case EFreeFallCharacterGrabbingState::GrabObject:
 		UpdateObjectPosition(DeltaTime);
@@ -452,7 +454,6 @@ void AFreeFallCharacter::UpdateObjectPosition(float DeltaTime) const
 
 void AFreeFallCharacter::UpdateHeavyObjectPosition(float DeltaTime)
 {
-
 	FVector NewPosition = OtherObject->GetActorLocation() + GrabHeavyObjectRelativeLocationPoint;
 	SetActorLocation(NewPosition);
 }
