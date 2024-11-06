@@ -6,6 +6,7 @@
 #include "Engine/DeveloperSettings.h"
 #include "MapSettings.generated.h"
 
+class AParachute;
 class AFreeFallCharacter;
 /**
  * 
@@ -16,6 +17,9 @@ class FREEFALLINGCOUCHGAME_API UMapSettings : public UDeveloperSettings
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(Config, EditAnywhere, Category="Parachute")
+	TSubclassOf<AParachute> ParachuteSubclass;
+	
 	UPROPERTY(Config, EditAnywhere, Category = "Characters")
 	TSubclassOf<AFreeFallCharacter> CharacterClassP0;
 
@@ -27,4 +31,7 @@ public:
 
 	UPROPERTY(Config, EditAnywhere, Category = "Characters")
 	TSubclassOf<AFreeFallCharacter> CharacterClassP3;
+
+	UPROPERTY(Config, EditAnywhere, Category="Diving")
+	float DiveLayerThreshold;
 };

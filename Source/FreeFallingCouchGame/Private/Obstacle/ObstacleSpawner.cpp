@@ -12,6 +12,8 @@ AObstacleSpawner::AObstacleSpawner()
 	ObstacleMaxSpeed = 1;
 	ObstacleMinTimer = 0;
 	ObstacleMaxTimer = 1;
+
+	bPlaySpawnTimer = true;
 }
 
 void AObstacleSpawner::BeginPlay()
@@ -19,8 +21,11 @@ void AObstacleSpawner::BeginPlay()
 	Super::BeginPlay();
 	
 	//Set spawner timer
-	float SpawnDelay = FMath::RandRange(ObstacleMinTimer, ObstacleMaxTimer);
-	GetWorldTimerManager().SetTimer(SpawnTimer, this, &AObstacleSpawner::SpawnObstacle, SpawnDelay, false, SpawnDelay);
+	if(bPlaySpawnTimer)
+	{
+		float SpawnDelay = FMath::RandRange(ObstacleMinTimer, ObstacleMaxTimer);
+		GetWorldTimerManager().SetTimer(SpawnTimer, this, &AObstacleSpawner::SpawnObstacle, SpawnDelay, false, SpawnDelay);
+	}
 }
 
 void AObstacleSpawner::Tick(float DeltaTime)
@@ -62,25 +67,41 @@ void AObstacleSpawner::SpawnObstacle()
 	float ObstacleSpeed = FMath::RandRange(ObstacleMinSpeed, ObstacleMaxSpeed);
 	SpawningObstacle->Speed = ObstacleSpeed;
 	SpawningObstacle->Direction = ObstacleDirection;
+	//Rotate Obstacle
+	FVector ObstacleFinalTorqueRotation = FVector(
+		FMath::RandRange(ObstacleMinTorqueRotation.X, ObstacleMaxTorqueRotation.X) * 100,
+		FMath::RandRange(ObstacleMinTorqueRotation.Y, ObstacleMaxTorqueRotation.Y) * 100,
+		FMath::RandRange(ObstacleMinTorqueRotation.Z, ObstacleMaxTorqueRotation.Z) * 100
+		);
+	if(SpawningObstacle->Mesh)
+		SpawningObstacle->Mesh->AddTorqueInDegrees(ObstacleFinalTorqueRotation, NAME_None, true);
+	
 	SpawningObstacle->FinishSpawning(SpawnTransform);
 
-	//Reset timer with new delay
-	SpawnTimer.Invalidate();
-	float SpawnDelay = FMath::RandRange(ObstacleMinTimer, ObstacleMaxTimer);
-	GetWorldTimerManager().SetTimer(SpawnTimer, this, &AObstacleSpawner::SpawnObstacle, SpawnDelay, false, SpawnDelay);
-
+	GetWorldTimerManager().ClearTimer(SpawnTimer);
+	//Reset timer
+	if(bPlaySpawnTimer)
+	{
+		float SpawnDelay = FMath::RandRange(ObstacleMinTimer, ObstacleMaxTimer);
+		GetWorldTimerManager().SetTimer(SpawnTimer, this, &AObstacleSpawner::SpawnObstacle, SpawnDelay, false);		
+	}
+	
 }
 
 void AObstacleSpawner::PauseSpawner()
 {
+	bPlaySpawnTimer = false;
+	
 	//Reset timer with new delay
-	SpawnTimer.Invalidate();
+	GetWorldTimerManager().ClearTimer(SpawnTimer);
 }
 
-void AObstacleSpawner::ResumeSpawner()
+void AObstacleSpawner::RestartSpawner()
 {
+	bPlaySpawnTimer = true;
+	
 	//Reset timer with new delay
-    SpawnTimer.Invalidate();
+	GetWorldTimerManager().ClearTimer(SpawnTimer);
     float SpawnDelay = FMath::RandRange(ObstacleMinTimer, ObstacleMaxTimer);
-    GetWorldTimerManager().SetTimer(SpawnTimer, this, &AObstacleSpawner::SpawnObstacle, SpawnDelay, false, SpawnDelay);
+    GetWorldTimerManager().SetTimer(SpawnTimer, this, &AObstacleSpawner::SpawnObstacle, SpawnDelay, false);
 }
