@@ -72,6 +72,6 @@ public:
 	virtual float GetMass() override;
 	virtual EBounceParameters GetBounceParameterType() override;
 	virtual void AddBounceForce(FVector Velocity) override;
-	
+	virtual AFreeFallCharacter* CollidedWithPlayer() override;
 #pragma endregion 
 };

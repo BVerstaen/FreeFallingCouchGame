@@ -127,4 +127,9 @@ void AObstacle::AddBounceForce(FVector Velocity)
 	Mesh->AddForce(Velocity);
 }
 
+AFreeFallCharacter* AObstacle::CollidedWithPlayer()
+{
+	return nullptr;
+}
+
 #pragma endregion
