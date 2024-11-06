@@ -5,6 +5,7 @@
 
 #include "LocalMultiplayerSubsystem.h"
 #include "Characters/FreeFallCharacter.h"
+#include "Engine/LevelStreamingDynamic.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 #include "Settings/CharactersSettings.h"
@@ -13,6 +14,11 @@
 void AFreeFallGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+	CreatePlayerStarts();
+}
+
+void AFreeFallGameMode::Init()
+{
 	CreateAndInitsPlayers();
 	ArenaActorInstance = NewObject<UArenaObject>(GetWorld());
 	TrackerActorInstance = GetWorld()->SpawnActor<ATrackerActor>();
@@ -22,7 +28,7 @@ void AFreeFallGameMode::BeginPlay()
 	if(Parachute)
 	{
 		ParachuteSpawnLocation = Parachute->GetActorLocation();
-		Parachute->Destroy();		
+		Parachute->Destroy();
 	}
 	else
 	{
@@ -32,6 +38,7 @@ void AFreeFallGameMode::BeginPlay()
 	//TODO Find way to receive player made modifications
 	StartMatch();
 }
+
 #pragma region CharacterSpawn
 void AFreeFallGameMode::CreateAndInitsPlayers() const
 {
@@ -42,6 +49,35 @@ void AFreeFallGameMode::CreateAndInitsPlayers() const
 	if (LocalMultiplayerSubsystem == nullptr) return;
 
 	LocalMultiplayerSubsystem->CreateAndInitPlayers(ELocalMultiplayerInputMappingType::InGame);
+}
+
+void AFreeFallGameMode::CreatePlayerStarts()
+{
+	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
+	if (MapSettings == nullptr) return;
+
+	const TArray<TSoftObjectPtr<UWorld>>& WorldList = MapSettings->PlayerStartsLevels;
+	int NumberOfPlayers = MapSettings->NumberOfPlayers;
+	FVector SpawnLocation = MapSettings->PlayerStartSubLevelLocation;
+	
+	if(NumberOfPlayers <= 1)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Number of player is below 2, NumberOfPlayers need at least 2");
+		return;
+	}
+	TSoftObjectPtr<UWorld> PlayerStartLevelToLoad = WorldList[NumberOfPlayers - 2];
+	
+	bool bLoadSuccessful = false;
+	ULevelStreamingDynamic* StreamingLevel = ULevelStreamingDynamic::LoadLevelInstanceBySoftObjectPtr(GetWorld(),
+		PlayerStartLevelToLoad, SpawnLocation, FRotator::ZeroRotator, bLoadSuccessful);
+	
+	if(!bLoadSuccessful)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Load not successful");
+		return;
+	}
+
+	StreamingLevel->OnLevelLoaded.AddDynamic(this, &AFreeFallGameMode::OnSubLevelPlayerStartLoaded);
 }
 
 UFreeFallCharacterInputData* AFreeFallGameMode::LoadInputDataFromConfig()
@@ -64,16 +100,31 @@ UInputMappingContext* AFreeFallGameMode::LoadInputMappingContextFromConfig()
 
 void AFreeFallGameMode::FindPlayerStartActorsInMap(TArray<APlayerStart*>& ResultsActors)
 {
-	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), FoundActors);
-
-	for (int i = 0; i < FoundActors.Num(); ++i)
+	// ULevel* LevelInstance = StreamingLevel->GetLoadedLevel();
+	// for (AActor* Actor : LevelInstance->Actors)
+	// {
+	// 	if (APlayerStart* PlayerStartActor = Cast<APlayerStart>(Actor))
+	// 	{
+	// 		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, PlayerStartActor->GetActorLocation().ToString());
+	// 		ResultsActors.Add(PlayerStartActor);
+	// 	}
+	// }
+	for (ULevelStreaming* StreamingLevel :  GetWorld()->GetStreamingLevels())
 	{
-		APlayerStart* PlayerStartActor = Cast<APlayerStart>(FoundActors[i]);
-		
-		if (PlayerStartActor == nullptr) continue;
-		
-		ResultsActors.Add(PlayerStartActor);
+		if (StreamingLevel && StreamingLevel->IsLevelLoaded())
+		{
+			ULevel* LoadedLevel = StreamingLevel->GetLoadedLevel();
+			if (LoadedLevel)
+			{
+				for (AActor* Actor : LoadedLevel->Actors)
+				{
+					if (APlayerStart* PlayerStartActor = Cast<APlayerStart>(Actor))
+					{
+						ResultsActors.Add(PlayerStartActor);
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -147,6 +198,31 @@ AParachute* AFreeFallGameMode::GetParachuteInstance() const
 	return ParachuteInstance;
 }
 
+/*
+ *	Idea -> wait until player start sublevel is loaded before continuing Initialisation
+ */
+void AFreeFallGameMode::OnSubLevelPlayerStartLoaded() { GetWorld()->GetTimerManager().SetTimer(SubLevelTimerHandle, this, &AFreeFallGameMode::VerifyLevelVisibility, 0.1f, true); }
+void AFreeFallGameMode::VerifyLevelVisibility()
+{
+	bool bAllLevelsVisible = true;
+
+	//Check if every streaming level is Visible
+	for (ULevelStreaming* StreamingLevel : GetWorld()->GetStreamingLevels())
+	{
+		if (StreamingLevel && !StreamingLevel->IsLevelVisible())
+		{
+			bAllLevelsVisible = false;
+			break;
+		}
+	}
+	//If so -> stop timer and continue initialisation
+	if (bAllLevelsVisible)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(SubLevelTimerHandle);
+		Init();
+	}
+}
+
 #pragma endregion
 
 #pragma region PreRound
@@ -162,6 +238,7 @@ void AFreeFallGameMode::StartMatch()
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------MATCH START--------------------"));
 	StartRound();
 }
+
 void AFreeFallGameMode::StartRound()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple, FString::Printf(TEXT("Current Round: %i"), CurrentRound));
