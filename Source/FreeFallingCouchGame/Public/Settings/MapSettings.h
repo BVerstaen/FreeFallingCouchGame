@@ -21,9 +21,13 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category = "Map")
 	TArray<TSoftObjectPtr<UWorld>> PlayerStartsLevels;
 
+	UPROPERTY(Config, EditAnywhere, Category = "Map")
+	FVector PlayerStartSubLevelLocation;
+	
 	//TEMPORAIRE !! A Remplacer par le nombre de mannette connecté dans Character Selection screen
 	UPROPERTY(Config, EditAnywhere, Category = "Map")
 	int NumberOfPlayers;
+	
 	
 	UPROPERTY(Config, EditAnywhere, Category="Parachute")
 	TSubclassOf<AParachute> ParachuteSubclass;

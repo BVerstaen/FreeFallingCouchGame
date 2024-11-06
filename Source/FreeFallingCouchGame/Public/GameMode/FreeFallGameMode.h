@@ -25,20 +25,21 @@ class FREEFALLINGCOUCHGAME_API AFreeFallGameMode : public AGameModeBase
 public:
 	virtual void BeginPlay() override;
 	void StartMatch();
-
-	UFUNCTION()
 	void Init();
 	
 	UPROPERTY(EditAnywhere)
 	TArray<AFreeFallCharacter*> CharactersInsideArena;
 	
-	UPROPERTY()
-	ULevelStreamingDynamic* StreamingLevel;
-	
 	UFUNCTION()
 	AParachute* GetParachuteInstance() const;
 
-	void Tick(float DeltaSeconds) override;
+#pragma region Player Start Level Instanciation
+private:
+	UFUNCTION()
+	void OnSubLevelPlayerStartLoaded();
+	void VerifyLevelVisibility();
+	FTimerHandle SubLevelTimerHandle;
+#pragma endregion 
 	
 private:
 	void CreatePlayerStarts();
