@@ -227,9 +227,13 @@ void AFreeFallCharacter::OnInputMove(const FInputActionValue& Value)
 #pragma endregion
 
 #pragma region Dive
-float AFreeFallCharacter::GetInputDive() const
+float AFreeFallCharacter::GetInputDive()
 {
+	//Can't dive if is grabbing a heavier object
 	if(GrabbingState == EFreeFallCharacterGrabbingState::GrabHeavierObject) return 0.0f;
+	//Invert dive input
+	if(InvertDiveInput)
+		InputDive *= -1;
 	return InputDive;
 }
 

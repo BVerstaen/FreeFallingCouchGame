@@ -96,7 +96,7 @@ private:
 #pragma region Input Dive
 
 public:
-	float GetInputDive() const;
+	float GetInputDive();
 
 	UFUNCTION(BlueprintCallable)
 	void SetDiveMaterialColor();
@@ -108,6 +108,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	TMap<EDiveLayersID, FLinearColor> DiveLevelsColors;
 
+	bool InvertDiveInput = false;
 protected:
 	UPROPERTY()
 	float InputDive = 0.f;
