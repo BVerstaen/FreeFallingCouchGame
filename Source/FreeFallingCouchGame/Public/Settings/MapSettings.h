@@ -44,6 +44,15 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category = "Characters")
 	TSubclassOf<AFreeFallCharacter> CharacterClassP3;
 
+	UPROPERTY(Config, EditAnywhere, Category = "Characters")
+	bool CharacterP0InvertDiveControl;
+	UPROPERTY(Config, EditAnywhere, Category = "Characters")
+	bool CharacterP1InvertDiveControl;
+	UPROPERTY(Config, EditAnywhere, Category = "Characters")
+	bool CharacterP2InvertDiveControl;
+	UPROPERTY(Config, EditAnywhere, Category = "Characters")
+	bool CharacterP3InvertDiveControl;
+	
 	UPROPERTY(Config, EditAnywhere, Category="Diving")
 	float DiveLayerThreshold;
 };

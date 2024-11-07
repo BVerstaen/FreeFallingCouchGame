@@ -231,9 +231,7 @@ float AFreeFallCharacter::GetInputDive()
 {
 	//Can't dive if is grabbing a heavier object
 	if(GrabbingState == EFreeFallCharacterGrabbingState::GrabHeavierObject) return 0.0f;
-	//Invert dive input
-	if(InvertDiveInput)
-		InputDive *= -1;
+	
 	return InputDive;
 }
 
@@ -295,6 +293,9 @@ void AFreeFallCharacter::BindInputDiveAxisAndActions(UEnhancedInputComponent* En
 void AFreeFallCharacter::OnInputDive(const FInputActionValue& Value)
 {
 	InputDive = Value.Get<float>();
+	//Invert dive input
+	if(InvertDiveInput)
+		InputDive *= -1;
 }
 
 #pragma endregion
