@@ -10,6 +10,7 @@
 #include "Interface/BounceableInterface.h"
 #include "FreeFallCharacter.generated.h"
 
+class UPowerUpObject;
 class AParachute;
 enum class EDiveLayersID : uint8;
 class ADiveLevels;
@@ -332,6 +333,14 @@ protected:
 public:
 	UFUNCTION()
 	USceneComponent* GetParachuteAttachPoint(); 
+	
+#pragma endregion
+
+#pragma region PowerUp
+	
+public:
+	UPROPERTY()
+	UPowerUpObject* CurrentPowerUp;
 	
 #pragma endregion
 };
