@@ -37,7 +37,7 @@ private:
 	void OnEventEnded(AEventActor* TriggeringActor);
 
 	UPROPERTY(EditAnywhere)
-	AObstacleSpawnerManager* ObstacleSpawnerManager = nullptr;
+	TObjectPtr<AObstacleSpawnerManager> ObstacleSpawnerManager = nullptr;
 
 	//Temps entre chaque Events;
 	UPROPERTY(EditAnywhere)
@@ -54,7 +54,7 @@ private:
 	bool EventHappening = false;
 
 	UPROPERTY()
-	AEventActor* CurrentEventActor = nullptr;
+	TObjectPtr<AEventActor> CurrentEventActor = nullptr;
 
 	UPROPERTY(EditAnywhere)
 	TArray<AEventActor*> EventsActors;
