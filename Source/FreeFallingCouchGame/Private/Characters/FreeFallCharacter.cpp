@@ -299,6 +299,7 @@ void AFreeFallCharacter::OnInputDive(const FInputActionValue& Value)
 
 void AFreeFallCharacter::ApplyDiveForce(FVector DiveForceDirection, float DiveStrength)
 {
+	GetCharacterMovement()->bOrientRotationToMovement = (GrabbingState != EFreeFallCharacterGrabbingState::GrabHeavierObject);
 	AddMovementInput(DiveForceDirection,DiveStrength / GetCharacterMovement()->MaxFlySpeed);
 }
 
