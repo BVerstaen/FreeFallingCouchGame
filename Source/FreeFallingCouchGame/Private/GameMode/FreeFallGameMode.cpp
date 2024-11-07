@@ -100,15 +100,6 @@ UInputMappingContext* AFreeFallGameMode::LoadInputMappingContextFromConfig()
 
 void AFreeFallGameMode::FindPlayerStartActorsInMap(TArray<APlayerStart*>& ResultsActors)
 {
-	// ULevel* LevelInstance = StreamingLevel->GetLoadedLevel();
-	// for (AActor* Actor : LevelInstance->Actors)
-	// {
-	// 	if (APlayerStart* PlayerStartActor = Cast<APlayerStart>(Actor))
-	// 	{
-	// 		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, PlayerStartActor->GetActorLocation().ToString());
-	// 		ResultsActors.Add(PlayerStartActor);
-	// 	}
-	// }
 	for (ULevelStreaming* StreamingLevel :  GetWorld()->GetStreamingLevels())
 	{
 		if (StreamingLevel && StreamingLevel->IsLevelLoaded())

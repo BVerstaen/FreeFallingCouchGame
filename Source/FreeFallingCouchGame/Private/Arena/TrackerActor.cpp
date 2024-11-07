@@ -203,22 +203,25 @@ void ATrackerActor::DebugPrintResultReward()
 	//Get winners and display them in viewport
 	for (ETrackingRewardCategory Category : Categories)
 	{
-		TArray<int> WinningPlayers = GetTrackingWinners(Category);
-        
+		//Check if category contains name
+		if (!CategoryNames.Contains(Category)) continue;
+    
 		//Display reward name
-		FString RewardMessage = FString::Printf(TEXT("Reward: %s"), *CategoryNames[Category]);
+		FString RewardMessage = "Reward:" + CategoryNames[Category];
 
+		
+		TArray<int> WinningPlayers = GetTrackingWinners(Category);
 		if (WinningPlayers.Num() > 0)
 		{
-			RewardMessage += TEXT(" - Winner(s): ");
+			RewardMessage += " - Winner(s): ";
 			for (int PlayerId : WinningPlayers)
 			{
-				RewardMessage += FString::FromInt(PlayerId) + TEXT(" ");
+				RewardMessage += FString::FromInt(PlayerId) + " ";
 			}
 		}
 		else
 		{
-			RewardMessage += TEXT(" - No winner");
+			RewardMessage += " - No winner";
 		}
 		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Yellow, RewardMessage);
 	}
