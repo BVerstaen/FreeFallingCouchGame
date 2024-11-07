@@ -7,6 +7,7 @@
 #include "PowerUpObject.generated.h"
 
 
+enum class EPowerUpsID : uint8;
 class AFreeFallCharacter;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -23,6 +24,8 @@ public:
 	void SetupCharacter(AFreeFallCharacter* Character);
 
 	virtual void PrepareForDestruction();
+
+	virtual EPowerUpsID GetPowerUpID();
 
 private:
 	UPROPERTY()

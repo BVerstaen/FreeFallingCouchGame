@@ -39,14 +39,24 @@ bool APowerUpCollectible::CanBeTaken()
 
 void APowerUpCollectible::Use(AFreeFallCharacter* Character)
 {
-	UPowerUpObject* PowerUpObj = NewObject<UPowerUpObject>(this, *PowerUpObject);
-	PowerUpObj->SetupCharacter(Character);
-	Character->CurrentPowerUp->PrepareForDestruction();
-	Character->CurrentPowerUp = PowerUpObj;
+	if (PowerUpObject == nullptr)
+	{
+		GEngine->AddOnScreenDebugMessage(
+		-1, 5, FColor::Red,
+		TEXT("Can't collect PowerUp Collectible, UObject is nullptr")
+		);
+		return;
+	} 
+	UPowerUpObject* CreatedPowerUpObj = NewObject<UPowerUpObject>(this, *PowerUpObject);
+	CreatedPowerUpObj->SetupCharacter(Character);
+	if (Character->CurrentPowerUp != nullptr) Character->CurrentPowerUp->PrepareForDestruction();
+	Character->CurrentPowerUp = CreatedPowerUpObj;
 	
 	GEngine->AddOnScreenDebugMessage(
 		-1, 5, FColor::Emerald,
-		TEXT("Player : " + Character->GetSelfActor()->GetName() + "Using PowerUpCollectible")
+		TEXT("Player : " + Character->GetSelfActor()->GetName() + " Collected PowerUp : " + UEnum::GetDisplayValueAsText(CreatedPowerUpObj->GetPowerUpID()).ToString())
 		);
+
+	this->Destroy();
 }
 

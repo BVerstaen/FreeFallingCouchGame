@@ -3,6 +3,8 @@
 
 #include "PowerUps/PowerUpObject.h"
 
+#include "PowerUps/PowerUpsID.h"
+
 UPowerUpObject::UPowerUpObject()
 {
 }
@@ -18,5 +20,10 @@ void UPowerUpObject::SetupCharacter(AFreeFallCharacter* Character)
 
 void UPowerUpObject::PrepareForDestruction()
 {
+}
+
+EPowerUpsID UPowerUpObject::GetPowerUpID()
+{
+	return EPowerUpsID::None;
 }
 
