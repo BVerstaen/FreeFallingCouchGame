@@ -239,7 +239,7 @@ void UFreeFallCharacterStateGrab::PlayerGrab() const
 	
 	//Calculate location offset
 	FVector GrabOffset = FoundCharacter->GetActorLocation() - Character->GetActorLocation();
-	if(GrabOffset.Size() <= GrabMinimumDistance)
+	if(GrabOffset.Size() <= GrabMinimumDistance || GrabOffset.Size() >= GrabMaximumDistance	)
 	{
 		FoundCharacter->SetActorLocation(Character->GetActorLocation() + Character->GetActorForwardVector() * GrabMinimumDistance);
 		GrabOffset = FoundCharacter->GetActorLocation() - Character->GetActorLocation();
