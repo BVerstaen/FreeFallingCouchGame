@@ -92,8 +92,10 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 	switch (GrabbingState)
 	{
 	case EFreeFallCharacterGrabbingState::None:
-	case EFreeFallCharacterGrabbingState::GrabHeavierObject:
 	case EFreeFallCharacterGrabbingState::GrabPlayer:
+		break;
+	case EFreeFallCharacterGrabbingState::GrabHeavierObject:
+		UpdateHeavyObjectPosition(DeltaTime);
 		break;
 	case EFreeFallCharacterGrabbingState::GrabObject:
 		UpdateObjectPosition(DeltaTime);
@@ -225,9 +227,11 @@ void AFreeFallCharacter::OnInputMove(const FInputActionValue& Value)
 #pragma endregion
 
 #pragma region Dive
-float AFreeFallCharacter::GetInputDive() const
+float AFreeFallCharacter::GetInputDive()
 {
+	//Can't dive if is grabbing a heavier object
 	if(GrabbingState == EFreeFallCharacterGrabbingState::GrabHeavierObject) return 0.0f;
+	
 	return InputDive;
 }
 
@@ -253,6 +257,8 @@ float AFreeFallCharacter::GetDiveLayerForceStrength() const
 
 ACameraActor* AFreeFallCharacter::GetCameraActor() const
 {
+	if(!CameraActor)
+		return nullptr;
 	return CameraActor;
 }
 
@@ -289,6 +295,9 @@ void AFreeFallCharacter::BindInputDiveAxisAndActions(UEnhancedInputComponent* En
 void AFreeFallCharacter::OnInputDive(const FInputActionValue& Value)
 {
 	InputDive = Value.Get<float>();
+	//Invert dive input
+	if(InvertDiveInput)
+		InputDive *= -1;
 }
 
 #pragma endregion
@@ -297,6 +306,7 @@ void AFreeFallCharacter::OnInputDive(const FInputActionValue& Value)
 
 void AFreeFallCharacter::ApplyDiveForce(FVector DiveForceDirection, float DiveStrength)
 {
+	GetCharacterMovement()->bOrientRotationToMovement = (GrabbingState != EFreeFallCharacterGrabbingState::GrabHeavierObject);
 	AddMovementInput(DiveForceDirection,DiveStrength / GetCharacterMovement()->MaxFlySpeed);
 }
 
@@ -392,7 +402,7 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallChara
 	{
 		FVector RotatedOffset = this->GetActorRotation().RotateVector(GrabInitialOffset);
 		FVector NewOtherCharacterPosition = this->GetActorLocation() + RotatedOffset;
-		OtherCharacter->SetActorLocation(NewOtherCharacterPosition);
+		OtherCharacter->SetActorLocation(NewOtherCharacterPosition, true);
 	}
 	
 	//Get both players velocity
@@ -452,7 +462,6 @@ void AFreeFallCharacter::UpdateObjectPosition(float DeltaTime) const
 
 void AFreeFallCharacter::UpdateHeavyObjectPosition(float DeltaTime)
 {
-
 	FVector NewPosition = OtherObject->GetActorLocation() + GrabHeavyObjectRelativeLocationPoint;
 	SetActorLocation(NewPosition);
 }

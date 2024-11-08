@@ -97,7 +97,7 @@ private:
 #pragma region Input Dive
 
 public:
-	float GetInputDive() const;
+	float GetInputDive();
 
 	UFUNCTION(BlueprintCallable)
 	void SetDiveMaterialColor();
@@ -109,6 +109,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	TMap<EDiveLayersID, FLinearColor> DiveLevelsColors;
 
+	bool InvertDiveInput = false;
 protected:
 	UPROPERTY()
 	float InputDive = 0.f;
@@ -117,13 +118,13 @@ protected:
 	float DiveLayerForceStrength = 1.f;
 
 	UPROPERTY(BlueprintReadWrite)
-	UMaterialInstanceDynamic* DiveMaterialInstance;
+	TObjectPtr<UMaterialInstanceDynamic> DiveMaterialInstance;
 
 	UPROPERTY()
-	ADiveLevels* DiveLevelsActor;
+	TObjectPtr<ADiveLevels> DiveLevelsActor;
 
 	UPROPERTY()
-	ACameraActor* CameraActor;
+	TObjectPtr<ACameraActor> CameraActor;
 	
 private:
 	void BindInputDiveAxisAndActions(UEnhancedInputComponent* EnhancedInputComponent);
@@ -341,6 +342,12 @@ public:
 public:
 	UPROPERTY()
 	UPowerUpObject* CurrentPowerUp;
+	
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTakePowerUp,const AFreeFallCharacter*, Character);
+	FTakePowerUp OnTakePowerUp;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUsePowerUp,const AFreeFallCharacter*, Character);
+	FUsePowerUp OnUsePowerUp;
 	
 #pragma endregion
 };

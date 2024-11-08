@@ -69,8 +69,4 @@ protected:
 	UPROPERTY()
 	EFreeFallCharacterStateID PreviousState;
 
-public:
-	UPROPERTY()
-	UPhysicsConstraintComponent* GrabConstraint;
-
 };
