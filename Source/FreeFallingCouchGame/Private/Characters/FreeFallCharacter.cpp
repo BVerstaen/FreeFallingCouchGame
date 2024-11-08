@@ -257,6 +257,8 @@ float AFreeFallCharacter::GetDiveLayerForceStrength() const
 
 ACameraActor* AFreeFallCharacter::GetCameraActor() const
 {
+	if(!CameraActor)
+		return nullptr;
 	return CameraActor;
 }
 

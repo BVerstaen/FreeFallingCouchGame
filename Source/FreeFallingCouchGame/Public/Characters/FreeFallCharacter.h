@@ -117,13 +117,13 @@ protected:
 	float DiveLayerForceStrength = 1.f;
 
 	UPROPERTY(BlueprintReadWrite)
-	UMaterialInstanceDynamic* DiveMaterialInstance;
+	TObjectPtr<UMaterialInstanceDynamic> DiveMaterialInstance;
 
 	UPROPERTY()
-	ADiveLevels* DiveLevelsActor;
+	TObjectPtr<ADiveLevels> DiveLevelsActor;
 
 	UPROPERTY()
-	ACameraActor* CameraActor;
+	TObjectPtr<ACameraActor> CameraActor;
 	
 private:
 	void BindInputDiveAxisAndActions(UEnhancedInputComponent* EnhancedInputComponent);
