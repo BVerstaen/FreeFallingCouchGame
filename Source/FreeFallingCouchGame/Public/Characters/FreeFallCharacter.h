@@ -343,5 +343,11 @@ public:
 	UPROPERTY()
 	UPowerUpObject* CurrentPowerUp;
 	
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTakePowerUp,const AFreeFallCharacter*, Character);
+	FTakePowerUp OnTakePowerUp;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUsePowerUp,const AFreeFallCharacter*, Character);
+	FUsePowerUp OnUsePowerUp;
+	
 #pragma endregion
 };
