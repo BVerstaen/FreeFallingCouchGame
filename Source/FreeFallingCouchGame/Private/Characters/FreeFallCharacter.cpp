@@ -429,7 +429,7 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallChara
 		TargetRotation += GrabDefaultRotationOffset;
 		FRotator NewGrabbedRotation = FMath::RInterpTo(OtherCharacter->GetActorRotation(), TargetRotation, DeltaTime, GrabRotationSpeed);
 
-		GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Cyan, GetName() + " - " + NewGrabbedRotation.ToString());
+		GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Cyan, GetName() + " - " + TargetRotation.ToString());
 
 		OtherCharacter->SetActorRotation(NewGrabbedRotation);
 	}

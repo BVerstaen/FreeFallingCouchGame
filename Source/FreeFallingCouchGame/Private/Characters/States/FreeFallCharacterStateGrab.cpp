@@ -171,7 +171,11 @@ void UFreeFallCharacterStateGrab::ReleasePlayerGrab(EFreeFallCharacterStateID Pr
 		//Remove references
 		Character->OtherCharacterGrabbing->OtherCharacterGrabbedBy = nullptr;
 		Character->OtherCharacterGrabbing = nullptr;
-			
+
+
+		//Reset GrabDefaultRotationOffset if is grabbed
+		if(Character->OtherCharacterGrabbedBy)
+			Character->GrabDefaultRotationOffset = Character->OtherCharacterGrabbedBy->GrabDefaultRotationOffset;
 	}
 }
 
@@ -239,7 +243,7 @@ void UFreeFallCharacterStateGrab::PlayerGrab() const
 	
 	//Calculate location offset
 	FVector GrabOffset = FoundCharacter->GetActorLocation() - Character->GetActorLocation();
-	if(GrabOffset.Size() <= GrabMinimumDistance || GrabOffset.Size() >= GrabMaximumDistance	)
+	if(GrabOffset.Size() <= GrabMinimumDistance || GrabOffset.Size() >= GrabMaximumDistance)
 	{
 		FoundCharacter->SetActorLocation(Character->GetActorLocation() + Character->GetActorForwardVector() * GrabMinimumDistance);
 		GrabOffset = FoundCharacter->GetActorLocation() - Character->GetActorLocation();
