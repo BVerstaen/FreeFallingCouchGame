@@ -186,7 +186,7 @@ private:
 	
 public:
 	UFUNCTION()
-	bool IsLookingToCloseToGrabber();
+	bool IsLookingToCloseToGrabber(float AngleLimit);
 	
 public:
 	bool bInputGrabPressed = false;
