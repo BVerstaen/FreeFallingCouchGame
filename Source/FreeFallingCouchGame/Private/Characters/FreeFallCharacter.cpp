@@ -466,6 +466,19 @@ void AFreeFallCharacter::UpdateHeavyObjectPosition(float DeltaTime)
 	SetActorLocation(NewPosition);
 }
 
+bool AFreeFallCharacter::IsLookingToCloseToGrabber()
+{
+	if(!OtherCharacterGrabbedBy) return false;
+
+	float SelfYRotation = GetActorRotation().Yaw;
+	float OtherYRotation = OtherCharacterGrabbedBy->GetActorRotation().Yaw;
+	float LookDiffAngle = FMath::Abs(OtherYRotation - SelfYRotation);
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, "Self : " + GetActorRotation().GetNormalized().ToString()
+	+ " ; Grab : " + OtherCharacterGrabbedBy->GetActorRotation().GetNormalized().ToString() + " ; Diff : " + FString::FromInt(LookDiffAngle));
+	
+	return LookDiffAngle > 160.f && LookDiffAngle < 200.f;
+}
+
 TObjectPtr<USceneComponent> AFreeFallCharacter::GetObjectGrabPoint() const
 {
 	return ObjectGrabPoint;

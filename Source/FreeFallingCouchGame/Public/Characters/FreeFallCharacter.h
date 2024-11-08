@@ -185,6 +185,10 @@ private:
 	void UpdateHeavyObjectPosition(float DeltaTime);
 	
 public:
+	UFUNCTION()
+	bool IsLookingToCloseToGrabber();
+	
+public:
 	bool bInputGrabPressed = false;
 	EFreeFallCharacterGrabbingState GrabbingState;
 
