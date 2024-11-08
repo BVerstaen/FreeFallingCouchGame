@@ -121,6 +121,13 @@ void AFreeFallCharacter::DestroyPlayer()
 			Parachute->DropParachute(this);
 		}
 	}
+
+	//Remove reference if was grabbing
+	if(OtherCharacterGrabbing)
+	{
+		OtherCharacterGrabbing->OtherCharacterGrabbedBy = nullptr;
+		OtherCharacterGrabbing = nullptr;
+	}
 	
 	Destroy();
 }
@@ -405,6 +412,7 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallChara
 		FVector NewOtherCharacterPosition = this->GetActorLocation() + RotatedOffset;
 		OtherCharacter->SetActorLocation(NewOtherCharacterPosition, true);
 	}
+
 	
 	//Get both players velocity
 	FVector CharacterVelocity = GetVelocity();
@@ -422,8 +430,9 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallChara
 	GetMovementComponent()->Velocity = NewCharacterVelocity;
 	OtherCharacter->GetMovementComponent()->Velocity = NewOtherCharacterVelocity;
 
+	
 	//Set other Character rotation
-	if(!(OtherCharacterGrabbedBy == OtherCharacter && OtherCharacterGrabbing) && !bIsCircularGrab)
+	if(!(OtherCharacterGrabbedBy == OtherCharacter) && !bIsCircularGrab)
 	{
 		FRotator TargetRotation = this->GetActorRotation();
 		TargetRotation += GrabDefaultRotationOffset;
@@ -477,8 +486,8 @@ bool AFreeFallCharacter::IsLookingToCloseToGrabber(float AngleLimit)
 	float SelfYRotation = GetActorRotation().Yaw;
 	float OtherYRotation = OtherCharacterGrabbedBy->GetActorRotation().Yaw;
 	float LookDiffAngle = FMath::Abs(OtherYRotation - SelfYRotation);
-	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, "Self : " + GetActorRotation().GetNormalized().ToString()
-	//+ " ; Grab : " + OtherCharacterGrabbedBy->GetActorRotation().GetNormalized().ToString() + " ; Diff : " + FString::FromInt(LookDiffAngle));
+
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, GetName() + " - " + (LookDiffAngle > 180.f - AngleLimit && LookDiffAngle < 180 + AngleLimit ? "Yes" : "No"));
 	
 	return LookDiffAngle > 180.f - AngleLimit && LookDiffAngle < 180 + AngleLimit;
 }

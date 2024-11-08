@@ -49,6 +49,11 @@ protected:
 	/*Distance minimum avec lequel un joueur n'est pas recenter*/
 	UPROPERTY(EditAnywhere, Category="Grab - Catch")
 	float GrabMaximumDistance = 200.0f;
+
+	/*Angle limite entre le joueur et celui qui le grab à partir duquel on ne peut pas grab
+	 *car trop proche (je suis fatigué déso si pas clair)*/
+	UPROPERTY(EditAnywhere, Category="Grab - Catch")
+	float ChainGrabAngleLimit = 20.0f;
 	
 	/*A quelle vitesse celui qui est agrippé suit la rotation du "maitre" ?*/
 	UPROPERTY(EditAnywhere, Category="PlayerGrab - Influences")
