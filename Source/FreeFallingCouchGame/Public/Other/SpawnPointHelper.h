@@ -4,20 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Interface/GrabbableInterface.h"
-#include "PowerUpCollectible.generated.h"
+#include "SpawnPointHelper.generated.h"
 
-class UPowerUpObject;
-enum class EPowerUpsID : uint8;
+class ADiveLevels;
 
 UCLASS()
-class FREEFALLINGCOUCHGAME_API APowerUpCollectible : public AActor, public IGrabbableInterface
+class FREEFALLINGCOUCHGAME_API ASpawnPointHelper : public AActor
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this actor's properties
-	APowerUpCollectible();
+	ASpawnPointHelper();
 
 protected:
 	// Called when the game starts or when spawned
@@ -26,13 +24,10 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	
-	virtual bool CanBeGrabbed() override;
-	
-	virtual bool CanBeTaken() override;
 
-	virtual void Use(AFreeFallCharacter* Character) override;
-	
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<UPowerUpObject> PowerUpObject;
+	ADiveLevels* DiveLevelsActor;
+
+	UFUNCTION(CallInEditor)
+	void CenterOnCurrentDiveLevel();
 };

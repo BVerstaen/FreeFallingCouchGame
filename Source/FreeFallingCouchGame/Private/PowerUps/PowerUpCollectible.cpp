@@ -18,7 +18,8 @@ APowerUpCollectible::APowerUpCollectible()
 void APowerUpCollectible::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, "PowerUpCollectible::BeginPlay");
 }
 
 // Called every frame
