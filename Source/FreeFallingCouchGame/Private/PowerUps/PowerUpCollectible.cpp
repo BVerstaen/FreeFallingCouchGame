@@ -50,8 +50,7 @@ void APowerUpCollectible::Use(AFreeFallCharacter* Character)
 	} 
 	UPowerUpObject* CreatedPowerUpObj = NewObject<UPowerUpObject>(this, *PowerUpObject);
 	CreatedPowerUpObj->SetupCharacter(Character);
-	if (Character->CurrentPowerUp != nullptr) Character->CurrentPowerUp->PrepareForDestruction();
-	Character->CurrentPowerUp = CreatedPowerUpObj;
+	Character->SetPowerUp(CreatedPowerUpObj);
 	
 	GEngine->AddOnScreenDebugMessage(
 		-1, 5, FColor::Emerald,

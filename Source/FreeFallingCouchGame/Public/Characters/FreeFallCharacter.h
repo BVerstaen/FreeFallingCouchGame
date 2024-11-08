@@ -52,6 +52,7 @@ public:
 	void InitStateMachine();
 
 	void TickStateMachine(float DeltaTime) const;
+	
 
 protected:
 	UPROPERTY(BlueprintReadOnly)
@@ -339,9 +340,12 @@ public:
 
 #pragma region PowerUp
 	
-public:
+protected:
 	UPROPERTY()
 	UPowerUpObject* CurrentPowerUp;
+
+public:
+	void SetPowerUp(UPowerUpObject* PowerUpObject);
 	
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTakePowerUp,const AFreeFallCharacter*, Character);
 	FTakePowerUp OnTakePowerUp;
