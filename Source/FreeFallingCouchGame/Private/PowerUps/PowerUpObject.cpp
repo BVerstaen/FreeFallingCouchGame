@@ -11,6 +11,7 @@ UPowerUpObject::UPowerUpObject()
 
 void UPowerUpObject::Use()
 {
+	hasBeenUsed = true;
 }
 
 void UPowerUpObject::SetupCharacter(AFreeFallCharacter* Character)

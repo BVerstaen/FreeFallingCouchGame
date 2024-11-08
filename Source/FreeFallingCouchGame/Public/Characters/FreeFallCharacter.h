@@ -339,12 +339,17 @@ public:
 #pragma endregion
 
 #pragma region PowerUp
-	
-protected:
-	UPROPERTY()
-	UPowerUpObject* CurrentPowerUp;
 
 public:
+	UPROPERTY()
+	TObjectPtr<UPowerUpObject> CurrentPowerUp;
+	
+	UPROPERTY()
+	bool bInputUsePowerUpPressed = false;
+	
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInputUsePowerUp);
+	FInputGrabbing OnInputUsePowerUpEvent;
+	
 	void SetPowerUp(UPowerUpObject* PowerUpObject);
 	
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTakePowerUp,const AFreeFallCharacter*, Character);
@@ -352,6 +357,11 @@ public:
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUsePowerUp,const AFreeFallCharacter*, Character);
 	FUsePowerUp OnUsePowerUp;
+
+private:
+	void BindInputUsePowerUpActions(UEnhancedInputComponent* EnhancedInputComponent);
+
+	void OnInputUsePowerUp(const FInputActionValue& Value);
 	
 #pragma endregion
 };

@@ -139,6 +139,7 @@ void AFreeFallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	BindInputMoveAxisAndActions(EnhancedInputComponent);
 	BindInputDiveAxisAndActions(EnhancedInputComponent);
 	BindInputGrabActions(EnhancedInputComponent);
+	BindInputUsePowerUpActions(EnhancedInputComponent);
 }
 
 
@@ -613,6 +614,33 @@ void AFreeFallCharacter::SetPowerUp(UPowerUpObject* PowerUpObject)
 	if (CurrentPowerUp != nullptr) CurrentPowerUp->PrepareForDestruction();
 	CurrentPowerUp = PowerUpObject;
 	OnTakePowerUp.Broadcast(this);
+}
+
+void AFreeFallCharacter::BindInputUsePowerUpActions(UEnhancedInputComponent* EnhancedInputComponent)
+{
+	if (InputData == nullptr) return;
+	
+	if (InputData->InputActionUsePowerUp)
+	{
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionUsePowerUp,
+			ETriggerEvent::Started,
+			this,
+			&AFreeFallCharacter::OnInputUsePowerUp
+			);
+
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionUsePowerUp,
+			ETriggerEvent::Completed,
+			this,
+			&AFreeFallCharacter::OnInputUsePowerUp
+			);
+	}
+}
+
+void AFreeFallCharacter::OnInputUsePowerUp(const FInputActionValue& Value)
+{
+	OnInputUsePowerUpEvent.Broadcast();
 }
 
 #pragma endregion
