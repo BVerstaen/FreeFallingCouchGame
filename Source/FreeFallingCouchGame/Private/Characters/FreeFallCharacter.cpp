@@ -14,6 +14,7 @@
 #include "Obstacle/Obstacle.h"
 #include "Other/DiveLevels.h"
 #include "Other/Parachute.h"
+#include "PowerUps/PowerUpObject.h"
 
 
 // Sets default values
@@ -614,6 +615,17 @@ void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent
 USceneComponent* AFreeFallCharacter::GetParachuteAttachPoint()
 {
 	return ParachuteAttachPoint;
+}
+
+#pragma endregion
+
+#pragma region PowerUp Fuctions
+
+void AFreeFallCharacter::SetPowerUp(UPowerUpObject* PowerUpObject)
+{
+	if (CurrentPowerUp != nullptr) CurrentPowerUp->PrepareForDestruction();
+	CurrentPowerUp = PowerUpObject;
+	OnTakePowerUp.Broadcast(this);
 }
 
 #pragma endregion
