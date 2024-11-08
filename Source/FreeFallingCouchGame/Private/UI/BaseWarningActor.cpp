@@ -1,10 +1,6 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "UI/BaseWarningActor.h"
-
-#include "MovieSceneSequenceID.h"
-#include "UnrealWidgetFwd.h"
-#include "Components/TextBlock.h"
 #include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
