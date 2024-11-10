@@ -175,17 +175,25 @@ private:
 	void OnInputGrab(const FInputActionValue& Value);
 	
 	bool IsInCircularGrab();
-	
+
+	//Update one movement influence with another character
 	UFUNCTION()
 	void UpdateMovementInfluence(float DeltaTime, AFreeFallCharacter* OtherCharacter, bool bIsCircularGrab);
+	//Check and update every movement influence
 	UFUNCTION()
 	void UpdateEveryMovementInfluence(float DeltaTime);
+	//Update smaller object influence
 	UFUNCTION()
 	void UpdateObjectPosition(float DeltaTime) const;
+	//Update heavier object influence
 	UFUNCTION()
 	void UpdateHeavyObjectPosition(float DeltaTime);
+	//Check and update if there's any dissociation problem -> handy to avoid physics problem
+	UFUNCTION()
+	void UpdateDissociationProblems(float DeltaTime);
 	
 public:
+	//Look if looking to close to the player who grabs me -> handy to avoid physics problem 
 	UFUNCTION()
 	bool IsLookingToCloseToGrabber(float AngleLimit);
 	

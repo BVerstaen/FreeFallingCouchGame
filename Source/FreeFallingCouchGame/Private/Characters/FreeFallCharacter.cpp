@@ -456,6 +456,12 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallChara
 		FRotator NewStabilizedRotation = FMath::RInterpTo(GetActorRotation(), StabilizedRotation, DeltaTime, GrabRotationSpeed);
 		SetActorRotation(NewStabilizedRotation);
 	}
+
+	//Update dissociation problem if there's any
+	if(OtherCharacterGrabbing)
+	{
+		UpdateDissociationProblems(DeltaTime);
+	}
 }
 
 void AFreeFallCharacter::UpdateEveryMovementInfluence(float DeltaTime)
@@ -477,6 +483,37 @@ void AFreeFallCharacter::UpdateHeavyObjectPosition(float DeltaTime)
 {
 	FVector NewPosition = OtherObject->GetActorLocation() + GrabHeavyObjectRelativeLocationPoint;
 	SetActorLocation(NewPosition);
+}
+
+void AFreeFallCharacter::UpdateDissociationProblems(float DeltaTime)
+{
+	//Check if still has grabbing player in front of me
+	FTransform CharacterTransform = GetTransform();
+	FVector SphereLocation = CharacterTransform.GetLocation() + CharacterTransform.GetRotation().GetForwardVector() * 150;
+	TArray<TEnumAsByte<EObjectTypeQuery>> traceObjectTypes;
+	traceObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
+	TArray<AActor*> ignoreActors;
+	FHitResult HitResult;
+	
+	bool CanGrab = UKismetSystemLibrary::SphereTraceSingleForObjects(
+														GetWorld(),
+														SphereLocation,
+														SphereLocation,
+														20,
+														traceObjectTypes,
+														false,
+														ignoreActors,
+														EDrawDebugTrace::ForOneFrame,
+														HitResult,
+														true);
+
+	if(!CanGrab || OtherCharacterGrabbing != HitResult.GetActor())
+	{
+		//If notice any dissociation problem -> then launch character to free character space in front of him.
+		FVector DissociationFeedbackDirection = OtherCharacterGrabbing->GetActorLocation() - GetActorLocation();
+		DissociationFeedbackDirection *= -.8;
+		LaunchCharacter(DissociationFeedbackDirection, false, false);
+	}
 }
 
 bool AFreeFallCharacter::IsLookingToCloseToGrabber(float AngleLimit)
