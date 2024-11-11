@@ -27,6 +27,9 @@ public:
 
 	virtual EPowerUpsID GetPowerUpID();
 
+	UPROPERTY()
+	bool hasBeenUsed = false;
+
 private:
 	UPROPERTY()
 	AFreeFallCharacter* OwnerCharacter = nullptr;
