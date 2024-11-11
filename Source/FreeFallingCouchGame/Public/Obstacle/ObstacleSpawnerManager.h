@@ -32,15 +32,15 @@ public:
 	bool IsTimerPlaying();
 
 	/* Liste des spawners d'obstacles*/
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<AObstacleSpawner*> LinkedObstacleSpawners;
 
 	/* Delay minimum entre 2 spawns */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ObstacleMinTimer;
 
 	/* Delay maximum entre 2 spawns */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ObstacleMaxTimer;
 
 	UPROPERTY()
