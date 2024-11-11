@@ -55,5 +55,5 @@ private:
 	float DiveLayerSlowingThreshold = 10.f;
 
 	UPROPERTY()
-	ACameraActor* CameraActor;
+	TObjectPtr<ACameraActor> CameraActor;
 };

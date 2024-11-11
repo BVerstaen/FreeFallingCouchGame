@@ -56,6 +56,8 @@ private:
 
 	void SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints);
 
+	bool GetCharacterInvertDiveInput(int PlayerIndex);
+	
 	AParachute* RespawnParachute(FVector SpawnLocation);
 
 	FVector ParachuteSpawnLocation;

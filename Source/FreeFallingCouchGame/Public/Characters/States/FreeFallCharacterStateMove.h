@@ -42,7 +42,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Grab Threshold")
 	float GrabbedOrientationThreshold;
 
-	
+	/*Le seuil à partir duquel le joueur ne bloque plus sa rotation de risque qu'il colissionne le joueur grab avec le joueur grabbé (uniquement si attrape et attrapée)*/
+	UPROPERTY(EditAnywhere, Category="Grab Threshold")
+	float GrabToCloseToGrabbedAngle;
 	
 	FVector2D OldInputDirection;
 	
@@ -55,6 +57,9 @@ private:
 private:
 	UFUNCTION()
 	void OnInputGrab();
+
+	UFUNCTION()
+	void OnInputUsePowerUp();
 	
 #pragma endregion
 };

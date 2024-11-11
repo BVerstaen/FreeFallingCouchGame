@@ -34,6 +34,10 @@ void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousS
 	if(Character->OtherCharacterGrabbing && Character->GrabbingState != EFreeFallCharacterGrabbingState::GrabPlayer)
 		ExitStateConditions();
 	
+	//Can't grab if is in Sensible Area
+	if(Character->IsLookingToCloseToGrabber(ChainGrabAngleLimit))
+		ExitStateConditions();
+	
 	//Stop grabbing if release key
 	if(!Character->bInputGrabPressed)
 	{
@@ -150,6 +154,14 @@ void UFreeFallCharacterStateGrab::ReleasePlayerGrab(EFreeFallCharacterStateID Pr
 	
 	if(Character->OtherCharacterGrabbing)
 	{
+		//Reset grab rotation offset
+		if(Character->OtherCharacterGrabbedBy)
+		{
+			//Calculate rotation offset
+			Character->OtherCharacterGrabbedBy->GrabDefaultRotationOffset = Character->GetActorRotation() - Character->OtherCharacterGrabbedBy->GetActorRotation();
+			Character->GrabDefaultRotationOffset = Character->OtherCharacterGrabbedBy->GetActorRotation() - Character->GetActorRotation();
+		}
+		
 		//If release while diving -> then don't launch and set other to dive instead
 		if(PreviousStateID == EFreeFallCharacterStateID::Dive)
 		{
@@ -171,7 +183,6 @@ void UFreeFallCharacterStateGrab::ReleasePlayerGrab(EFreeFallCharacterStateID Pr
 		//Remove references
 		Character->OtherCharacterGrabbing->OtherCharacterGrabbedBy = nullptr;
 		Character->OtherCharacterGrabbing = nullptr;
-			
 	}
 }
 

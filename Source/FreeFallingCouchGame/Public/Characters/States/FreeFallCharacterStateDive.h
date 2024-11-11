@@ -88,7 +88,7 @@ private:
 	float EnterDiveLevelThreshold = 5.f;
 	
 	UPROPERTY()
-	ADiveLevels* DiveLevelsActor;
+	TObjectPtr<ADiveLevels> DiveLevelsActor;
 
 	UPROPERTY()
 	EDivePhase CurrentDivePhase;

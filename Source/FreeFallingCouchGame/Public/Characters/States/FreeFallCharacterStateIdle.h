@@ -28,6 +28,9 @@ public:
 private:
 	UFUNCTION()
 	void OnInputGrab();
+
+	UFUNCTION()
+	void OnInputUsePowerUp();
 	
 #pragma endregion 
 };

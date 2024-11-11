@@ -101,7 +101,7 @@ void UArenaObject::Tick(float DeltaTime)
 
 void UArenaObject::CheckAndRemoveOutOfBoundPlayers()
 {
-	TArray<AFreeFallCharacter*> CharactersToRemove;
+	TArray<TObjectPtr<AFreeFallCharacter>> CharactersToRemove;
 	
 	//Check if character was rendered on screen (inverted loop to avoid indexation problems)
 	for(int i = CharactersInsideArena.Num() - 1; i > -1; i--)
@@ -129,6 +129,7 @@ void UArenaObject::CheckAndRemoveOutOfBoundPlayers()
 				if(OnCharacterDestroyed.IsBound())
 					OnCharacterDestroyed.Broadcast(Character);
 
+				if(!Character) continue;
 				CharactersToRemove.Add(Character);
 			}
 			else if (IsNearOutOfBounds(ScreenPosition, ViewportSizeMin, ViewportSizeMax))

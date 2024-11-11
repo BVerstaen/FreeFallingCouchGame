@@ -100,15 +100,6 @@ UInputMappingContext* AFreeFallGameMode::LoadInputMappingContextFromConfig()
 
 void AFreeFallGameMode::FindPlayerStartActorsInMap(TArray<APlayerStart*>& ResultsActors)
 {
-	// ULevel* LevelInstance = StreamingLevel->GetLoadedLevel();
-	// for (AActor* Actor : LevelInstance->Actors)
-	// {
-	// 	if (APlayerStart* PlayerStartActor = Cast<APlayerStart>(Actor))
-	// 	{
-	// 		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, PlayerStartActor->GetActorLocation().ToString());
-	// 		ResultsActors.Add(PlayerStartActor);
-	// 	}
-	// }
 	for (ULevelStreaming* StreamingLevel :  GetWorld()->GetStreamingLevels())
 	{
 		if (StreamingLevel && StreamingLevel->IsLevelLoaded())
@@ -148,11 +139,32 @@ TSubclassOf<AFreeFallCharacter> AFreeFallGameMode::GetFreeFallCharacterClassFrom
 	}
 }
 
+bool AFreeFallGameMode::GetCharacterInvertDiveInput(int PlayerIndex)
+{
+	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
+	if (MapSettings == nullptr) return false;
+
+	switch (PlayerIndex - 1)
+	{
+	case 0:
+		return MapSettings->CharacterP0InvertDiveControl;
+	case 1:
+		return MapSettings->CharacterP1InvertDiveControl;
+	case 2:
+		return MapSettings->CharacterP2InvertDiveControl;
+	case 3:
+		return MapSettings->CharacterP3InvertDiveControl;
+	default:
+		return false;
+	}
+}
+
 void AFreeFallGameMode::SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints)
 {
 	UFreeFallCharacterInputData* InputData = LoadInputDataFromConfig();
 	UInputMappingContext* InputMappingContext = LoadInputMappingContextFromConfig();
 	uint8 ID_Player = 1;
+	
 	for (APlayerStart* SpawnPoint : SpawnPoints)
 	{
 		EAutoReceiveInput::Type InputType = SpawnPoint->AutoReceiveInput.GetValue();
@@ -169,6 +181,7 @@ void AFreeFallGameMode::SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints
 		NewCharacter->InputData = InputData;
 		NewCharacter->InputMappingContext = InputMappingContext;
 		NewCharacter->AutoPossessPlayer = SpawnPoint->AutoReceiveInput;
+		NewCharacter->InvertDiveInput = GetCharacterInvertDiveInput(ID_Player);
 		NewCharacter->FinishSpawning(SpawnPoint->GetTransform());
 		NewCharacter->setIDPlayerLinked(ID_Player);
 		/*NewCharacter->SetOrientX(SpawnPoint->GetStartOrientX());*/

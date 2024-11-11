@@ -21,6 +21,7 @@ void UFreeFallCharacterStateMove::StateEnter(EFreeFallCharacterStateID PreviousS
 
 	Character->GetCharacterMovement()->MaxFlySpeed = StartMoveSpeed;
 	Character->OnInputGrabEvent.AddDynamic(this, &UFreeFallCharacterStateMove::OnInputGrab);
+	Character->OnInputUsePowerUpEvent.AddDynamic(this, &UFreeFallCharacterStateMove::OnInputUsePowerUp);
 
 	//Set OrientRotation to movement (deactivated if grab a heavier object)
 	Character->GetCharacterMovement()->bOrientRotationToMovement = Character->GrabbingState != EFreeFallCharacterGrabbingState::GrabHeavierObject;
@@ -46,6 +47,7 @@ void UFreeFallCharacterStateMove::StateExit(EFreeFallCharacterStateID NextStateI
 	}
 
 	Character->OnInputGrabEvent.RemoveDynamic(this, &UFreeFallCharacterStateMove::OnInputGrab);
+	Character->OnInputUsePowerUpEvent.RemoveDynamic(this, &UFreeFallCharacterStateMove::OnInputUsePowerUp);
 	// GEngine->AddOnScreenDebugMessage(
 	// 	-1,
 	// 	3.f,
@@ -65,7 +67,7 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 	
 	FVector MovementDirection = Character->GetVelocity().GetSafeNormal();
 	FVector CharacterDirection = Character->GetActorForwardVector();
-
+	
 	//Set Orient Rotation To Movement
 	if(Character->GetCharacterMovement()->bOrientRotationToMovement && Character->GrabbingState != EFreeFallCharacterGrabbingState::GrabHeavierObject)
 	{
@@ -74,7 +76,8 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 		
 		//If Reached orientation Threshold in his grabbing state -> stop orientation and let yourself influenced
 		if((DotProduct > OrientationThreshold && Character->OtherCharacterGrabbing)
-			|| (DotProduct > GrabbedOrientationThreshold && Character->OtherCharacterGrabbedBy))
+			|| (DotProduct > GrabbedOrientationThreshold && Character->OtherCharacterGrabbedBy)
+			|| Character->IsLookingToCloseToGrabber(GrabToCloseToGrabbedAngle))
 		{
 			Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 			OldInputDirection = InputMove;
@@ -113,4 +116,9 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 void UFreeFallCharacterStateMove::OnInputGrab()
 {
 	StateMachine->ChangeState(EFreeFallCharacterStateID::Grab);
+}
+
+void UFreeFallCharacterStateMove::OnInputUsePowerUp()
+{
+	StateMachine->ChangeState(EFreeFallCharacterStateID::PowerUp);
 }

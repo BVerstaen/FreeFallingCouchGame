@@ -4,14 +4,13 @@
 
 #include "CoreMinimal.h"
 
+/**
+ * 
+ */
 UENUM(BlueprintType)
-enum class EFreeFallCharacterStateID : uint8
+enum class EPowerUpsID : uint8
 {
 	None = 0,
-	Idle,
-	Move,
-	Dive,
-	Grab,
-	PowerUp,
+	Smaller = 1,
+	Duplicate = 2,
 };
-
