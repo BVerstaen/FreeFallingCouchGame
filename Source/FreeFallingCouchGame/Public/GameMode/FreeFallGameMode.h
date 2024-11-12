@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "InputMappingContext.h"
-#include "Arena/ArenaActor.h"
+#include "Arena/ArenaObject.h"
 #include "Arena/TrackerActor.h"
 #include "FreeFallingCouchGame/Public/Match/MatchParameters.h"
 #include "Characters/PlayerMatchData.h"
@@ -12,6 +12,7 @@
 #include "FreeFallGameMode.generated.h"
 
 
+class ULevelStreamingDynamic;
 class AFreeFallCharacter;
 
 class APlayerStart;
@@ -24,14 +25,25 @@ class FREEFALLINGCOUCHGAME_API AFreeFallGameMode : public AGameModeBase
 public:
 	virtual void BeginPlay() override;
 	void StartMatch();
-
+	void Init();
+	
 	UPROPERTY(EditAnywhere)
 	TArray<AFreeFallCharacter*> CharactersInsideArena;
-
+	
 	UFUNCTION()
 	AParachute* GetParachuteInstance() const;
+
+#pragma region Player Start Level Instanciation
+private:
+	UFUNCTION()
+	void OnSubLevelPlayerStartLoaded();
+	void VerifyLevelVisibility();
+	FTimerHandle SubLevelTimerHandle;
+#pragma endregion 
 	
 private:
+	void CreatePlayerStarts();
+	
 	void CreateAndInitsPlayers() const;
 
 	UFreeFallCharacterInputData* LoadInputDataFromConfig();
@@ -44,6 +56,8 @@ private:
 
 	void SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints);
 
+	bool GetCharacterInvertDiveInput(int PlayerIndex);
+	
 	AParachute* RespawnParachute(FVector SpawnLocation);
 
 	FVector ParachuteSpawnLocation;
@@ -63,7 +77,7 @@ protected:
 	TArray<int> LossOrder;
 	// Refs to Objects in Scene
 	UPROPERTY()
-	TObjectPtr<AArenaActor> ArenaActorInstance;
+	TObjectPtr<UArenaObject> ArenaActorInstance;
 
 	UPROPERTY()
 	TObjectPtr<ATrackerActor> TrackerActorInstance;

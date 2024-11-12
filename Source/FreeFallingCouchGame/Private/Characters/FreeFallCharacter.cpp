@@ -14,6 +14,7 @@
 #include "Obstacle/Obstacle.h"
 #include "Other/DiveLevels.h"
 #include "Other/Parachute.h"
+#include "PowerUps/PowerUpObject.h"
 
 
 // Sets default values
@@ -92,8 +93,10 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 	switch (GrabbingState)
 	{
 	case EFreeFallCharacterGrabbingState::None:
-	case EFreeFallCharacterGrabbingState::GrabHeavierObject:
 	case EFreeFallCharacterGrabbingState::GrabPlayer:
+		break;
+	case EFreeFallCharacterGrabbingState::GrabHeavierObject:
+		UpdateHeavyObjectPosition(DeltaTime);
 		break;
 	case EFreeFallCharacterGrabbingState::GrabObject:
 		UpdateObjectPosition(DeltaTime);
@@ -113,9 +116,19 @@ void AFreeFallCharacter::DestroyPlayer()
 	}
 	else
 	{
-		if(!Parachute) return;
-		Parachute->DropParachute(this);		
+		if(Parachute)
+		{
+			Parachute->DropParachute(this);
+		}
 	}
+
+	//Remove reference if was grabbing
+	if(OtherCharacterGrabbing)
+	{
+		OtherCharacterGrabbing->OtherCharacterGrabbedBy = nullptr;
+		OtherCharacterGrabbing = nullptr;
+	}
+	
 	Destroy();
 }
 
@@ -133,6 +146,7 @@ void AFreeFallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	BindInputMoveAxisAndActions(EnhancedInputComponent);
 	BindInputDiveAxisAndActions(EnhancedInputComponent);
 	BindInputGrabActions(EnhancedInputComponent);
+	BindInputUsePowerUpActions(EnhancedInputComponent);
 }
 
 
@@ -222,9 +236,11 @@ void AFreeFallCharacter::OnInputMove(const FInputActionValue& Value)
 #pragma endregion
 
 #pragma region Dive
-float AFreeFallCharacter::GetInputDive() const
+float AFreeFallCharacter::GetInputDive()
 {
+	//Can't dive if is grabbing a heavier object
 	if(GrabbingState == EFreeFallCharacterGrabbingState::GrabHeavierObject) return 0.0f;
+	
 	return InputDive;
 }
 
@@ -250,6 +266,8 @@ float AFreeFallCharacter::GetDiveLayerForceStrength() const
 
 ACameraActor* AFreeFallCharacter::GetCameraActor() const
 {
+	if(!CameraActor)
+		return nullptr;
 	return CameraActor;
 }
 
@@ -286,6 +304,9 @@ void AFreeFallCharacter::BindInputDiveAxisAndActions(UEnhancedInputComponent* En
 void AFreeFallCharacter::OnInputDive(const FInputActionValue& Value)
 {
 	InputDive = Value.Get<float>();
+	//Invert dive input
+	if(InvertDiveInput)
+		InputDive *= -1;
 }
 
 #pragma endregion
@@ -294,6 +315,7 @@ void AFreeFallCharacter::OnInputDive(const FInputActionValue& Value)
 
 void AFreeFallCharacter::ApplyDiveForce(FVector DiveForceDirection, float DiveStrength)
 {
+	GetCharacterMovement()->bOrientRotationToMovement = (GrabbingState != EFreeFallCharacterGrabbingState::GrabHeavierObject);
 	AddMovementInput(DiveForceDirection,DiveStrength / GetCharacterMovement()->MaxFlySpeed);
 }
 
@@ -389,8 +411,9 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallChara
 	{
 		FVector RotatedOffset = this->GetActorRotation().RotateVector(GrabInitialOffset);
 		FVector NewOtherCharacterPosition = this->GetActorLocation() + RotatedOffset;
-		OtherCharacter->SetActorLocation(NewOtherCharacterPosition);
+		OtherCharacter->SetActorLocation(NewOtherCharacterPosition, true);
 	}
+
 	
 	//Get both players velocity
 	FVector CharacterVelocity = GetVelocity();
@@ -408,12 +431,16 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallChara
 	GetMovementComponent()->Velocity = NewCharacterVelocity;
 	OtherCharacter->GetMovementComponent()->Velocity = NewOtherCharacterVelocity;
 
+	
 	//Set other Character rotation
-	if(!(OtherCharacterGrabbedBy == OtherCharacter && OtherCharacterGrabbing) && !bIsCircularGrab)
+	if(!(OtherCharacterGrabbedBy == OtherCharacter) && !bIsCircularGrab)
 	{
 		FRotator TargetRotation = this->GetActorRotation();
 		TargetRotation += GrabDefaultRotationOffset;
 		FRotator NewGrabbedRotation = FMath::RInterpTo(OtherCharacter->GetActorRotation(), TargetRotation, DeltaTime, GrabRotationSpeed);
+
+		GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Cyan, GetName() + " - " + TargetRotation.ToString());
+
 		OtherCharacter->SetActorRotation(NewGrabbedRotation);
 	}
 	//Set self rotation if is in a circular grab
@@ -429,6 +456,12 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallChara
 		//Interpolation toward the stabilized rotation within clamped range
 		FRotator NewStabilizedRotation = FMath::RInterpTo(GetActorRotation(), StabilizedRotation, DeltaTime, GrabRotationSpeed);
 		SetActorRotation(NewStabilizedRotation);
+	}
+
+	//Update dissociation problem if there's any
+	if(OtherCharacterGrabbing)
+	{
+		UpdateDissociationProblems(DeltaTime);
 	}
 }
 
@@ -449,9 +482,52 @@ void AFreeFallCharacter::UpdateObjectPosition(float DeltaTime) const
 
 void AFreeFallCharacter::UpdateHeavyObjectPosition(float DeltaTime)
 {
-
 	FVector NewPosition = OtherObject->GetActorLocation() + GrabHeavyObjectRelativeLocationPoint;
 	SetActorLocation(NewPosition);
+}
+
+void AFreeFallCharacter::UpdateDissociationProblems(float DeltaTime)
+{
+	//Check if still has grabbing player in front of me
+	FTransform CharacterTransform = GetTransform();
+	FVector SphereLocation = CharacterTransform.GetLocation() + CharacterTransform.GetRotation().GetForwardVector() * 150;
+	TArray<TEnumAsByte<EObjectTypeQuery>> traceObjectTypes;
+	traceObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
+	TArray<AActor*> ignoreActors;
+	FHitResult HitResult;
+	
+	bool CanGrab = UKismetSystemLibrary::SphereTraceSingleForObjects(
+														GetWorld(),
+														SphereLocation,
+														SphereLocation,
+														20,
+														traceObjectTypes,
+														false,
+														ignoreActors,
+														EDrawDebugTrace::ForOneFrame,
+														HitResult,
+														true);
+
+	if(!CanGrab || OtherCharacterGrabbing != HitResult.GetActor())
+	{
+		//If notice any dissociation problem -> then launch character to free character space in front of him.
+		FVector DissociationFeedbackDirection = OtherCharacterGrabbing->GetActorLocation() - GetActorLocation();
+		DissociationFeedbackDirection *= -.8;
+		LaunchCharacter(DissociationFeedbackDirection, false, false);
+	}
+}
+
+bool AFreeFallCharacter::IsLookingToCloseToGrabber(float AngleLimit)
+{
+	if(!OtherCharacterGrabbedBy || !OtherCharacterGrabbing) return false;
+
+	float SelfYRotation = GetActorRotation().Yaw;
+	float OtherYRotation = OtherCharacterGrabbedBy->GetActorRotation().Yaw;
+	float LookDiffAngle = FMath::Abs(OtherYRotation - SelfYRotation);
+
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, GetName() + " - " + (LookDiffAngle > 180.f - AngleLimit && LookDiffAngle < 180 + AngleLimit ? "Yes" : "No"));
+	
+	return LookDiffAngle > 180.f - AngleLimit && LookDiffAngle < 180 + AngleLimit;
 }
 
 TObjectPtr<USceneComponent> AFreeFallCharacter::GetObjectGrabPoint() const
@@ -468,11 +544,6 @@ void AFreeFallCharacter::BounceCooldown()
 
 	FTimerHandle TimerHandle;
 	GetWorldTimerManager().SetTimer(TimerHandle, this, &AFreeFallCharacter::ResetBounce, BounceCooldownDelay, false);
-}
-
-float AFreeFallCharacter::GetPlayerMass()
-{
-	return PlayerMass;
 }
 
 void AFreeFallCharacter::SetWasRecentlyBouncedTimer(AFreeFallCharacter* Character)
@@ -495,75 +566,98 @@ void AFreeFallCharacter::ResetWasRecentlyBounced()
 	bWasRecentlyBounced = false;
 }
 
-void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
-                                               UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+float AFreeFallCharacter::GetMass()
 {
-	if(bAlreadyCollided) return; //Return if cooldown isn't over
+	return PlayerMass;
+}
+
+FVector AFreeFallCharacter::GetVelocity()
+{
+	return GetCharacterMovement()->Velocity;
+}
+
+EBounceParameters AFreeFallCharacter::GetBounceParameterType()
+{
+	return Player;
+}
+
+void AFreeFallCharacter::AddBounceForce(FVector Velocity)
+{
+	LaunchCharacter(Velocity, true, true);
+}
+
+AFreeFallCharacter* AFreeFallCharacter::CollidedWithPlayer()
+{
+	return this;
+}
+
+void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBounceableInterface> OtherBounceableInterface, float SelfRestitutionMultiplier, float OtherRestitutionMultiplier, float GlobalMultiplier,
+                                       bool bShouldConsiderMass, bool bShouldKeepRemainVelocity)
+{
+	//Get old velocity
+	FVector OldVelocity = GetVelocity();
 	
-	//Cast to smaller obstacle
-	AObstacle* OtherObstacle = Cast<AObstacle>(OtherActor);
-	if(OtherObstacle)
+	//Get impact direction
+	FVector ImpactDirection = (OtherActor->GetActorLocation() - GetActorLocation()).GetSafeNormal(); 
+
+	//Bounce self
+	//Player bounce
+	FVector NewVelocity = (-ImpactDirection * OtherBounceableInterface->GetVelocity().Size() * OtherRestitutionMultiplier
+		* (bShouldConsiderMass ? OtherBounceableInterface->GetMass() / GetMass() : 1)
+		+ (bShouldKeepRemainVelocity ? OldVelocity * (1 - SelfRestitutionMultiplier) : FVector::Zero())) 
+		* GlobalMultiplier;
+	//Neutralize Z bounce velocity
+	NewVelocity.Z = 0;
+	AddBounceForce(NewVelocity);
+
+	//Bounce other character
+	NewVelocity = (ImpactDirection * OldVelocity.Size() * SelfRestitutionMultiplier
+			* (bShouldConsiderMass ? GetMass() / OtherBounceableInterface->GetMass() : 1)
+			+ (bShouldKeepRemainVelocity ? OtherBounceableInterface->GetVelocity() * (1 - OtherRestitutionMultiplier) : FVector::Zero())) 
+			* GlobalMultiplier;
+	//Neutralize Z bounce velocity
+	NewVelocity.Z = 0;
+	OtherBounceableInterface->AddBounceForce(NewVelocity);
+	
+	//Check if collided with players
+	if(AFreeFallCharacter* OtherFreeFallCharacter = OtherBounceableInterface->CollidedWithPlayer())
 	{
-		// Récupération du mesh de l'obstacle
-		UStaticMeshComponent* ObstacleMesh = OtherObstacle->GetMesh();
-
-		//Get impact direction
-		FVector ImpactDirection = (ObstacleMesh->GetComponentLocation() - GetActorLocation()).GetSafeNormal();
-
-		//Player bounce
-		FVector PlayerVelocity = (-ImpactDirection * ObstacleMesh->GetPhysicsLinearVelocity().Size() * BounceObstacleRestitutionMultiplier
-			* (bShouldConsiderMassObject ? ObstacleMesh->GetMass() / PlayerMass : 1)
-			+ (bShouldKeepRemainingVelocity ? GetCharacterMovement()->Velocity * (1 - BouncePlayerRestitutionMultiplier) : FVector::Zero())) 
-			* BouncePlayerMultiplier;
-		
-		PlayerVelocity.Z = 0;
-		LaunchCharacter(PlayerVelocity, true, true);
-
-		//Obstacle Bounce
-		FVector ObjectVelocity = (ImpactDirection * GetCharacterMovement()->Velocity.Size() * BouncePlayerRestitutionMultiplier
-			* (bShouldConsiderMassObject ? PlayerMass / ObstacleMesh->GetMass() : 1)
-			+ (bShouldKeepRemainingVelocity ? ObstacleMesh->GetPhysicsLinearVelocity() * (1 - BounceObstacleRestitutionMultiplier) : FVector::Zero())) 
-			* BounceObstacleMultiplier;
-		
-		ObjectVelocity.Z = 0;
-		ObstacleMesh->AddForce(ObjectVelocity);
-	}
-
-	//Cast to bigger FreefallCharacter
-	AFreeFallCharacter* OtherFreeFallCharacter = Cast<AFreeFallCharacter>(OtherActor);
-	if(OtherFreeFallCharacter)
-	{
-		//Get impact direction
-		FVector ImpactDirection = (OtherFreeFallCharacter->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-		
-		OldVelocity = GetCharacterMovement()->Velocity;
-
-		//Bounce self
-		FVector NewVelocity = (-ImpactDirection * OtherFreeFallCharacter->GetCharacterMovement()->Velocity.Size() * BouncePlayerRestitutionMultiplier
-			+ (bShouldKeepRemainingVelocity ? OldVelocity * (1 - BouncePlayerRestitutionMultiplier) : FVector::Zero()))
-			* BouncePlayerMultiplier;
-		//Neutralize Z bounce velocity
-		NewVelocity.Z = 0;
-		LaunchCharacter(NewVelocity, true, true);
-
-		//Bounce other character
-		NewVelocity = (ImpactDirection * OldVelocity.Size() * BouncePlayerRestitutionMultiplier
-			+ (bShouldKeepRemainingVelocity ? OtherFreeFallCharacter->GetCharacterMovement()->Velocity * (1 - BouncePlayerRestitutionMultiplier) : FVector::Zero()))
-			* BouncePlayerMultiplier;
-		//Neutralize Z bounce velocity
-		NewVelocity.Z = 0;
-		OtherFreeFallCharacter->LaunchCharacter(NewVelocity, true, true);
-
 		//Activate bounce cooldown & elimination timers
 		if (!OtherFreeFallCharacter->bAlreadyCollided)
 			OtherFreeFallCharacter->BounceCooldown();
 		
 		SetWasRecentlyBouncedTimer(OtherFreeFallCharacter);
 		OtherFreeFallCharacter->SetWasRecentlyBouncedTimer(this);
-	}
 
-	BounceCooldown();
+		BounceCooldown();
+	}
 }
+
+
+void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
+                                               UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if(bAlreadyCollided) return; //Return if cooldown isn't over
+
+	//Check if have bouncable interface
+	if(!OtherActor->Implements<UBounceableInterface>()) return;
+	TScriptInterface<IBounceableInterface> OtherBounceableInterface = TScriptInterface<IBounceableInterface>(OtherActor);
+	
+	switch (OtherBounceableInterface->GetBounceParameterType())
+	{
+	case Obstacle:
+		BounceRoutine(OtherActor, OtherBounceableInterface, BouncePlayerRestitutionMultiplier,
+			BounceObstacleRestitutionMultiplier, BounceObstacleMultiplier, bShouldConsiderMassObject, bShouldKeepRemainingVelocity);
+		break;
+	case Player:
+		BounceRoutine(OtherActor, OtherBounceableInterface, BouncePlayerRestitutionMultiplier,
+	BouncePlayerRestitutionMultiplier, BouncePlayerMultiplier, false, bShouldKeepRemainingVelocity);
+		break;
+	}
+	
+}
+
+
 #pragma endregion 
 
 #pragma region Parachute Fucntions
@@ -571,6 +665,44 @@ void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent
 USceneComponent* AFreeFallCharacter::GetParachuteAttachPoint()
 {
 	return ParachuteAttachPoint;
+}
+
+#pragma endregion
+
+#pragma region PowerUp Fuctions
+
+void AFreeFallCharacter::SetPowerUp(UPowerUpObject* PowerUpObject)
+{
+	if (CurrentPowerUp != nullptr) CurrentPowerUp->PrepareForDestruction();
+	CurrentPowerUp = PowerUpObject;
+	OnTakePowerUp.Broadcast(this);
+}
+
+void AFreeFallCharacter::BindInputUsePowerUpActions(UEnhancedInputComponent* EnhancedInputComponent)
+{
+	if (InputData == nullptr) return;
+	
+	if (InputData->InputActionUsePowerUp)
+	{
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionUsePowerUp,
+			ETriggerEvent::Started,
+			this,
+			&AFreeFallCharacter::OnInputUsePowerUp
+			);
+
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionUsePowerUp,
+			ETriggerEvent::Completed,
+			this,
+			&AFreeFallCharacter::OnInputUsePowerUp
+			);
+	}
+}
+
+void AFreeFallCharacter::OnInputUsePowerUp(const FInputActionValue& Value)
+{
+	OnInputUsePowerUpEvent.Broadcast();
 }
 
 #pragma endregion

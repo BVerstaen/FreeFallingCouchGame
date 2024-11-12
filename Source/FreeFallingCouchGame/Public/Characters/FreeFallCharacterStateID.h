@@ -11,6 +11,7 @@ enum class EFreeFallCharacterStateID : uint8
 	Idle,
 	Move,
 	Dive,
-	Grab
+	Grab,
+	PowerUp,
 };
 

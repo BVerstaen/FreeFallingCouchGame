@@ -32,11 +32,13 @@ void ADiveLevels::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	TArray<TScriptInterface<IDiveLayersSensible>> ActorsToRemove;
+	
 	for (TScriptInterface<IDiveLayersSensible> SensibleActor : OverlappingSensibleActors)
 	{
 		if (SensibleActor == nullptr)
 		{
-			OverlappingSensibleActors.Remove(SensibleActor);
+			ActorsToRemove.Add(SensibleActor);
 			continue;
 		}
 		GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::White, TEXT("List Contains " + SensibleActor->GetSelfActor()->GetName()));
@@ -78,6 +80,11 @@ void ADiveLevels::Tick(float DeltaTime)
 				SensibleActor->GetSelfActor()->GetRootComponent()->ComponentVelocity += Direction * Force;
 			}
 		}
+	}
+	
+	for (TScriptInterface<IDiveLayersSensible> ActorToRemove : ActorsToRemove)
+	{
+		OverlappingSensibleActors.Remove(ActorToRemove);
 	}
 }
 

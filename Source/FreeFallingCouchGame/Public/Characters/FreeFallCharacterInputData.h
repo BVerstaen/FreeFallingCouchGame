@@ -24,4 +24,7 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UInputAction> InputActionGrab;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UInputAction> InputActionUsePowerUp;
 };
