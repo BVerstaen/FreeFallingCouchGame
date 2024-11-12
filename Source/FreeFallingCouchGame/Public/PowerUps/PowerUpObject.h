@@ -21,6 +21,10 @@ public:
 
 	virtual void Use();
 
+	virtual void Tick(float DeltaTime);
+
+	void ResetEffectClock();
+
 	void SetupCharacter(AFreeFallCharacter* Character);
 
 	virtual void PrepareForDestruction();
@@ -28,9 +32,18 @@ public:
 	virtual EPowerUpsID GetPowerUpID();
 
 	UPROPERTY()
-	bool hasBeenUsed = false;
+	bool bHasBeenUsed = false;
+
+	UPROPERTY()
+	bool bIsActionFinished = false;
 
 private:
 	UPROPERTY()
 	AFreeFallCharacter* OwnerCharacter = nullptr;
+
+	UPROPERTY()
+	float EffectClock = 0.f;
+
+	UPROPERTY(EditAnywhere)
+	float Duration = 2.f;
 };

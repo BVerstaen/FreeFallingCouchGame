@@ -102,6 +102,16 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 		UpdateObjectPosition(DeltaTime);
 		break;
 	}
+
+	for (TObjectPtr<UPowerUpObject> PowerUpObject : UsedPowerUps)
+	{
+		PowerUpObject->Tick(DeltaTime);
+		if (PowerUpObject->bIsActionFinished)
+		{
+			PowerUpObject->PrepareForDestruction();
+			UsedPowerUps.Remove(PowerUpObject);
+		}
+	}
 	
 }
 

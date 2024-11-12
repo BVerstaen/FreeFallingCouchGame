@@ -35,4 +35,10 @@ public:
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UPowerUpObject> PowerUpObject;
+
+	UPROPERTY(EditAnywhere)
+	float LifeTime = 10.0f;
+
+	private:
+	float LifeClock = 0.f;
 };

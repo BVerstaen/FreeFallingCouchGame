@@ -355,6 +355,9 @@ public:
 public:
 	UPROPERTY()
 	TObjectPtr<UPowerUpObject> CurrentPowerUp;
+
+	UPROPERTY()
+	TArray<TObjectPtr<UPowerUpObject>> UsedPowerUps;
 	
 	UPROPERTY()
 	bool bInputUsePowerUpPressed = false;
