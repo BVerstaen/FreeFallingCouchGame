@@ -182,8 +182,8 @@ void AFreeFallGameMode::SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints
 		NewCharacter->InputMappingContext = InputMappingContext;
 		NewCharacter->AutoPossessPlayer = SpawnPoint->AutoReceiveInput;
 		NewCharacter->InvertDiveInput = GetCharacterInvertDiveInput(ID_Player);
-		NewCharacter->FinishSpawning(SpawnPoint->GetTransform());
 		NewCharacter->setIDPlayerLinked(ID_Player);
+		NewCharacter->FinishSpawning(SpawnPoint->GetTransform());
 		/*NewCharacter->SetOrientX(SpawnPoint->GetStartOrientX());*/
 
 		CharactersInsideArena.Add(NewCharacter);
