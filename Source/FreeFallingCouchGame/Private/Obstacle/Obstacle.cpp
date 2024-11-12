@@ -35,7 +35,7 @@ void AObstacle::BeginPlay()
 	{
 		Mesh->AddImpulse(ImpulseVector, NAME_None, true);
 		// Shoot raytrace to set warning
-		//SetupWarning(ImpulseVector);
+		SetupWarning(ImpulseVector);
 	}
 }
 

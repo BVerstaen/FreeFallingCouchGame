@@ -28,17 +28,21 @@ public:
 
 	UFUNCTION()
 	void SetupWidgets();
+
+	void SetupWidget(UWidgetComponent* RefObject, FName inName, USceneComponent* root,
+	FVector2D InSize2D, const FVector& InScale, const FVector& InPositionRelative, const TCHAR* InPath);
+	UFUNCTION()
+	void FaceCamera();
+	UFUNCTION()
+	void SetRotationBeginning();
 protected:
 	// Components
 	UPROPERTY(EditAnywhere)
 	UWidgetComponent *Arrow;
-	UPROPERTY(EditAnywhere)
-	UWidgetComponent *Body;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USceneComponent* RootArrow;
+	//UPROPERTY(EditAnywhere) UWidgetComponent *Body;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite) USceneComponent* RootArrow;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USceneComponent* RootBody;
-	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

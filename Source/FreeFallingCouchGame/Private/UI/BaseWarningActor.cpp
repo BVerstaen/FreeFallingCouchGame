@@ -2,6 +2,7 @@
 
 #include "UI/BaseWarningActor.h"
 
+#include "EditorCategoryUtils.h"
 #include "MovieSceneSequenceID.h"
 #include "UnrealWidgetFwd.h"
 #include "Components/TextBlock.h"
@@ -12,33 +13,41 @@ ABaseWarningActor::ABaseWarningActor()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	RootArrow = CreateDefaultSubobject<USceneComponent>(TEXT("RootArrow"));
+	//RootArrow = CreateDefaultSubobject<USceneComponent>(TEXT("RootArrow"));
 	RootBody = CreateDefaultSubobject<USceneComponent>(TEXT("RootMain"));
 	RootComponent = RootBody;
-	RootArrow->SetupAttachment(RootBody);
 	SetupWidgets();
+	/*
+	SetupWidget(Arrow, TEXT("Arrow"),RootArrow, FVector2D(500.0f, 500.0f),
+		FVector(0.24f, 0.24f, 0.24f),  FVector(0.0f, -444.0f, 0.0f),
+		TEXT("/Game/_Content/BP/UI/TestWarning/WBP_Arrow"));
+	SetupWidget(Body, TEXT("Body"), RootBody, FVector2D(500.0f, 500.0f),
+		FVector(0.4f, 0.4f, 0.4f),  FVector(0.0f, 0.0f, 0.0f),
+		TEXT("/Game/_Content/BP/UI/TestWarning/WBP_SideWarning"));
+	*/
 }
 
 void ABaseWarningActor::SetupWidgets()
 {
 	Arrow = CreateDefaultSubobject<UWidgetComponent>(TEXT("Arrow"));
-	Arrow->SetupAttachment(RootArrow);
+	Arrow->SetupAttachment(RootBody);
 	Arrow->SetWidgetSpace(EWidgetSpace::World);
 	Arrow->SetDrawSize(FVector2D(500.0f, 500.0f));
 	Arrow->SetRelativeScale3D(FVector(0.24f, 0.24f, 0.24f));
-	Arrow->SetRelativeLocation(FVector(0.0f, -444.0f, 0.0f));
+	Arrow->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
 	static ConstructorHelpers::FClassFinder<UUserWidget> WidgetClass
 	(TEXT("/Game/_Content/BP/UI/TestWarning/WBP_Arrow"));
 	if (WidgetClass.Succeeded())
 	{
 		Arrow->SetWidgetClass(WidgetClass.Class);
 	}
-	
+
+	/*
 	Body = CreateDefaultSubobject<UWidgetComponent>(TEXT("Body"));
 	Body->SetupAttachment(this->RootBody);
 	Body->SetWidgetSpace(EWidgetSpace::World);
 	Body->SetDrawSize(FVector2D(500.0f, 500.0f));
-	Arrow->SetRelativeScale3D(FVector(0.5f, 0.5f, 0.5f));
+	Body->SetRelativeScale3D(FVector(0.4f, 0.4f, 0.4f));
 	Body->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
 	static ConstructorHelpers::FClassFinder<UUserWidget> WidgetClassBody
 	(TEXT("/Game/_Content/BP/UI/TestWarning/WBP_SideWarning"));
@@ -46,16 +55,34 @@ void ABaseWarningActor::SetupWidgets()
 	{
 		Body->SetWidgetClass(WidgetClassBody.Class);
 	}
+	*/
+	
 }
 
+void ABaseWarningActor::SetupWidget(UWidgetComponent* RefObject, FName inName, USceneComponent* root,
+	FVector2D InSize2D, const FVector& InScale, const FVector& InPositionRelative, const TCHAR* InPath)
+{
+	RefObject = CreateDefaultSubobject<UWidgetComponent>(inName);
+	RefObject->SetupAttachment(root);
+	RefObject->SetWidgetSpace(EWidgetSpace::World);
+	RefObject->SetDrawSize(InSize2D);
+	RefObject->SetRelativeScale3D(InScale);
+	RefObject->SetRelativeLocation(InPositionRelative);
+	static ConstructorHelpers::FClassFinder<UUserWidget> WidgetClass(InPath);
+	if (WidgetClass.Succeeded())
+	{
+		RefObject->SetWidgetClass(WidgetClass.Class);
+	}
+}
 
 // Called when the game starts or when spawned
 void ABaseWarningActor::BeginPlay()
 {
 	Super::BeginPlay();
-	if(!DataHit.bBlockingHit || !RootArrow->IsValidLowLevel())
+	if(!DataHit.bBlockingHit /*|| !RootArrow->IsValidLowLevel()*/)
 		Destroy();
-	//APlayerCameraManager *temp = Cast<APlayerCameraManager>(GetWorld()->GetFirstPlayerController());
+	//SetRotationBeginning();
+
 	APlayerCameraManager *temp = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
 	if(temp->IsValidLowLevel())
 	{
@@ -68,30 +95,33 @@ void ABaseWarningActor::BeginPlay()
 	}
 }
 
+void  ABaseWarningActor::FaceCamera()
+{
+	FRotator refRota = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), CameraManagerRef->GetCameraLocation());
+	//refRota.Roll = GetActorRotation().Roll;
+	//refRota.Pitch = GetActorRotation().Pitch;
+	SetActorRotation(refRota);
+}
+
 // Called every frame
 void ABaseWarningActor::Tick(float DeltaTime)
 {
-	// Face camera
-	if(CameraManagerRef->IsValidLowLevel())
-	{
-		FRotator refRota = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), CameraManagerRef->GetCameraLocation());
-		SetActorRotation(refRota);
-	}
-	// Set Arrow
-	FRotator MyRotator = FRotationMatrix::MakeFromX(DataHit.Normal).Rotator();
-	RootArrow->SetWorldRotation(MyRotator);
-	Super::Tick(DeltaTime);
+	FaceCamera();
+	// Set rota arrow
+	FVector direction = OwnerObstacle->GetActorLocation() - GetActorLocation();
+	float angle = FMath::Atan2(direction.X, direction.Y);
+	angle = FMath::RadiansToDegrees(angle);
+	FRotator MyRotator(0, 0, angle);
+	Arrow->SetRelativeRotation(MyRotator);
 	// Check Color
 	CheckDistanceColor();
+	Super::Tick(DeltaTime);
 }
-
 
 void ABaseWarningActor::CheckDistanceColor()
 {
 	float distance = GetDistanceTo(OwnerObstacle);
-	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple,
-		FString::Printf(TEXT("Distance of %f between obstacle and warning "),
-			distance));
-	if(distance < 10.0f)
+	//GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple, FString::Printf(TEXT("Distance of %f between obstacle and warning "),distance));
+	if(distance < 100.0f)
 		Destroy();
 }
