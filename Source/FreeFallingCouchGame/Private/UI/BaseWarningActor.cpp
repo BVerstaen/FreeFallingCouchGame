@@ -66,7 +66,6 @@ void ABaseWarningActor::BeginPlay()
 	Super::BeginPlay();
 	if(!DataHit.bBlockingHit /*|| !RootArrow->IsValidLowLevel()*/)
 		Destroy();
-	//SetRotationBeginning();
 
 	APlayerCameraManager *temp = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
 	if(temp->IsValidLowLevel())
@@ -85,7 +84,10 @@ void  ABaseWarningActor::FaceCamera()
 	FRotator refRota = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), CameraManagerRef->GetCameraLocation());
 	//refRota.Roll = GetActorRotation().Roll;
 	//refRota.Pitch = GetActorRotation().Pitch;
-	SetActorRotation(refRota);
+	FRotator refRota2 = CameraManagerRef->GetCameraRotation();
+	FQuat refQuat = FQuat(refRota2);
+	refQuat = refQuat.Inverse();
+	SetActorRotation(refQuat.Rotator());
 }
 
 // Called every frame
@@ -94,9 +96,9 @@ void ABaseWarningActor::Tick(float DeltaTime)
 	FaceCamera();
 	// Set rota arrow
 	FVector direction = OwnerObstacle->GetActorLocation() - GetActorLocation();
-	float angle = FMath::Atan2(direction.X, direction.Y);
+	float angle = FMath::Atan2(direction.X, -direction.Y);
 	angle = FMath::RadiansToDegrees(angle);
-	FRotator MyRotator(0, 0, angle);
+	FRotator MyRotator(0, 0, -angle);
 	Arrow->SetRelativeRotation(MyRotator);
 	// Check Color
 	CheckDistanceColor();
@@ -106,7 +108,15 @@ void ABaseWarningActor::Tick(float DeltaTime)
 void ABaseWarningActor::CheckDistanceColor()
 {
 	float distance = GetDistanceTo(OwnerObstacle);
-	//GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple, FString::Printf(TEXT("Distance of %f between obstacle and warning "),distance));
-	if(distance < 100.0f)
+	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple, FString::Printf(TEXT("Distance of %f between obstacle and warning "),distance));
+
+	if(distance >= 1000) {
+		Arrow->SetTintColorAndOpacity(FLinearColor(0.0f, 1.0f, 0.0f));
+	} else if (distance >= 500 && distance <= 999) {
+		Arrow->SetTintColorAndOpacity(FLinearColor(1.0f, 0.5f, 0.1f));
+	} else if(distance >= 200 && distance <= 499) {
+		Arrow->SetTintColorAndOpacity(FLinearColor(1.0f, 0.0f, 0.0f));
+	}
+	if(distance < 200.0f)
 		Destroy();
 }

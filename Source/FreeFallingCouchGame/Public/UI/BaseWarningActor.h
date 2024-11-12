@@ -33,8 +33,6 @@ public:
 	FVector2D InSize2D, const FVector& InScale, const FVector& InPositionRelative, const TCHAR* InPath);
 	UFUNCTION()
 	void FaceCamera();
-	UFUNCTION()
-	void SetRotationBeginning();
 protected:
 	// Components
 	UPROPERTY(EditAnywhere)

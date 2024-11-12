@@ -59,6 +59,11 @@ void AObstacle::SetupWarning(FVector ImpulseVector)
 	DrawDebugLine(GetWorld(), GetActorLocation(), EndLocation, FColor::Red, false, 2.0f);
 	if(!RV_Hits.IsEmpty())
 	{
+		for (const FHitResult& Hit : RV_Hits)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Hit Actor: %s, Channel: %d"), *Hit.GetActor()->GetName(), (int32)Hit.GetComponent()->GetCollisionObjectType());
+		}
+		
 		if (RV_Hits.GetData()[0].IsValidBlockingHit())
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Hit detected"));
