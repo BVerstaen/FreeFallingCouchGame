@@ -61,7 +61,8 @@ void AFreeFallCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	DiveLevelsActor = Cast<ADiveLevels>(UGameplayStatics::GetActorOfClass(GetWorld(), ADiveLevels::StaticClass()));
-	
+	PlayerMeshDefaultRotation = GetMesh()->GetRelativeRotation(); 
+
 	//Setup state machine
 	CreateStateMachine();
 	InitStateMachine();
@@ -147,6 +148,16 @@ void AFreeFallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	BindInputDiveAxisAndActions(EnhancedInputComponent);
 	BindInputGrabActions(EnhancedInputComponent);
 	BindInputUsePowerUpActions(EnhancedInputComponent);
+}
+
+void AFreeFallCharacter::InterpMeshPlayer(FRotator Destination, float DeltaTime, float DampingSpeed)
+{
+	GetMesh()->SetRelativeRotation(FMath::RInterpTo(GetMesh()->GetRelativeRotation(), Destination, DeltaTime, DampingSpeed));
+}
+
+FRotator AFreeFallCharacter::GetPlayerDefaultRotation()
+{
+	return PlayerMeshDefaultRotation;
 }
 
 

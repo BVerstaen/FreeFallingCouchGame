@@ -45,12 +45,27 @@ protected:
 	/*Le seuil à partir duquel le joueur ne bloque plus sa rotation de risque qu'il colissionne le joueur grab avec le joueur grabbé (uniquement si attrape et attrapée)*/
 	UPROPERTY(EditAnywhere, Category="Grab Threshold")
 	float GrabToCloseToGrabbedAngle;
+
+
+#pragma region Mesh movement
 	
-	FVector2D OldInputDirection;
+protected:
+	/*Rotation maximum en Yaw du joueur lorsqu'il se déplace*/
+	UPROPERTY(EditAnywhere, Category="Mesh movement")
+	float MeshMovementRotationAngle;
+	
+	/*Vitesse de rotation du joueur lorsqu'il se déplace*/
+	UPROPERTY(EditAnywhere, Category="Mesh movement")
+	float MeshMovementDampingSpeed;
+
+	FVector2D PreviousInputMovement;
+	
+#pragma endregion
 	
 private:
 	UPROPERTY()
 	float AccelerationAlpha;
+
 
 #pragma region  Input Event
 	
@@ -61,5 +76,6 @@ private:
 	UFUNCTION()
 	void OnInputUsePowerUp();
 	
+	FVector2D GrabOldInputDirection;
 #pragma endregion
 };
