@@ -26,19 +26,18 @@ void AObstacle::BeginPlay()
 {
 	Super::BeginPlay();
 	
-
+	FVector refDirection = Direction;
 	Direction.Normalize();
 	FVector ImpulseVector = Direction * Speed;
 	if(Mesh != nullptr)
 	{
 		Mesh->AddImpulse(ImpulseVector, NAME_None, true);
 		// Shoot raytrace to set warning
-		SetupWarning(ImpulseVector);
+		SetupWarning(ImpulseVector, refDirection);
 	}
 }
 
-
-void AObstacle::SetupWarning(FVector ImpulseVector)
+void AObstacle::SetupWarning(FVector ImpulseVector, FVector InDirection)
 {
 	//Setup parameters
 	TArray<FHitResult> RV_Hits;
@@ -84,6 +83,9 @@ void AObstacle::SetupWarning(FVector ImpulseVector)
 			ThingToSpawn,
 			SpawnTransform
 			);
+		GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Cyan, FString::Printf(
+		TEXT("Vector of X:%f Y:%f Z:%f value "),InDirection.X,InDirection.Y,InDirection.Z));
+		LinkedWarningActor->SetDirection(InDirection);
 		LinkedWarningActor->SetHitResult(RV_Hits.GetData()[0]);
 		LinkedWarningActor->SetLinkedObstacle(this);
 		LinkedWarningActor->FinishSpawning(SpawnTransform);
