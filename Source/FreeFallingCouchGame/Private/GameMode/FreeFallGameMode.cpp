@@ -249,7 +249,11 @@ void AFreeFallGameMode::StartMatch()
 	ArenaActorInstance->OnCharacterDestroyed.AddDynamic(this, &AFreeFallGameMode::CheckEndRoundDeath);
 	SetupMatch(nullptr);
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------MATCH START--------------------"));
-	StartRound();
+
+	//Round counter and delegate 
+	RoundCounterWidget = CreateWidget<URoundCounterWidget>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	RoundCounterWidget->OnFinishCounter.AddDynamic(this, &AFreeFallGameMode::StartRound);
+	RoundCounterWidget->AddToViewport();
 }
 
 void AFreeFallGameMode::StartRound()

@@ -18,6 +18,12 @@ class FREEFALLINGCOUCHGAME_API UMapSettings : public UDeveloperSettings
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(Config, EditAnywhere, Category = "Round Counter")
+	float CurrentCounter;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Round Counter")
+	int CounterNumberOfCount;
+	
 	UPROPERTY(Config, EditAnywhere, Category = "Map")
 	TArray<TSoftObjectPtr<UWorld>> PlayerStartsLevels;
 
