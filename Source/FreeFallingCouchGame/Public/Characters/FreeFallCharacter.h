@@ -44,6 +44,17 @@ public:
 
 public:
 	void DestroyPlayer();
+
+#pragma region Mesh Rotation
+	
+public :
+	void InterpMeshPlayer(FRotator Destination, float DeltaTime, float DampingSpeed);
+	FRotator GetPlayerDefaultRotation();
+
+private:
+	FRotator PlayerMeshDefaultRotation;
+
+#pragma endregion
 	
 #pragma region StateMachine
 public:

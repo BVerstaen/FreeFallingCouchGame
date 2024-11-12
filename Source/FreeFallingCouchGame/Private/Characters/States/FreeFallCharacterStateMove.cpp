@@ -80,15 +80,21 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 			|| Character->IsLookingToCloseToGrabber(GrabToCloseToGrabbedAngle))
 		{
 			Character->GetCharacterMovement()->bOrientRotationToMovement = false;
-			OldInputDirection = InputMove;
+			GrabOldInputDirection = InputMove;
 		}
 	}
-	else if(OldInputDirection != InputMove)
+	else if(GrabOldInputDirection != InputMove)
 	{
 		//If you change direction -> Restore Orient Rotation Movement
 		Character->GetCharacterMovement()->bOrientRotationToMovement = true;
 	}
 
+	//Set mesh movement
+	FVector2D CharacterDirection2D = FVector2D(CharacterDirection.GetSafeNormal().X, CharacterDirection.GetSafeNormal().Y);
+	float AngleDiff = FMath::Clamp(FVector2d::DotProduct(InputMove.GetSafeNormal(), CharacterDirection2D.GetSafeNormal()) , -1.0f , 1.0f);
+	Character->InterpMeshPlayer(FRotator((AngleDiff >= 0 ? 1 : -1) * FMath::Lerp(Character->GetPlayerDefaultRotation().Pitch,MeshMovementRotationAngle, 1-FMath::Abs(AngleDiff)),
+		Character->GetMesh()->GetRelativeRotation().Yaw, Character->GetPlayerDefaultRotation().Roll), DeltaTime, MeshMovementDampingSpeed);
+	
 	//Change state if other input
 	if (FMathf::Abs(Character->GetInputDive()) > CharactersSettings->InputDiveThreshold)
 	{
