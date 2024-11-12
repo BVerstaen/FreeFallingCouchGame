@@ -241,6 +241,7 @@ public :
 protected:
 	uint8 ID_PlayerLinked = -1;
 public:
+	UFUNCTION(BlueprintCallable)
 	int getIDPlayerLinked() const { return ID_PlayerLinked; }
 	void setIDPlayerLinked(int InID) { ID_PlayerLinked = InID; }
 #pragma endregion
