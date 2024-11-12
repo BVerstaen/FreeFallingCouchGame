@@ -41,9 +41,19 @@ protected:
 	/*Le radius de la boule qui check si on peut grab un joueur ou obstacle*/
 	UPROPERTY(EditAnywhere, Category="Grab - Catch")
 	float GrabRadius = 10.0f;
-	/*Le radius de la boule qui check si on peut grab un joueur ou obstacle*/
+
+	/*Distance minimum avec lequel un joueur n'est pas recenter*/
 	UPROPERTY(EditAnywhere, Category="Grab - Catch")
 	float GrabMinimumDistance = 30.0f;
+	
+	/*Distance minimum avec lequel un joueur n'est pas recenter*/
+	UPROPERTY(EditAnywhere, Category="Grab - Catch")
+	float GrabMaximumDistance = 200.0f;
+
+	/*Angle limite entre le joueur et celui qui le grab à partir duquel on ne peut pas grab
+	 *car trop proche (je suis fatigué déso si pas clair)*/
+	UPROPERTY(EditAnywhere, Category="Grab - Catch")
+	float ChainGrabAngleLimit = 20.0f;
 	
 	/*A quelle vitesse celui qui est agrippé suit la rotation du "maitre" ?*/
 	UPROPERTY(EditAnywhere, Category="PlayerGrab - Influences")

@@ -121,6 +121,13 @@ void AFreeFallCharacter::DestroyPlayer()
 			Parachute->DropParachute(this);
 		}
 	}
+
+	//Remove reference if was grabbing
+	if(OtherCharacterGrabbing)
+	{
+		OtherCharacterGrabbing->OtherCharacterGrabbedBy = nullptr;
+		OtherCharacterGrabbing = nullptr;
+	}
 	
 	Destroy();
 }
@@ -406,6 +413,7 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallChara
 		FVector NewOtherCharacterPosition = this->GetActorLocation() + RotatedOffset;
 		OtherCharacter->SetActorLocation(NewOtherCharacterPosition, true);
 	}
+
 	
 	//Get both players velocity
 	FVector CharacterVelocity = GetVelocity();
@@ -423,12 +431,16 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallChara
 	GetMovementComponent()->Velocity = NewCharacterVelocity;
 	OtherCharacter->GetMovementComponent()->Velocity = NewOtherCharacterVelocity;
 
+	
 	//Set other Character rotation
-	if(!(OtherCharacterGrabbedBy == OtherCharacter && OtherCharacterGrabbing) && !bIsCircularGrab)
+	if(!(OtherCharacterGrabbedBy == OtherCharacter) && !bIsCircularGrab)
 	{
 		FRotator TargetRotation = this->GetActorRotation();
 		TargetRotation += GrabDefaultRotationOffset;
 		FRotator NewGrabbedRotation = FMath::RInterpTo(OtherCharacter->GetActorRotation(), TargetRotation, DeltaTime, GrabRotationSpeed);
+
+		GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Cyan, GetName() + " - " + TargetRotation.ToString());
+
 		OtherCharacter->SetActorRotation(NewGrabbedRotation);
 	}
 	//Set self rotation if is in a circular grab
@@ -444,6 +456,12 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallChara
 		//Interpolation toward the stabilized rotation within clamped range
 		FRotator NewStabilizedRotation = FMath::RInterpTo(GetActorRotation(), StabilizedRotation, DeltaTime, GrabRotationSpeed);
 		SetActorRotation(NewStabilizedRotation);
+	}
+
+	//Update dissociation problem if there's any
+	if(OtherCharacterGrabbing)
+	{
+		UpdateDissociationProblems(DeltaTime);
 	}
 }
 
@@ -466,6 +484,50 @@ void AFreeFallCharacter::UpdateHeavyObjectPosition(float DeltaTime)
 {
 	FVector NewPosition = OtherObject->GetActorLocation() + GrabHeavyObjectRelativeLocationPoint;
 	SetActorLocation(NewPosition);
+}
+
+void AFreeFallCharacter::UpdateDissociationProblems(float DeltaTime)
+{
+	//Check if still has grabbing player in front of me
+	FTransform CharacterTransform = GetTransform();
+	FVector SphereLocation = CharacterTransform.GetLocation() + CharacterTransform.GetRotation().GetForwardVector() * 150;
+	TArray<TEnumAsByte<EObjectTypeQuery>> traceObjectTypes;
+	traceObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
+	TArray<AActor*> ignoreActors;
+	FHitResult HitResult;
+	
+	bool CanGrab = UKismetSystemLibrary::SphereTraceSingleForObjects(
+														GetWorld(),
+														SphereLocation,
+														SphereLocation,
+														20,
+														traceObjectTypes,
+														false,
+														ignoreActors,
+														EDrawDebugTrace::ForOneFrame,
+														HitResult,
+														true);
+
+	if(!CanGrab || OtherCharacterGrabbing != HitResult.GetActor())
+	{
+		//If notice any dissociation problem -> then launch character to free character space in front of him.
+		FVector DissociationFeedbackDirection = OtherCharacterGrabbing->GetActorLocation() - GetActorLocation();
+		DissociationFeedbackDirection *= -.8;
+		LaunchCharacter(DissociationFeedbackDirection, false, false);
+	}
+}
+
+bool AFreeFallCharacter::IsLookingToCloseToGrabber(float AngleLimit)
+{
+	if(!OtherCharacterGrabbedBy || !OtherCharacterGrabbing) return false;
+
+	float SelfYRotation = GetActorRotation().Yaw;
+	float OtherYRotation = OtherCharacterGrabbedBy->GetActorRotation().Yaw;
+	float LookDiffAngle = FMath::Abs(OtherYRotation - SelfYRotation);
+
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, GetName() + " - " + (LookDiffAngle > 180.f - AngleLimit && LookDiffAngle < 180 + AngleLimit ? "Yes" : "No"));
+	
+	return LookDiffAngle > 180.f - AngleLimit && LookDiffAngle < 180 + AngleLimit;
 }
 
 TObjectPtr<USceneComponent> AFreeFallCharacter::GetObjectGrabPoint() const
