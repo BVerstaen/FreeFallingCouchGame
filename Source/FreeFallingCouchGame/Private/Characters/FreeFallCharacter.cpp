@@ -269,11 +269,6 @@ ADiveLevels* AFreeFallCharacter::GetDiveLevelsActor() const
 	return DiveLevelsActor;
 }
 
-float AFreeFallCharacter::GetDiveLayerForceStrength() const
-{
-	return DiveLayerForceStrength;
-}
-
 ACameraActor* AFreeFallCharacter::GetCameraActor() const
 {
 	if(!CameraActor)

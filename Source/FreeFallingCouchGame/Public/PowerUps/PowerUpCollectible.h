@@ -32,10 +32,12 @@ public:
 	virtual bool CanBeTaken() override;
 
 	virtual void Use(AFreeFallCharacter* Character) override;
-	
+
+	//For Game Programming
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UPowerUpObject> PowerUpObject;
 
+	//Lifetime of PowerUps Collectibles
 	UPROPERTY(EditAnywhere)
 	float LifeTime = 10.0f;
 
