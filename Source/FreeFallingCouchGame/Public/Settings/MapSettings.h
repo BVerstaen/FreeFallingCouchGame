@@ -6,6 +6,7 @@
 #include "Engine/DeveloperSettings.h"
 #include "MapSettings.generated.h"
 
+class URoundCounterWidget;
 class ALevelInstance;
 class AParachute;
 class AFreeFallCharacter;
@@ -18,6 +19,9 @@ class FREEFALLINGCOUCHGAME_API UMapSettings : public UDeveloperSettings
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(Config, EditAnywhere, Category = "Round Counter")
+	TSubclassOf<UUserWidget> RoundCounterWidget;
+	
 	UPROPERTY(Config, EditAnywhere, Category = "Round Counter")
 	float CurrentCounter;
 

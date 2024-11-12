@@ -241,6 +241,9 @@ void AFreeFallGameMode::VerifyLevelVisibility()
 #pragma region PreRound
 void AFreeFallGameMode::StartMatch()
 {
+	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
+	if(!MapSettings) return;
+	
 	// Check Player data
 	if(!IsValid(PlayerMatchData))
 		PlayerMatchData = NewObject<UPlayerMatchData>();
@@ -251,13 +254,22 @@ void AFreeFallGameMode::StartMatch()
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------MATCH START--------------------"));
 
 	//Round counter and delegate 
-	RoundCounterWidget = CreateWidget<URoundCounterWidget>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	RoundCounterWidget->OnFinishCounter.AddDynamic(this, &AFreeFallGameMode::StartRound);
-	RoundCounterWidget->AddToViewport();
+	RoundCounterWidget = CreateWidget<URoundCounterWidget>(UGameplayStatics::GetPlayerController(GetWorld(), 0), MapSettings->RoundCounterWidget);
+	if(RoundCounterWidget)
+	{
+		RoundCounterWidget->AddToViewport();
+		RoundCounterWidget->OnFinishCounter.AddDynamic(this, &AFreeFallGameMode::StartRound);
+	}
 }
 
 void AFreeFallGameMode::StartRound()
 {
+	//Unbind Start round delegate
+	if(RoundCounterWidget)
+	{
+		RoundCounterWidget->OnFinishCounter.RemoveDynamic(this, &AFreeFallGameMode::StartRound);
+	}
+	
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple, FString::Printf(TEXT("Current Round: %i"), CurrentRound));
 
 	TArray<APlayerStart*> PlayerStartsPoints;

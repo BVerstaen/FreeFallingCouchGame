@@ -65,7 +65,7 @@ private:
 	
 #pragma region Rounds
 protected:
-	//Round widget
+	//Match counter widget
 	UPROPERTY()
 	TObjectPtr<URoundCounterWidget> RoundCounterWidget;
 	
