@@ -1,11 +1,6 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "UI/BaseWarningActor.h"
-
-#include "EditorCategoryUtils.h"
-#include "MovieSceneSequenceID.h"
-#include "UnrealWidgetFwd.h"
-#include "Components/TextBlock.h"
 #include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
@@ -17,14 +12,6 @@ ABaseWarningActor::ABaseWarningActor()
 	RootBody = CreateDefaultSubobject<USceneComponent>(TEXT("RootMain"));
 	RootComponent = RootBody;
 	SetupWidgets();
-	/*
-	SetupWidget(Arrow, TEXT("Arrow"),RootArrow, FVector2D(500.0f, 500.0f),
-		FVector(0.24f, 0.24f, 0.24f),  FVector(0.0f, -444.0f, 0.0f),
-		TEXT("/Game/_Content/BP/UI/TestWarning/WBP_Arrow"));
-	SetupWidget(Body, TEXT("Body"), RootBody, FVector2D(500.0f, 500.0f),
-		FVector(0.4f, 0.4f, 0.4f),  FVector(0.0f, 0.0f, 0.0f),
-		TEXT("/Game/_Content/BP/UI/TestWarning/WBP_SideWarning"));
-	*/
 }
 
 void ABaseWarningActor::SetupWidgets()
@@ -41,7 +28,6 @@ void ABaseWarningActor::SetupWidgets()
 	{
 		Arrow->SetWidgetClass(WidgetClass.Class);
 	}
-
 	/*
 	Body = CreateDefaultSubobject<UWidgetComponent>(TEXT("Body"));
 	Body->SetupAttachment(this->RootBody);
@@ -56,7 +42,6 @@ void ABaseWarningActor::SetupWidgets()
 		Body->SetWidgetClass(WidgetClassBody.Class);
 	}
 	*/
-	
 }
 
 void ABaseWarningActor::SetupWidget(UWidgetComponent* RefObject, FName inName, USceneComponent* root,
