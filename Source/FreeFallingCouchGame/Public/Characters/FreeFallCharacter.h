@@ -104,7 +104,6 @@ public:
 	void SetDiveMaterialColor();
 	
 	ADiveLevels* GetDiveLevelsActor() const;
-	float GetDiveLayerForceStrength() const;
 	ACameraActor* GetCameraActor() const;
 
 	UPROPERTY(EditAnywhere)
@@ -114,9 +113,6 @@ public:
 protected:
 	UPROPERTY()
 	float InputDive = 0.f;
-
-	UPROPERTY(EditAnywhere)
-	float DiveLayerForceStrength = 1.f;
 
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<UMaterialInstanceDynamic> DiveMaterialInstance;
@@ -355,6 +351,9 @@ public:
 public:
 	UPROPERTY()
 	TObjectPtr<UPowerUpObject> CurrentPowerUp;
+
+	UPROPERTY()
+	TArray<TObjectPtr<UPowerUpObject>> UsedPowerUps;
 	
 	UPROPERTY()
 	bool bInputUsePowerUpPressed = false;

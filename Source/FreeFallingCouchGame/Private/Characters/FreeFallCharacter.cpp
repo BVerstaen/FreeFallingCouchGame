@@ -102,6 +102,16 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 		UpdateObjectPosition(DeltaTime);
 		break;
 	}
+
+	for (TObjectPtr<UPowerUpObject> PowerUpObject : UsedPowerUps)
+	{
+		PowerUpObject->Tick(DeltaTime);
+		if (PowerUpObject->bIsActionFinished)
+		{
+			PowerUpObject->PrepareForDestruction();
+			UsedPowerUps.Remove(PowerUpObject);
+		}
+	}
 	
 }
 
@@ -257,11 +267,6 @@ void AFreeFallCharacter::SetDiveMaterialColor()
 ADiveLevels* AFreeFallCharacter::GetDiveLevelsActor() const
 {
 	return DiveLevelsActor;
-}
-
-float AFreeFallCharacter::GetDiveLayerForceStrength() const
-{
-	return DiveLayerForceStrength;
 }
 
 ACameraActor* AFreeFallCharacter::GetCameraActor() const
