@@ -57,7 +57,7 @@ public:
 protected:
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<UFreeFallCharacterStateMachine> StateMachine;
-	
+
 public:
 	TObjectPtr<UFreeFallCharacterStateMachine> GetStateMachine() const;
 	
@@ -208,6 +208,9 @@ public:
 	UPROPERTY()
 	TObjectPtr<AActor> OtherObject;
 
+	UPROPERTY()	
+	bool bIsGrabbable = true;
+	
 	FVector GrabHeavyObjectRelativeLocationPoint;
 	
 	//Fields are set by Grab State
@@ -272,11 +275,13 @@ protected:
 	 */
 	UPROPERTY(EditAnywhere, Category="Bounce Collision - Player / Object")
 	bool bShouldConsiderMassObject = false;
-	
+
+public:
 	/*La masse du joueur (sert pour les collisions entre objets)*/
 	UPROPERTY(EditAnywhere, Category="Bounce Collision - Player / Object")
 	float PlayerMass;
 
+protected:
 	UPROPERTY()
 	bool bWasRecentlyBounced;
 
