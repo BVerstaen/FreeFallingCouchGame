@@ -31,7 +31,11 @@ void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousS
 	//Get previous state ID
 
 	//Can't grab if is grabbed
-	if(Character->OtherCharacterGrabbing && !(Character->GrabbingState == EFreeFallCharacterGrabbingState::GrabPlayer))
+	if(Character->OtherCharacterGrabbing && Character->GrabbingState != EFreeFallCharacterGrabbingState::GrabPlayer)
+		ExitStateConditions();
+	
+	//Can't grab if is in Sensible Area
+	if(Character->IsLookingToCloseToGrabber(ChainGrabAngleLimit))
 		ExitStateConditions();
 	
 	//Stop grabbing if release key
@@ -44,6 +48,7 @@ void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousS
 				break;
 			
 			case EFreeFallCharacterGrabbingState::GrabObject:
+			case EFreeFallCharacterGrabbingState::GrabHeavierObject:
 				ReleaseObjectGrab(PreviousStateID);
 				break;
 			
@@ -149,10 +154,22 @@ void UFreeFallCharacterStateGrab::ReleasePlayerGrab(EFreeFallCharacterStateID Pr
 	
 	if(Character->OtherCharacterGrabbing)
 	{
+		//Reset grab rotation offset
+		if(Character->OtherCharacterGrabbedBy)
+		{
+			//Calculate rotation offset
+			Character->OtherCharacterGrabbedBy->GrabDefaultRotationOffset = Character->GetActorRotation() - Character->OtherCharacterGrabbedBy->GetActorRotation();
+			Character->GrabDefaultRotationOffset = Character->OtherCharacterGrabbedBy->GetActorRotation() - Character->GetActorRotation();
+		}
+		
 		//If release while diving -> then don't launch and set other to dive instead
 		if(PreviousStateID == EFreeFallCharacterStateID::Dive)
 		{
 			Character->OtherCharacterGrabbing->GetStateMachine()->ChangeState(EFreeFallCharacterStateID::Dive);
+			//Remove references
+			Character->OtherCharacterGrabbing->OtherCharacterGrabbedBy = nullptr;
+			Character->OtherCharacterGrabbing = nullptr;
+			
 			//Exit Grab state
 			ExitStateConditions();
 			return;
@@ -163,10 +180,9 @@ void UFreeFallCharacterStateGrab::ReleasePlayerGrab(EFreeFallCharacterStateID Pr
 		LaunchVelocity += Character->GetActorForwardVector() * LaunchOtherCharacterBaseLaunchMultiplier;
 		Character->OtherCharacterGrabbing->LaunchCharacter(LaunchVelocity, true, true);
 			
-		//Remove reference
+		//Remove references
 		Character->OtherCharacterGrabbing->OtherCharacterGrabbedBy = nullptr;
 		Character->OtherCharacterGrabbing = nullptr;
-			
 	}
 }
 
@@ -195,6 +211,7 @@ void UFreeFallCharacterStateGrab::ReleaseObjectGrab(EFreeFallCharacterStateID Pr
 		}
 		
 		//Null reference
+		Character->GrabbingState = EFreeFallCharacterGrabbingState::None;
 		Character->OtherObject = nullptr;
 	}
 	
@@ -218,10 +235,19 @@ void UFreeFallCharacterStateGrab::PlayerGrab() const
 
 	//Grab onto the player
 	Character->GrabbingState = EFreeFallCharacterGrabbingState::GrabPlayer;
-		
+
+	//Check if can steal grab
+	if(FoundCharacter->OtherCharacterGrabbedBy)
+	{
+		//Remove References
+		FoundCharacter->OtherCharacterGrabbedBy->OtherCharacterGrabbing = nullptr;
+		FoundCharacter->OtherCharacterGrabbedBy = nullptr;
+	}
+	
 	//Set cross-references
 	Character->OtherCharacterGrabbing = FoundCharacter;
 	Character->OtherCharacterGrabbing->OtherCharacterGrabbedBy = Character;
+	
 	//Calculate location offset
 	FVector GrabOffset = FoundCharacter->GetActorLocation() - Character->GetActorLocation();
 	if(GrabOffset.Size() <= GrabMinimumDistance)
@@ -266,7 +292,7 @@ void UFreeFallCharacterStateGrab::ObjectGrab() const
 		{
 			Character->GrabbingState = EFreeFallCharacterGrabbingState::GrabHeavierObject;
 			Character->GetMovementComponent()->Velocity = FVector(0, 0, 0);
-			Character->GrabHeavyObjectRelativeLocationPoint = FoundObstacle->GetActorLocation() - Character->GetActorLocation();
+			Character->GrabHeavyObjectRelativeLocationPoint = Character->GetActorLocation() - FoundObstacle->GetActorLocation();
 		}
 		else
 		{

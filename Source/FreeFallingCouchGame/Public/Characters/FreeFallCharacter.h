@@ -10,6 +10,7 @@
 #include "Interface/BounceableInterface.h"
 #include "FreeFallCharacter.generated.h"
 
+class UPowerUpObject;
 class AParachute;
 enum class EDiveLayersID : uint8;
 class ADiveLevels;
@@ -51,6 +52,7 @@ public:
 	void InitStateMachine();
 
 	void TickStateMachine(float DeltaTime) const;
+	
 
 protected:
 	UPROPERTY(BlueprintReadOnly)
@@ -96,7 +98,7 @@ private:
 #pragma region Input Dive
 
 public:
-	float GetInputDive() const;
+	float GetInputDive();
 
 	UFUNCTION(BlueprintCallable)
 	void SetDiveMaterialColor();
@@ -108,6 +110,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	TMap<EDiveLayersID, FLinearColor> DiveLevelsColors;
 
+	bool InvertDiveInput = false;
 protected:
 	UPROPERTY()
 	float InputDive = 0.f;
@@ -116,13 +119,13 @@ protected:
 	float DiveLayerForceStrength = 1.f;
 
 	UPROPERTY(BlueprintReadWrite)
-	UMaterialInstanceDynamic* DiveMaterialInstance;
+	TObjectPtr<UMaterialInstanceDynamic> DiveMaterialInstance;
 
 	UPROPERTY()
-	ADiveLevels* DiveLevelsActor;
+	TObjectPtr<ADiveLevels> DiveLevelsActor;
 
 	UPROPERTY()
-	ACameraActor* CameraActor;
+	TObjectPtr<ACameraActor> CameraActor;
 	
 private:
 	void BindInputDiveAxisAndActions(UEnhancedInputComponent* EnhancedInputComponent);
@@ -172,15 +175,27 @@ private:
 	void OnInputGrab(const FInputActionValue& Value);
 	
 	bool IsInCircularGrab();
-	
+
+	//Update one movement influence with another character
 	UFUNCTION()
 	void UpdateMovementInfluence(float DeltaTime, AFreeFallCharacter* OtherCharacter, bool bIsCircularGrab);
+	//Check and update every movement influence
 	UFUNCTION()
 	void UpdateEveryMovementInfluence(float DeltaTime);
+	//Update smaller object influence
 	UFUNCTION()
 	void UpdateObjectPosition(float DeltaTime) const;
+	//Update heavier object influence
 	UFUNCTION()
 	void UpdateHeavyObjectPosition(float DeltaTime);
+	//Check and update if there's any dissociation problem -> handy to avoid physics problem
+	UFUNCTION()
+	void UpdateDissociationProblems(float DeltaTime);
+	
+public:
+	//Look if looking to close to the player who grabs me -> handy to avoid physics problem 
+	UFUNCTION()
+	bool IsLookingToCloseToGrabber(float AngleLimit);
 	
 public:
 	bool bInputGrabPressed = false;
@@ -332,6 +347,33 @@ protected:
 public:
 	UFUNCTION()
 	USceneComponent* GetParachuteAttachPoint(); 
+	
+#pragma endregion
+
+#pragma region PowerUp
+
+public:
+	UPROPERTY()
+	TObjectPtr<UPowerUpObject> CurrentPowerUp;
+	
+	UPROPERTY()
+	bool bInputUsePowerUpPressed = false;
+	
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInputUsePowerUp);
+	FInputGrabbing OnInputUsePowerUpEvent;
+	
+	void SetPowerUp(UPowerUpObject* PowerUpObject);
+	
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTakePowerUp,const AFreeFallCharacter*, Character);
+	FTakePowerUp OnTakePowerUp;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUsePowerUp,const AFreeFallCharacter*, Character);
+	FUsePowerUp OnUsePowerUp;
+
+private:
+	void BindInputUsePowerUpActions(UEnhancedInputComponent* EnhancedInputComponent);
+
+	void OnInputUsePowerUp(const FInputActionValue& Value);
 	
 #pragma endregion
 };

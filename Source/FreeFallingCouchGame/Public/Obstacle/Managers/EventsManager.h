@@ -22,6 +22,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	virtual void Destroyed() override;
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -35,7 +37,7 @@ private:
 	void OnEventEnded(AEventActor* TriggeringActor);
 
 	UPROPERTY(EditAnywhere)
-	AObstacleSpawnerManager* ObstacleSpawnerManager = nullptr;
+	TObjectPtr<AObstacleSpawnerManager> ObstacleSpawnerManager = nullptr;
 
 	//Temps entre chaque Events;
 	UPROPERTY(EditAnywhere)
@@ -50,6 +52,9 @@ private:
 
 	UPROPERTY()
 	bool EventHappening = false;
+
+	UPROPERTY()
+	TObjectPtr<AEventActor> CurrentEventActor = nullptr;
 
 	UPROPERTY(EditAnywhere)
 	TArray<AEventActor*> EventsActors;

@@ -84,3 +84,6 @@ Binaries/Win64/*
 !Binaries/Win64/UnrealEditor-FreeFallingCouchGame_Tools_Toolbar.dll
 !Binaries/Win64/UnrealEditor-FreeFallingCouchGameEditor_Tools_Toolbar.dll
 !Binaries/Win64/UnrealEditor-LocalMultiplayer-Win64-DebugGame.dll
+
+#Rider
+.idea/

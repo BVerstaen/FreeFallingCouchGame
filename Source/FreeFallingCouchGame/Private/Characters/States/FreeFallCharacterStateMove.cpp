@@ -21,9 +21,10 @@ void UFreeFallCharacterStateMove::StateEnter(EFreeFallCharacterStateID PreviousS
 
 	Character->GetCharacterMovement()->MaxFlySpeed = StartMoveSpeed;
 	Character->OnInputGrabEvent.AddDynamic(this, &UFreeFallCharacterStateMove::OnInputGrab);
+	Character->OnInputUsePowerUpEvent.AddDynamic(this, &UFreeFallCharacterStateMove::OnInputUsePowerUp);
 
-	//Set OrientRotation to movement (deactivated if is grabbed)
-	Character->GetCharacterMovement()->bOrientRotationToMovement = true;
+	//Set OrientRotation to movement (deactivated if grab a heavier object)
+	Character->GetCharacterMovement()->bOrientRotationToMovement = Character->GrabbingState != EFreeFallCharacterGrabbingState::GrabHeavierObject;
 	
 	if(PreviousStateID != EFreeFallCharacterStateID::Grab)
 		AccelerationAlpha = 0;
@@ -46,6 +47,7 @@ void UFreeFallCharacterStateMove::StateExit(EFreeFallCharacterStateID NextStateI
 	}
 
 	Character->OnInputGrabEvent.RemoveDynamic(this, &UFreeFallCharacterStateMove::OnInputGrab);
+	Character->OnInputUsePowerUpEvent.RemoveDynamic(this, &UFreeFallCharacterStateMove::OnInputUsePowerUp);
 	// GEngine->AddOnScreenDebugMessage(
 	// 	-1,
 	// 	3.f,
@@ -65,18 +67,17 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 	
 	FVector MovementDirection = Character->GetVelocity().GetSafeNormal();
 	FVector CharacterDirection = Character->GetActorForwardVector();
-
+	
 	//Set Orient Rotation To Movement
-	if(Character->GetCharacterMovement()->bOrientRotationToMovement)
+	if(Character->GetCharacterMovement()->bOrientRotationToMovement && Character->GrabbingState != EFreeFallCharacterGrabbingState::GrabHeavierObject)
 	{
 		//Get angle btw Character & movement direction
 		float DotProduct = FVector::DotProduct(MovementDirection, CharacterDirection);
-
-		if(DotProduct > GrabbedOrientationThreshold && Character->OtherCharacterGrabbedBy)
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Grabbed");
 		
+		//If Reached orientation Threshold in his grabbing state -> stop orientation and let yourself influenced
 		if((DotProduct > OrientationThreshold && Character->OtherCharacterGrabbing)
-			|| (DotProduct > GrabbedOrientationThreshold && Character->OtherCharacterGrabbedBy))
+			|| (DotProduct > GrabbedOrientationThreshold && Character->OtherCharacterGrabbedBy)
+			|| Character->IsLookingToCloseToGrabber(GrabToCloseToGrabbedAngle))
 		{
 			Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 			OldInputDirection = InputMove;
@@ -115,4 +116,9 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 void UFreeFallCharacterStateMove::OnInputGrab()
 {
 	StateMachine->ChangeState(EFreeFallCharacterStateID::Grab);
+}
+
+void UFreeFallCharacterStateMove::OnInputUsePowerUp()
+{
+	StateMachine->ChangeState(EFreeFallCharacterStateID::PowerUp);
 }

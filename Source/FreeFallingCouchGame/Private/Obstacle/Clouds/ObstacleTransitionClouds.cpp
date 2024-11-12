@@ -79,6 +79,11 @@ void AObstacleTransitionClouds::RandomizePlayersPositions()
 
 		ExistingLocations.Add(NewLocation);
 		Player->SetActorLocation(NewLocation);
+
+		//Stop grabbing
+		Player->GrabbingState = EFreeFallCharacterGrabbingState::None;
+		Player->OtherCharacterGrabbedBy = nullptr;
+		Player->OtherCharacterGrabbing = nullptr;
 	}
 
 	//Wait a bit for randomizing effect

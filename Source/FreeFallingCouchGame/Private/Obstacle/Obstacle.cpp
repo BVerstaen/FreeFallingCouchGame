@@ -3,8 +3,6 @@
 
 #include "Obstacle/Obstacle.h"
 
-#include "InputBehavior.h"
-
 
 // Sets default values
 AObstacle::AObstacle()
