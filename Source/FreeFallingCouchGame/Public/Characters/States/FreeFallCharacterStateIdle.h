@@ -23,6 +23,12 @@ public:
 
 	virtual void StateTick(float DeltaTime) override;
 
+#pragma region Mesh movement
+protected:
+	/*Vitesse de rotation du joueur lorsqu'il reset sa rotation*/
+	UPROPERTY(EditAnywhere, Category="Mesh movement")
+	float MeshMovementDampingSpeed;
+	
 #pragma region  Input Event
 	
 private:
