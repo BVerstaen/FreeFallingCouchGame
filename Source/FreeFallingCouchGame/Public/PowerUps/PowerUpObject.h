@@ -37,7 +37,7 @@ public:
 	UPROPERTY()
 	bool bIsActionFinished = false;
 
-private:
+protected:
 	UPROPERTY()
 	AFreeFallCharacter* OwnerCharacter = nullptr;
 
