@@ -65,6 +65,8 @@ void AObstacleTransitionClouds::RandomizePlayersPositions()
 
 	for(AFreeFallCharacter* Player : CharactersInArena)
 	{
+		if(!Player)
+			continue;
 		do
 		{
 			//Choose a random position
