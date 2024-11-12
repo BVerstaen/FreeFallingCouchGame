@@ -89,13 +89,10 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 		Character->GetCharacterMovement()->bOrientRotationToMovement = true;
 	}
 
-	FVector2D CharacterDirection2D = FVector2D(CharacterDirection.GetSafeNormal().X, CharacterDirection.GetSafeNormal().Y);
-	float AngleDiff = FVector2d::DotProduct(InputMove.GetSafeNormal(), CharacterDirection2D.GetSafeNormal());
-	AngleDiff = FMath::Clamp(AngleDiff, -1, 1);
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Black, FString::SanitizeFloat((AngleDiff > 0 ? 1 : -1)));
-	
 	//Set mesh movement
-	Character->InterpMeshPlayer(FRotator((AngleDiff > 0 ? 1 : -1) * FMath::Lerp(Character->GetPlayerDefaultRotation().Pitch,MeshMovementRotationAngle, 1-FMath::Abs(AngleDiff)),
+	FVector2D CharacterDirection2D = FVector2D(CharacterDirection.GetSafeNormal().X, CharacterDirection.GetSafeNormal().Y);
+	float AngleDiff = FMath::Clamp(FVector2d::DotProduct(InputMove.GetSafeNormal(), CharacterDirection2D.GetSafeNormal()) , -1.0f , 1.0f);
+	Character->InterpMeshPlayer(FRotator((AngleDiff >= 0 ? 1 : -1) * FMath::Lerp(Character->GetPlayerDefaultRotation().Pitch,MeshMovementRotationAngle, 1-FMath::Abs(AngleDiff)),
 		Character->GetMesh()->GetRelativeRotation().Yaw, Character->GetPlayerDefaultRotation().Roll), DeltaTime, MeshMovementDampingSpeed);
 	
 	//Change state if other input

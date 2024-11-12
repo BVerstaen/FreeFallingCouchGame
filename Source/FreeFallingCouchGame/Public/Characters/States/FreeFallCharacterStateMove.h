@@ -59,6 +59,7 @@ protected:
 	float MeshMovementDampingSpeed;
 
 	FVector2D PreviousInputMovement;
+	FRotator PreviousRotation = FRotator::ZeroRotator;
 	
 #pragma endregion
 	
