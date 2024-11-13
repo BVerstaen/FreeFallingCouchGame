@@ -679,7 +679,7 @@ void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent
 		break;
 	case Player:
 		BounceRoutine(OtherActor, OtherBounceableInterface, BouncePlayerRestitutionMultiplier,
-	BouncePlayerRestitutionMultiplier, BouncePlayerMultiplier, false, bShouldKeepRemainingVelocity);
+	BouncePlayerRestitutionMultiplier, BouncePlayerMultiplier, true, bShouldKeepRemainingVelocity);
 		break;
 	}
 	
