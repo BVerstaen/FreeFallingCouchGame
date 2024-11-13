@@ -12,14 +12,27 @@ void UFreeFallCharacterStatePowerUp::StateEnter(EFreeFallCharacterStateID Previo
 {
 	Super::StateEnter(PreviousStateID);
 
-	if (Character->CurrentPowerUp ==nullptr || Character->CurrentPowerUp->hasBeenUsed)
+	if (Character->CurrentPowerUp ==nullptr || Character->CurrentPowerUp->bHasBeenUsed)
 	{
 		ExitStatePowerUp();
 		return;
 	}
+	GEngine->AddOnScreenDebugMessage(-1,3.f,FColor::Emerald,"Using PowerUp " + UEnum::GetDisplayValueAsText(Character->CurrentPowerUp->GetPowerUpID()).ToString());
+	for (TObjectPtr<UPowerUpObject> PowerUpObject : Character->UsedPowerUps)
+	{
+		if (PowerUpObject->GetPowerUpID() == Character->CurrentPowerUp->GetPowerUpID())
+		{
+			PowerUpObject->ResetEffectClock();
+			Character->CurrentPowerUp->PrepareForDestruction();
+			Character->CurrentPowerUp = nullptr;
+			ExitStatePowerUp();
+			return;
+		}
+	}
 	Character->CurrentPowerUp->Use();
 	Character->OnUsePowerUp.Broadcast(Character);
-	GEngine->AddOnScreenDebugMessage(-1,3.f,FColor::Emerald,"Using PowerUp");
+	Character->UsedPowerUps.Add(Character->CurrentPowerUp);
+	Character->CurrentPowerUp = nullptr;
 	ExitStatePowerUp();
 }
 

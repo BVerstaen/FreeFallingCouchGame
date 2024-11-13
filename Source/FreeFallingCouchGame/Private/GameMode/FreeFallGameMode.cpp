@@ -182,8 +182,8 @@ void AFreeFallGameMode::SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints
 		NewCharacter->InputMappingContext = InputMappingContext;
 		NewCharacter->AutoPossessPlayer = SpawnPoint->AutoReceiveInput;
 		NewCharacter->InvertDiveInput = GetCharacterInvertDiveInput(ID_Player);
-		NewCharacter->FinishSpawning(SpawnPoint->GetTransform());
 		NewCharacter->setIDPlayerLinked(ID_Player);
+		NewCharacter->FinishSpawning(SpawnPoint->GetTransform());
 		/*NewCharacter->SetOrientX(SpawnPoint->GetStartOrientX());*/
 
 		CharactersInsideArena.Add(NewCharacter);
@@ -241,6 +241,9 @@ void AFreeFallGameMode::VerifyLevelVisibility()
 #pragma region PreRound
 void AFreeFallGameMode::StartMatch()
 {
+	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
+	if(!MapSettings) return;
+	
 	// Check Player data
 	if(!IsValid(PlayerMatchData))
 		PlayerMatchData = NewObject<UPlayerMatchData>();
@@ -249,11 +252,24 @@ void AFreeFallGameMode::StartMatch()
 	ArenaActorInstance->OnCharacterDestroyed.AddDynamic(this, &AFreeFallGameMode::CheckEndRoundDeath);
 	SetupMatch(nullptr);
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------MATCH START--------------------"));
-	StartRound();
+
+	//Round counter and delegate 
+	RoundCounterWidget = CreateWidget<URoundCounterWidget>(UGameplayStatics::GetPlayerController(GetWorld(), 0), MapSettings->RoundCounterWidget);
+	if(RoundCounterWidget)
+	{
+		RoundCounterWidget->AddToViewport();
+		RoundCounterWidget->OnFinishCounter.AddDynamic(this, &AFreeFallGameMode::StartRound);
+	}
 }
 
 void AFreeFallGameMode::StartRound()
 {
+	//Unbind Start round delegate
+	if(RoundCounterWidget)
+	{
+		RoundCounterWidget->OnFinishCounter.RemoveDynamic(this, &AFreeFallGameMode::StartRound);
+	}
+	
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple, FString::Printf(TEXT("Current Round: %i"), CurrentRound));
 
 	TArray<APlayerStart*> PlayerStartsPoints;
