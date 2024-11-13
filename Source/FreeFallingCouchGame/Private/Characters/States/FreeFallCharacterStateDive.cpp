@@ -86,7 +86,10 @@ void UFreeFallCharacterStateDive::StateTick(float DeltaTime)
 		FColor::Turquoise,
 		TEXT("TargetLayer = " + GetLayerName(TargetLayer))
 		);
-	
+
+	//Change Angle by rotation
+	Character->InterpMeshPlayer(FRotator(Character->GetPlayerDefaultRotation().Pitch, Character->GetMesh()->GetRelativeRotation().Yaw, InputDive * MeshMovementRotationAngle), DeltaTime, MeshMovementDampingSpeed);
+
 	
 	if (FMath::Abs(InputDive) < CharactersSettings->InputMoveThreshold)
 	{

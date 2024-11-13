@@ -61,7 +61,8 @@ void AFreeFallCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	DiveLevelsActor = Cast<ADiveLevels>(UGameplayStatics::GetActorOfClass(GetWorld(), ADiveLevels::StaticClass()));
-	
+	PlayerMeshDefaultRotation = GetMesh()->GetRelativeRotation(); 
+
 	//Setup state machine
 	CreateStateMachine();
 	InitStateMachine();
@@ -101,6 +102,16 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 	case EFreeFallCharacterGrabbingState::GrabObject:
 		UpdateObjectPosition(DeltaTime);
 		break;
+	}
+
+	for (TObjectPtr<UPowerUpObject> PowerUpObject : UsedPowerUps)
+	{
+		PowerUpObject->Tick(DeltaTime);
+		if (PowerUpObject->bIsActionFinished)
+		{
+			PowerUpObject->PrepareForDestruction();
+			UsedPowerUps.Remove(PowerUpObject);
+		}
 	}
 	
 }
@@ -147,6 +158,16 @@ void AFreeFallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	BindInputDiveAxisAndActions(EnhancedInputComponent);
 	BindInputGrabActions(EnhancedInputComponent);
 	BindInputUsePowerUpActions(EnhancedInputComponent);
+}
+
+void AFreeFallCharacter::InterpMeshPlayer(FRotator Destination, float DeltaTime, float DampingSpeed)
+{
+	GetMesh()->SetRelativeRotation(FMath::RInterpTo(GetMesh()->GetRelativeRotation(), Destination, DeltaTime, DampingSpeed));
+}
+
+FRotator AFreeFallCharacter::GetPlayerDefaultRotation()
+{
+	return PlayerMeshDefaultRotation;
 }
 
 
@@ -257,11 +278,6 @@ void AFreeFallCharacter::SetDiveMaterialColor()
 ADiveLevels* AFreeFallCharacter::GetDiveLevelsActor() const
 {
 	return DiveLevelsActor;
-}
-
-float AFreeFallCharacter::GetDiveLayerForceStrength() const
-{
-	return DiveLayerForceStrength;
 }
 
 ACameraActor* AFreeFallCharacter::GetCameraActor() const
@@ -651,7 +667,7 @@ void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent
 		break;
 	case Player:
 		BounceRoutine(OtherActor, OtherBounceableInterface, BouncePlayerRestitutionMultiplier,
-	BouncePlayerRestitutionMultiplier, BouncePlayerMultiplier, false, bShouldKeepRemainingVelocity);
+	BouncePlayerRestitutionMultiplier, BouncePlayerMultiplier, true, bShouldKeepRemainingVelocity);
 		break;
 	}
 	

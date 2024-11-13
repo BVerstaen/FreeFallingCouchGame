@@ -51,7 +51,7 @@ public :
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector ObstacleMinTorqueRotation;
 	
-	/* La rotation minimal qui sera donnée à l'obstacle (la rotation sera entre ObstacleMinTorqueRotation et ObstacleMaxTorqueRotation)*/
+		/* La rotation maximal qui sera donnée à l'obstacle (la rotation sera entre ObstacleMinTorqueRotation et ObstacleMaxTorqueRotation)*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector ObstacleMaxTorqueRotation;
 	

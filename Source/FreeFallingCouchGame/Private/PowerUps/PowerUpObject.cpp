@@ -11,7 +11,22 @@ UPowerUpObject::UPowerUpObject()
 
 void UPowerUpObject::Use()
 {
-	hasBeenUsed = true;
+	bHasBeenUsed = true;
+}
+
+void UPowerUpObject::Tick(float DeltaTime)
+{
+	if (GetPowerUpID() == EPowerUpsID::None)
+	{
+		GEngine->AddOnScreenDebugMessage(-1,DeltaTime,FColor::Turquoise,TEXT("Tick PowerUp None"));
+		EffectClock+=DeltaTime;
+		if (EffectClock >= Duration) bIsActionFinished = true;
+	}
+}
+
+void UPowerUpObject::ResetEffectClock()
+{
+	EffectClock = 0.f;
 }
 
 void UPowerUpObject::SetupCharacter(AFreeFallCharacter* Character)
