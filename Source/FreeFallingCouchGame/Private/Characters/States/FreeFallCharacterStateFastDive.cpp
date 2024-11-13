@@ -73,20 +73,24 @@ void UFreeFallCharacterStateFastDive::StateTick(float DeltaTime)
 	GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Purple, "CharZLoc : " + FString::SanitizeFloat(Character->GetActorLocation().Z));
 	GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Purple, "ZTarget : " + FString::SanitizeFloat(TargetLayerZCenter));
 
-	Character->AddMovementInput(Direction, DirectionScaleValue);
 
 	if (Character->GetActorLocation().Z > TargetLayerZCenter && DirectionScaleValue == -1)
 	{
 		FVector Velocity = Character->GetCharacterMovement()->Velocity;
-		if (Velocity.Z > -1) Character->GetCharacterMovement()->Velocity += Velocity.Z * Direction;
+		Character->GetCharacterMovement()->Velocity += Velocity.Z * Direction;
+		GEngine->AddOnScreenDebugMessage(-1,3.f,FColor::Purple, "Velocity with DSV-1 : " + FString::SanitizeFloat(Velocity.Z));
 		ExitStateFastDive();
+		return;
 	}
-	else if (Character->GetActorLocation().Z < TargetLayerZCenter && DirectionScaleValue == 1)
+	if (Character->GetActorLocation().Z < TargetLayerZCenter && DirectionScaleValue == 1)
 	{
 		FVector Velocity = Character->GetCharacterMovement()->Velocity;
-		if (Velocity.Z > -1) Character->GetCharacterMovement()->Velocity -= Velocity.Z * Direction;
+		Character->GetCharacterMovement()->Velocity += Velocity.Z * Direction;
+		GEngine->AddOnScreenDebugMessage(-1,3.f,FColor::Purple, "Velocity with DSV1 : " + FString::SanitizeFloat(Velocity.Z));
 		ExitStateFastDive();
+		return;
 	}
+	Character->AddMovementInput(Direction, DirectionScaleValue);
 }
 
 void UFreeFallCharacterStateFastDive::CheckTargetedLayer()

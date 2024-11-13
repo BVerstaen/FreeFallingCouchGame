@@ -367,7 +367,7 @@ void AFreeFallCharacter::OnInputFastDive(const FInputActionValue& Value)
 	//Invert FastDive input
 	if(InvertDiveInput)
 		InputFastDive *= -1;
-	OnInputFastDiveEvent.Broadcast();
+	if (FMath::Abs(InputFastDive) > 0.1) OnInputFastDiveEvent.Broadcast();
 	GEngine->AddOnScreenDebugMessage(-1,3.f,FColor::Purple, "Pressing Fast Dive : " + FString::SanitizeFloat(InputFastDive));
 }
 
