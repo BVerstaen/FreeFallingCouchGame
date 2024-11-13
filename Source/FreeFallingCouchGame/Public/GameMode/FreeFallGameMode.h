@@ -10,6 +10,7 @@
 #include "Characters/PlayerMatchData.h"
 #include "GameFramework/GameModeBase.h"
 #include "UI/Widgets/RoundCounterWidget.h"
+#include "UI/Widgets/RoundScorePanelWidget.h"
 #include "FreeFallGameMode.generated.h"
 
 
@@ -68,6 +69,8 @@ private:
 	UPROPERTY()
 	TObjectPtr<URoundCounterWidget> RoundCounterWidget;
 
+	UPROPERTY()
+	TObjectPtr<URoundScorePanelWidget> RoundScorePanelWidget;
 #pragma endregion
 	
 #pragma region Rounds
@@ -135,8 +138,28 @@ private:
 	void RoundEventTimer();
 	void RoundTimer();
 	void ClearTimers();
+
+	/*
+	 *	End round functions
+	 */
+	UPROPERTY()
+	TArray<int> OldPlayerScore;
 	// When Round end condition is reached, unlinks and check if match is over
 	void EndRound();
+	//Timer Handle for timers
+	FTimerHandle EndRoundTimerHandle;
+	// Launch add score after round ended
+	UFUNCTION()
+	void EndRoundAddScore();
+	// Launch add score after round ended
+	UFUNCTION()
+	void EndRoundAddRewardScore();
+	UFUNCTION()
+	void EndRoundWaitHide();
+	UFUNCTION()
+	void EndRoundHideScorePanel();
+
+	
 	void CheckEndRoundTimer();
 	// When Match is over, calls an event to show
 	// Results UI and buttons to go back to menu (/ restart)

@@ -19,6 +19,17 @@ class FREEFALLINGCOUCHGAME_API UMapSettings : public UDeveloperSettings
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(Config, EditAnywhere, Category = "Round Score")
+	TSubclassOf<UUserWidget> RoundScorePanelWidget;
+	
+	//Temps de la transistion avant de donner les points rewards
+	UPROPERTY(Config, EditAnywhere, Category = "Round Score")
+	float TimeBeforeRewardPoints;
+
+	//Temps de la transistion avant de cacher le widget et reprendre la partie
+	UPROPERTY(Config, EditAnywhere, Category = "Round Score")
+	float TimeBeforeHideScorePanelWidget;
+	
 	UPROPERTY(Config, EditAnywhere, Category = "Round Counter")
 	TSubclassOf<UUserWidget> RoundCounterWidget;
 	

@@ -12,7 +12,7 @@
  */
 class AFreeFallGameMode;
 
-UENUM()
+UENUM(BlueprintType)
 enum ETrackingRewardCategory
 {
 	MostStealParachute,
