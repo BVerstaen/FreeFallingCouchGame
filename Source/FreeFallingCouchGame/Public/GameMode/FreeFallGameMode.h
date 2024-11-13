@@ -153,12 +153,15 @@ private:
 	void EndRoundAddScore();
 	// Launch add score after round ended
 	UFUNCTION()
-	void EndRoundAddRewardScore();
+	void EndRoundCycleAddRewardPoints();
+	int CurrentCategory;
+	
 	UFUNCTION()
 	void EndRoundWaitHide();
 	UFUNCTION()
 	void EndRoundHideScorePanel();
-
+	UFUNCTION()
+	bool EndRoundAddRewardPoints(ETrackingRewardCategory Category, float DelayOnScreen);
 	
 	void CheckEndRoundTimer();
 	// When Match is over, calls an event to show

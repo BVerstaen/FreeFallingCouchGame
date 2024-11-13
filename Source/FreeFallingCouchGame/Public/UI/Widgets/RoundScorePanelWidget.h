@@ -41,5 +41,5 @@ public:
 	void AddScoreToRound(int PlayerID,int Score);
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "C++ Functions")
-	void AddScoreReward(int PlayerID,int Score, ETrackingRewardCategory Category);
+	void AddScoreReward(int PlayerID,int Score, ETrackingRewardCategory Category, float DelayDisplayedOnScreen);
 };

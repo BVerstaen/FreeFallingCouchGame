@@ -29,15 +29,13 @@ public:
 	//Temps de la transistion avant de cacher le widget et reprendre la partie
 	UPROPERTY(Config, EditAnywhere, Category = "Round Score")
 	float TimeBeforeHideScorePanelWidget;
+
+	//Temps entre les distributions de rewards
+	UPROPERTY(Config, EditAnywhere, Category = "Round Score")
+	float TimeBetweenGivingRewards;
 	
 	UPROPERTY(Config, EditAnywhere, Category = "Round Counter")
 	TSubclassOf<UUserWidget> RoundCounterWidget;
-	
-	UPROPERTY(Config, EditAnywhere, Category = "Round Counter")
-	float CurrentCounter;
-
-	UPROPERTY(Config, EditAnywhere, Category = "Round Counter")
-	int CounterNumberOfCount;
 	
 	UPROPERTY(Config, EditAnywhere, Category = "Map")
 	TArray<TSoftObjectPtr<UWorld>> PlayerStartsLevels;
