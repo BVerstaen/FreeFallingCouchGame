@@ -64,7 +64,7 @@ public:
 	virtual bool CanBeTaken() override;
 
 	UFUNCTION()
-	void SetupWarning(FVector ImpulseVector);
+	void SetupWarning(FVector ImpulseVector, FVector InDirection);
 
 #pragma region Bounceable
 public:
