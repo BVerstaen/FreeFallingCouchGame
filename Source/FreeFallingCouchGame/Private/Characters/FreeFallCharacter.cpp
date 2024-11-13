@@ -158,6 +158,7 @@ void AFreeFallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	BindInputDiveAxisAndActions(EnhancedInputComponent);
 	BindInputGrabActions(EnhancedInputComponent);
 	BindInputUsePowerUpActions(EnhancedInputComponent);
+	BindInputFastDiveAxisAndActions(EnhancedInputComponent);
 }
 
 void AFreeFallCharacter::InterpMeshPlayer(FRotator Destination, float DeltaTime, float DampingSpeed)
@@ -323,6 +324,51 @@ void AFreeFallCharacter::OnInputDive(const FInputActionValue& Value)
 	//Invert dive input
 	if(InvertDiveInput)
 		InputDive *= -1;
+}
+
+
+#pragma endregion
+
+#pragma region FastDive
+
+float AFreeFallCharacter::GetInputFastDive()
+{
+	return InputFastDive;
+}
+
+void AFreeFallCharacter::BindInputFastDiveAxisAndActions(UEnhancedInputComponent* EnhancedInputComponent)
+{
+	if (InputData == nullptr) return;
+
+	if (InputData == nullptr) return;
+	
+	if (InputData->InputActionFastDive)
+	{
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionFastDive,
+			ETriggerEvent::Started,
+			this,
+			&AFreeFallCharacter::OnInputFastDive
+			);
+
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionFastDive,
+			ETriggerEvent::Completed,
+			this,
+			&AFreeFallCharacter::OnInputFastDive
+			);
+	}
+	
+}
+
+void AFreeFallCharacter::OnInputFastDive(const FInputActionValue& Value)
+{
+	InputFastDive = Value.Get<float>();
+	//Invert FastDive input
+	if(InvertDiveInput)
+		InputFastDive *= -1;
+	OnInputFastDiveEvent.Broadcast();
+	GEngine->AddOnScreenDebugMessage(-1,3.f,FColor::Purple, "Pressing Fast Dive : " + FString::SanitizeFloat(InputFastDive));
 }
 
 #pragma endregion
