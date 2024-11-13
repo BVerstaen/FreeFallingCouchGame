@@ -65,6 +65,8 @@ void UFreeFallCharacterStateFastDive::StateTick(float DeltaTime)
 {
 	Super::StateTick(DeltaTime);
 
+	if (Character->GetCharacterMovement()->MovementMode !=MOVE_Flying)
+		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, "you ain't flying darling");
 	GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Cyan, "StateFastDive Tick");
 	
 	FVector Direction = Character->GetActorLocation() - Character->GetCameraActor()->GetActorLocation();

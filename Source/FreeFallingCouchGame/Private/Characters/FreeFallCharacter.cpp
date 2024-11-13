@@ -89,6 +89,8 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 	
 	//TODO: Delete that when Shader is created
 	SetDiveMaterialColor();
+
+	if (GetCharacterMovement()->MovementMode != MOVE_Flying) GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 	
 	//Update physic based on grab
 	switch (GrabbingState)
@@ -646,6 +648,7 @@ EBounceParameters AFreeFallCharacter::GetBounceParameterType()
 void AFreeFallCharacter::AddBounceForce(FVector Velocity)
 {
 	LaunchCharacter(Velocity, true, true);
+	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 }
 
 AFreeFallCharacter* AFreeFallCharacter::CollidedWithPlayer()
