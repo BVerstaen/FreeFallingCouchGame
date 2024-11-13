@@ -62,12 +62,18 @@ private:
 	AParachute* RespawnParachute(FVector SpawnLocation);
 
 	FVector ParachuteSpawnLocation;
-	
-#pragma region Rounds
-protected:
+
+#pragma region Widgets
 	//Match counter widget
 	UPROPERTY()
 	TObjectPtr<URoundCounterWidget> RoundCounterWidget;
+
+#pragma endregion
+	
+#pragma region Rounds
+protected:
+
+
 	
 	UPROPERTY(EditAnywhere)
 	float CurrentCounter;
