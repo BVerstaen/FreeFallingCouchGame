@@ -9,6 +9,7 @@
 #include "FreeFallingCouchGame/Public/Match/MatchParameters.h"
 #include "Characters/PlayerMatchData.h"
 #include "GameFramework/GameModeBase.h"
+#include "UI/Widgets/RoundCounterWidget.h"
 #include "FreeFallGameMode.generated.h"
 
 
@@ -64,17 +65,26 @@ private:
 	
 #pragma region Rounds
 protected:
+	//Match counter widget
+	UPROPERTY()
+	TObjectPtr<URoundCounterWidget> RoundCounterWidget;
+	
+	UPROPERTY(EditAnywhere)
+	float CurrentCounter;
 	
 	
 	UPROPERTY(EditAnywhere)
 	uint8 CurrentRound = 0;
 	FTimerHandle RoundTimerHandle;
 	FTimerHandle EventTimerHandle;
+	
 	//Ranking
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UPlayerMatchData> PlayerMatchData;
+	
 	//std::vector<uint8> LossOrder;
 	TArray<int> LossOrder;
+	
 	// Refs to Objects in Scene
 	UPROPERTY()
 	TObjectPtr<UArenaObject> ArenaActorInstance;
@@ -84,6 +94,7 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<AParachute> ParachuteInstance;
+	
 	// Match Parameters
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UMatchParameters> DefaultParameters = nullptr;
@@ -104,12 +115,16 @@ protected:
 	FDResults OnResults;
 	UPROPERTY(BlueprintAssignable, Category = "EventsFreefall")
 	FDCallEvent OnCallEvent;
+	
 public:
 	UFUNCTION(BlueprintCallable)
 	FTimerHandle getRoundTimer() const { return RoundTimerHandle; }
-private:
+	
 	//After Initiation, launches the timer and links events
+	UFUNCTION()
 	void StartRound();
+	
+private:
 	// Timers
 	void RoundEventTimer();
 	void RoundTimer();
@@ -130,5 +145,6 @@ private:
 	void CheckEndRoundDeath(AFreeFallCharacter* Character);
 	// Sets up the values for the match & rounds to follow
 	void SetupMatch(TSubclassOf<UMatchParameters> UserParameters);
+	
 #pragma endregion
 };

@@ -223,6 +223,7 @@ void UFreeFallCharacterStateGrab::PlayerGrab() const
 	//Find player to grab
  	AFreeFallCharacter* FoundCharacter = FindPlayerToGrab();
 	if(!FoundCharacter) return;
+	if (!FoundCharacter->bIsGrabbable) return;
 	
 	//Can't grab the one I'm grabbing
 	if(FoundCharacter == Character->OtherCharacterGrabbedBy) return;

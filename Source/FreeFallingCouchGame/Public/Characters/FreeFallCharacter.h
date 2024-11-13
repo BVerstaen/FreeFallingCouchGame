@@ -44,6 +44,17 @@ public:
 
 public:
 	void DestroyPlayer();
+
+#pragma region Mesh Rotation
+	
+public :
+	void InterpMeshPlayer(FRotator Destination, float DeltaTime, float DampingSpeed);
+	FRotator GetPlayerDefaultRotation();
+
+private:
+	FRotator PlayerMeshDefaultRotation;
+
+#pragma endregion
 	
 #pragma region StateMachine
 public:
@@ -57,7 +68,7 @@ public:
 protected:
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<UFreeFallCharacterStateMachine> StateMachine;
-	
+
 public:
 	TObjectPtr<UFreeFallCharacterStateMachine> GetStateMachine() const;
 	
@@ -104,7 +115,6 @@ public:
 	void SetDiveMaterialColor();
 	
 	ADiveLevels* GetDiveLevelsActor() const;
-	float GetDiveLayerForceStrength() const;
 	ACameraActor* GetCameraActor() const;
 
 	UPROPERTY(EditAnywhere)
@@ -114,9 +124,6 @@ public:
 protected:
 	UPROPERTY()
 	float InputDive = 0.f;
-
-	UPROPERTY(EditAnywhere)
-	float DiveLayerForceStrength = 1.f;
 
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<UMaterialInstanceDynamic> DiveMaterialInstance;
@@ -212,6 +219,9 @@ public:
 	UPROPERTY()
 	TObjectPtr<AActor> OtherObject;
 
+	UPROPERTY()	
+	bool bIsGrabbable = true;
+	
 	FVector GrabHeavyObjectRelativeLocationPoint;
 	
 	//Fields are set by Grab State
@@ -234,6 +244,7 @@ public :
 protected:
 	uint8 ID_PlayerLinked = -1;
 public:
+	UFUNCTION(BlueprintCallable)
 	int getIDPlayerLinked() const { return ID_PlayerLinked; }
 	void setIDPlayerLinked(int InID) { ID_PlayerLinked = InID; }
 #pragma endregion
@@ -276,11 +287,13 @@ protected:
 	 */
 	UPROPERTY(EditAnywhere, Category="Bounce Collision - Player / Object")
 	bool bShouldConsiderMassObject = false;
-	
+
+public:
 	/*La masse du joueur (sert pour les collisions entre objets)*/
 	UPROPERTY(EditAnywhere, Category="Bounce Collision - Player / Object")
 	float PlayerMass;
 
+protected:
 	UPROPERTY()
 	bool bWasRecentlyBounced;
 
@@ -355,6 +368,9 @@ public:
 public:
 	UPROPERTY()
 	TObjectPtr<UPowerUpObject> CurrentPowerUp;
+
+	UPROPERTY()
+	TArray<TObjectPtr<UPowerUpObject>> UsedPowerUps;
 	
 	UPROPERTY()
 	bool bInputUsePowerUpPressed = false;

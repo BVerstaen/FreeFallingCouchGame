@@ -47,6 +47,7 @@ void UFreeFallCharacterStateIdle::StateTick(float DeltaTime)
 {
 	Super::StateTick(DeltaTime);
 
+	//Change State on input
 	if (FMathf::Abs(Character->GetInputDive()) > CharactersSettings->InputDiveThreshold)
 	{
 		StateMachine->ChangeState(EFreeFallCharacterStateID::Dive);
@@ -57,6 +58,9 @@ void UFreeFallCharacterStateIdle::StateTick(float DeltaTime)
 	{
 		StateMachine->ChangeState(EFreeFallCharacterStateID::Move);
 	}
+
+	//Reset mesh rotation
+	Character->InterpMeshPlayer(Character->GetPlayerDefaultRotation(), DeltaTime, MeshMovementDampingSpeed);
 	
 	GEngine->AddOnScreenDebugMessage(
 		-1,

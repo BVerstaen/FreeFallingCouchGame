@@ -26,6 +26,8 @@ void APowerUpCollectible::BeginPlay()
 void APowerUpCollectible::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	LifeClock += DeltaTime;
+	if (LifeClock >= LifeTime) Destroy();
 }
 
 bool APowerUpCollectible::CanBeGrabbed()

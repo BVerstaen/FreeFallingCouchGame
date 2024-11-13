@@ -58,4 +58,19 @@ bool AObstacleSpawnerManager::IsTimerPlaying()
 	return bTimerPlaying;
 }
 
+/* Faudrait idéalement lancer la delegate au début pour que le bon spawner s'initialize
+ * Doit également être bind à la delegate 
+ */
+void AObstacleSpawnerManager::ActivateCamera(int NewCamPosition)
+{
+	if(CameraPositionIndex.Contains(NewCamPosition))
+	{
+		ResumeTimer();
+	}
+	else
+	{
+		PauseTimer();
+	}
+}
+
 
