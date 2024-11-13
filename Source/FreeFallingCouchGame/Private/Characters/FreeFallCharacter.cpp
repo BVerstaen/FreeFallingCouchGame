@@ -137,9 +137,16 @@ void AFreeFallCharacter::DestroyPlayer()
 	if(OtherCharacterGrabbing)
 	{
 		OtherCharacterGrabbing->OtherCharacterGrabbedBy = nullptr;
+		OtherCharacterGrabbing->GrabbingState = EFreeFallCharacterGrabbingState::None;
 		OtherCharacterGrabbing = nullptr;
 	}
-	
+	//Remove reference if was grabbed
+	if(OtherCharacterGrabbedBy)
+	{
+		OtherCharacterGrabbedBy->OtherCharacterGrabbing = nullptr;
+		OtherCharacterGrabbedBy->GrabbingState = EFreeFallCharacterGrabbingState::None;
+		OtherCharacterGrabbedBy = nullptr;
+	}
 	Destroy();
 }
 
@@ -422,6 +429,8 @@ bool AFreeFallCharacter::IsInCircularGrab()
 
 void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallCharacter* OtherCharacter, bool bIsCircularGrab)
 {
+	if(!OtherCharacter) return;
+	
 	//Calculate new offset of child actor based on Character rotation
 	if(OtherCharacterGrabbing == OtherCharacter && !bIsCircularGrab)
 	{
@@ -484,11 +493,14 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallChara
 void AFreeFallCharacter::UpdateEveryMovementInfluence(float DeltaTime)
 {
 	bool bIsInCircularGrab = IsInCircularGrab();
-	
+
 	if(OtherCharacterGrabbedBy)
 		UpdateMovementInfluence(DeltaTime, OtherCharacterGrabbedBy, bIsInCircularGrab);
 	if(OtherCharacterGrabbing)
+	{
 		UpdateMovementInfluence(DeltaTime, OtherCharacterGrabbing, bIsInCircularGrab);
+		GEngine->AddOnScreenDebugMessage(-1,15, FColor::Red, OtherCharacterGrabbing->GetName());
+	}
 }
 
 void AFreeFallCharacter::UpdateObjectPosition(float DeltaTime) const
