@@ -28,6 +28,8 @@ void UFreeFallCharacterStateDive::StateEnter(EFreeFallCharacterStateID PreviousS
 {
 	Super::StateEnter(PreviousStateID);
 
+	Character->OnInputFastDiveEvent.AddDynamic(this, &UFreeFallCharacterStateDive::OnInputFastDive);
+
 	Character->bIsDiveForced = false;
 
 	//Not crash if DiveLevelsActor is not set in scene
@@ -60,6 +62,8 @@ void UFreeFallCharacterStateDive::StateExit(EFreeFallCharacterStateID NextStateI
 	Super::StateExit(NextStateID);
 
 	Character->bIsDiveForced = true;
+
+	Character->OnInputFastDiveEvent.RemoveDynamic(this, &UFreeFallCharacterStateDive::OnInputFastDive);
 }
 
 void UFreeFallCharacterStateDive::StateTick(float DeltaTime)
@@ -303,4 +307,9 @@ void UFreeFallCharacterStateDive::SetMoveStats(float Move_MaxMoveSpeed, float Mo
 	ReachMaxSpeedTime = Move_ReachMaxSpeedTime;
 	OrientationThreshold = Move_OrientationThreshold;
 	AccelerationAlpha = Move_AccelerationAlpha;
+}
+
+void UFreeFallCharacterStateDive::OnInputFastDive()
+{
+	StateMachine->ChangeState(EFreeFallCharacterStateID::FastDive);
 }

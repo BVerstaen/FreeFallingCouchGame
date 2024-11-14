@@ -23,6 +23,9 @@ public:
 	TObjectPtr<UInputAction> InputActionDive;
 
 	UPROPERTY(EditAnywhere)
+	TObjectPtr<UInputAction> InputActionFastDive;
+
+	UPROPERTY(EditAnywhere)
 	TObjectPtr<UInputAction> InputActionGrab;
 
 	UPROPERTY(EditAnywhere)

@@ -28,7 +28,7 @@ class FREEFALLINGCOUCHGAME_API UFreeFallCharacterStateDive : public UFreeFallCha
 	virtual EFreeFallCharacterStateID GetStateID() override;
 
 	virtual void StateInit(UFreeFallCharacterStateMachine* InStateMachine) override;
-
+	
 	virtual void StateEnter(EFreeFallCharacterStateID PreviousStateID) override;
 
 	virtual void StateExit(EFreeFallCharacterStateID NextStateID) override;
@@ -111,4 +111,8 @@ private:
 
 	UPROPERTY()
 	float CrossLayerClock;
+
+private:
+	UFUNCTION()
+	void OnInputFastDive();
 };
