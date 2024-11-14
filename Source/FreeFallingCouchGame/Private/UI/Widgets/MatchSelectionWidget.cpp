@@ -2,6 +2,9 @@
 
 #include "UI/Widgets/MatchSelectionWidget.h"
 
+#include "GameMode/FreeFallGameMode.h"
+#include "Kismet/GameplayStatics.h"
+
 void UMatchSelectionWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -44,11 +47,15 @@ void UMatchSelectionWidget::TestCallOnPressed(FString NameElementPressed)
 void UMatchSelectionWidget::ReceiveData(int inMaxRounds,float inRoundTimer, float inEventDelay, FString inEraChosen,
 		 EMatchTypes InMatchType, ETrackingRewardCategory InTracker)
 {
-	PlayerCustomData->setMatchParameters(
-		inMaxRounds,
-		inRoundTimer,
-		inEventDelay,
-		inEraChosen,
-		InMatchType,
-		InTracker);
+	AFreeFallGameMode* MyMode = Cast<AFreeFallGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if(MyMode->IsValidLowLevel())
+	{
+		PlayerCustomData->setMatchParameters(
+			inMaxRounds,
+			inRoundTimer,
+			inEventDelay,
+			inEraChosen,
+			InMatchType,
+			InTracker);
+	}
 }

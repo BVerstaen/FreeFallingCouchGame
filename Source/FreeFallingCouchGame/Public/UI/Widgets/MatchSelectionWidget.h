@@ -31,6 +31,4 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Blueprint Data")
 	TSubclassOf<UUserWidget> ItemWidgetClass = nullptr;
-	UPROPERTY(EditAnywhere, Category = "Blueprint Data", meta=(BindWidget))
-	TObjectPtr<UUniformGridPanel> Grid;
-};
+}

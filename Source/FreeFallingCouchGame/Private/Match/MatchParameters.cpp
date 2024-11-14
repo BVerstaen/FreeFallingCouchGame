@@ -24,21 +24,7 @@ int UMatchParameters::getMaxRounds() const
 {
 	return MaxRounds;
 }
-/*
-void UMatchParameters::setValues(TObjectPtr<UMatchParameters> UserParameters)
-{
-	if(IsValid(UserParameters))
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Valid data");
-		memcpy(ScoreValue,UserParameters->getScoreValues() , sizeof(int));
-		MaxRounds = UserParameters->getMaxRounds();
-		//MatchType  = UserParameters.MatchType;
-	} else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Data not valid");
-	}
-}
-*/
+
 void UMatchParameters::setMatchParameters(int inMaxRounds, float inEventDelay, float inRoundTimer, FString inEraChosen,
 	EMatchTypes InMatchType, ETrackingRewardCategory InTracker)
 {
@@ -49,5 +35,7 @@ void UMatchParameters::setMatchParameters(int inMaxRounds, float inEventDelay, f
 	RoundTimer = inRoundTimer;
 	TrackedValue = InTracker;
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Received Data !");
-	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple, FString::Printf(TEXT("Selected Rounds : %i"), inMaxRounds));
+	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple, FString::Printf(
+	TEXT("Selected Rounds : %i \n  Event delay: %f"), 
+	inMaxRounds));
 }
