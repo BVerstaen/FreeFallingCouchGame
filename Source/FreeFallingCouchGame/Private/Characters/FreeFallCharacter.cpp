@@ -506,7 +506,8 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallChara
 
 	
 	//Set other Character rotation
-	if(!(OtherCharacterGrabbedBy == OtherCharacter) && !bIsCircularGrab)
+							//This comparaison -> prevent every character to circle around
+	if(!bIsCircularGrab && !(OtherCharacterGrabbing && OtherCharacterGrabbedBy))
 	{
 		FRotator TargetRotation = this->GetActorRotation();
 		TargetRotation += GrabDefaultRotationOffset;
