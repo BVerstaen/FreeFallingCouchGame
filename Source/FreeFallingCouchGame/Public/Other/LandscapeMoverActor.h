@@ -56,16 +56,16 @@ public:
 	UPROPERTY(EditAnywhere, Category= "Lerp")
 	FTransform MaximumTransform;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Lerp")
+	UPROPERTY(BlueprintReadWrite, Category = "Lerp")
 	float Timer;
 	
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Lerp")
+	UPROPERTY(BlueprintReadWrite, Category = "Lerp")
 	float MaxTimer;
 
 	bool bIsLerping = false;
 	
 	UPROPERTY()
-	UMaterialInstanceDynamic* FishEyePostProcess;
+	UCameraComponent* FishEyeCameraComponent;
 	
 	float FishEyePostProcessDefaultIntensity;
 	

@@ -404,7 +404,7 @@ void AFreeFallGameMode::EndRound()
 
 		//Set player profile
 		int MaxNumberOfPoints = 3 * CurrentParameters->getMaxRounds();
-		for(int i = 0; i < 4; i++)
+		for(int i = 0; i < MapSettings->NumberOfPlayers; i++)
 		{
 			RoundScorePanelWidget->SetPlayerProfile(i+1, OldPlayerScore[i], MaxNumberOfPoints);
 		}
@@ -414,8 +414,9 @@ void AFreeFallGameMode::EndRound()
 void AFreeFallGameMode::EndRoundAddScore()
 {
 	RoundScorePanelWidget->OnFinishShow.RemoveDynamic(this, &AFreeFallGameMode::EndRoundAddScore);
-	
-	for(int i = 0; i < 4; i++)
+	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
+
+	for(int i = 0; i < MapSettings->NumberOfPlayers; i++)
 	{
 		int NewScore = PlayerMatchData->getScoreValues()[i];
 		RoundScorePanelWidget->AddScoreToRound(i + 1, NewScore);
@@ -423,7 +424,6 @@ void AFreeFallGameMode::EndRoundAddScore()
 	}
 
 	CurrentCategory = 0;
-	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
 	GetWorld()->GetTimerManager().SetTimer(EndRoundTimerHandle, this, &AFreeFallGameMode::EndRoundCycleAddRewardPoints, MapSettings->TimeBeforeRewardPoints, false, MapSettings->TimeBeforeRewardPoints);
 }
 
@@ -489,7 +489,8 @@ bool AFreeFallGameMode::EndRoundAddRewardPoints(ETrackingRewardCategory Category
 	}
 	
 	//Display new score if gained points
-	for(int i = 0; i < 4; i++){
+	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
+	for(int i = 0; i < MapSettings->NumberOfPlayers; i++){
 		int NewScore = PlayerMatchData->getScoreValues()[i];
 		
 		if (OldPlayerScore[i] != NewScore)

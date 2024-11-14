@@ -30,22 +30,14 @@ void ALandscapeMoverActor::BeginPlay()
 		FAttachmentTransformRules AttachmentRules = FAttachmentTransformRules(EAttachmentRule::KeepWorld, true);
 		child->AttachToActor(Landscape, AttachmentRules);
 	}
-
 	
 	//Set fish eye post process
-	UCameraComponent* CameraComponent = GetActiveCamera();
-	if (CameraComponent->PostProcessSettings.WeightedBlendables.Array.Num() > 0)
+	FishEyeCameraComponent = GetActiveCamera();
+	if (FishEyeCameraComponent)
 	{
-		//Set post process material
-		UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(PostProcessMaterial, this);
-		CameraComponent->PostProcessSettings.WeightedBlendables.Array[0].Object = DynamicMaterial;
-		CameraComponent->PostProcessSettings.WeightedBlendables.Array[0].Weight = .9f;
-		
-		//Set material instance
-		if (DynamicMaterial)
+		if(FishEyeCameraComponent->PostProcessSettings.WeightedBlendables.Array.Num() <= 0)
 		{
-			FishEyePostProcess = DynamicMaterial;
-			FishEyePostProcess->GetScalarParameterValue(FName("Intensity"), FishEyePostProcessDefaultIntensity);
+			GEngine->AddOnScreenDebugMessage(-1,30.f, FColor::Red, "No FishEye shader in camera (also set weight to 0.01f)");
 		}
 	}
 }
@@ -71,15 +63,11 @@ void ALandscapeMoverActor::Tick(float DeltaTime)
 	Landscape->SetActorScale3D(newScale);
 
 	//Set Post process intensity
-	if(FishEyePostProcess)
+	if(FishEyeCameraComponent && FishEyeCameraComponent->PostProcessSettings.WeightedBlendables.Array.Num() > 0)
 	{
-		float FishEyeIntensity = FMath::Lerp(0.0f,FishEyePostProcessDefaultIntensity,Progression);
-		FishEyePostProcess->SetScalarParameterValue(FName("Intensity"), FishEyeIntensity);
+		if(!FMath::IsNaN(1-Progression))
+			FishEyeCameraComponent->PostProcessSettings.WeightedBlendables.Array[0].Weight = (1-Progression);
 	}
-
-	float ALED = 0.0f;
-	FishEyePostProcess->GetScalarParameterValue(FName("Intensity"),ALED);
-	GEngine->AddOnScreenDebugMessage(-1,DeltaTime,FColor::Red, FString::SanitizeFloat(ALED));
 	
 	if(Progression < 0.0f)
 		Pause();
