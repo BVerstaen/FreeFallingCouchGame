@@ -95,7 +95,6 @@ void UArenaObject::Tick(float DeltaTime)
 		return;
 
 	CheckAndRemoveOutOfBoundPlayers();
-
 	LastFrameNumberWeTicked = GFrameCounter;
 }
 
