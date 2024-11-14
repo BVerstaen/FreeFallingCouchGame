@@ -41,11 +41,9 @@ void ADiveLevels::Tick(float DeltaTime)
 			ActorsToRemove.Add(SensibleActor);
 			continue;
 		}
-		GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::White, TEXT("List Contains " + SensibleActor->GetSelfActor()->GetName()));
 		if (SensibleActor->IsDiveForced())
 		{
 			ApplyDiveForce(SensibleActor);
-			GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::White, TEXT(" Applying DiveForce to " + SensibleActor->GetSelfActor()->GetName()));
 		}
 		if (SensibleActor->IsBoundedByLayer())
 		{
@@ -133,7 +131,7 @@ void ADiveLevels::ApplyDiveForce(TScriptInterface<IDiveLayersSensible> SensibleA
 		FVector Direction = (ZPosDifference < 0 ? -1 : 1 ) * (SensibleActor->GetSelfActor()->GetActorLocation() - CameraActor->GetActorLocation());
 		Direction.Normalize();
 		SensibleActor->ApplyDiveForce(Direction, DiveForcesStrength);
-		GEngine->AddOnScreenDebugMessage(-1, 0.1, FColor::Red, "DiveForces");
+		//GEngine->AddOnScreenDebugMessage(-1, 0.1, FColor::Red, "DiveForces");
 	}
 }
 

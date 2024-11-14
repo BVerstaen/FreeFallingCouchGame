@@ -13,5 +13,6 @@ enum class EFreeFallCharacterStateID : uint8
 	Dive,
 	Grab,
 	PowerUp,
+	FastDive,
 };
 
