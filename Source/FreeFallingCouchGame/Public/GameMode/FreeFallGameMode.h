@@ -108,7 +108,7 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UMatchParameters> DefaultParameters = nullptr;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	UMatchParameters *CurrentParameters;
 	// Delegate declaration
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDStartRound);
