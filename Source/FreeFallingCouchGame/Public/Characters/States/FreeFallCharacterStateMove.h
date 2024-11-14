@@ -76,6 +76,9 @@ private:
 
 	UFUNCTION()
 	void OnInputUsePowerUp();
+
+	UFUNCTION()
+	void OnInputFastDive();
 	
 	FVector2D GrabOldInputDirection;
 #pragma endregion
