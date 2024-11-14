@@ -22,6 +22,7 @@ void UFreeFallCharacterStateMove::StateEnter(EFreeFallCharacterStateID PreviousS
 	Character->GetCharacterMovement()->MaxFlySpeed = StartMoveSpeed;
 	Character->OnInputGrabEvent.AddDynamic(this, &UFreeFallCharacterStateMove::OnInputGrab);
 	Character->OnInputUsePowerUpEvent.AddDynamic(this, &UFreeFallCharacterStateMove::OnInputUsePowerUp);
+	Character->OnInputFastDiveEvent.AddDynamic(this, &UFreeFallCharacterStateMove::OnInputFastDive);
 
 	//Set OrientRotation to movement (deactivated if grab a heavier object)
 	Character->GetCharacterMovement()->bOrientRotationToMovement = Character->GrabbingState != EFreeFallCharacterGrabbingState::GrabHeavierObject;
@@ -48,6 +49,7 @@ void UFreeFallCharacterStateMove::StateExit(EFreeFallCharacterStateID NextStateI
 
 	Character->OnInputGrabEvent.RemoveDynamic(this, &UFreeFallCharacterStateMove::OnInputGrab);
 	Character->OnInputUsePowerUpEvent.RemoveDynamic(this, &UFreeFallCharacterStateMove::OnInputUsePowerUp);
+	Character->OnInputFastDiveEvent.RemoveDynamic(this, &UFreeFallCharacterStateMove::OnInputFastDive);
 	// GEngine->AddOnScreenDebugMessage(
 	// 	-1,
 	// 	3.f,
@@ -127,4 +129,9 @@ void UFreeFallCharacterStateMove::OnInputGrab()
 void UFreeFallCharacterStateMove::OnInputUsePowerUp()
 {
 	StateMachine->ChangeState(EFreeFallCharacterStateID::PowerUp);
+}
+
+void UFreeFallCharacterStateMove::OnInputFastDive()
+{
+	StateMachine->ChangeState(EFreeFallCharacterStateID::FastDive);
 }

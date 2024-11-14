@@ -26,6 +26,20 @@ class FREEFALLINGCOUCHGAME_API UFreeFallCharacterStateFastDive : public UFreeFal
 
 	virtual void StateTick(float DeltaTime) override;
 
+
+#pragma region Mesh movement
+
+protected:
+	/*Rotation maximum en Roll du joueur lorsqu'il se déplace*/
+	UPROPERTY(EditAnywhere, Category="Mesh movement")
+	float MeshMovementRotationAngle;
+	
+	/*Vitesse de rotation du joueur lorsqu'il se déplace*/
+	UPROPERTY(EditAnywhere, Category="Mesh movement")
+	float MeshMovementDampingSpeed;
+	
+#pragma endregion
+
 private:
 	UPROPERTY()
 	TObjectPtr<ADiveLevels> DiveLevelsActor;

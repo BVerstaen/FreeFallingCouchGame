@@ -67,16 +67,17 @@ void UFreeFallCharacterStateFastDive::StateTick(float DeltaTime)
 
 	if (Character->GetCharacterMovement()->MovementMode !=MOVE_Flying)
 		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, "you ain't flying darling");
-	GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Cyan, "StateFastDive Tick");
+	//GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Cyan, "StateFastDive Tick");
+	GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Purple, "FlySpeed = " + FString::SanitizeFloat(Character->GetCharacterMovement()->MaxFlySpeed));
 	
 	FVector Direction = Character->GetActorLocation() - Character->GetCameraActor()->GetActorLocation();
 	Direction.Normalize();
 
-	GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Purple, "CharZLoc : " + FString::SanitizeFloat(Character->GetActorLocation().Z));
-	GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Purple, "ZTarget : " + FString::SanitizeFloat(TargetLayerZCenter));
+	//GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Purple, "CharZLoc : " + FString::SanitizeFloat(Character->GetActorLocation().Z));
+	//GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Purple, "ZTarget : " + FString::SanitizeFloat(TargetLayerZCenter));
 
 
-	if (Character->GetActorLocation().Z > TargetLayerZCenter && DirectionScaleValue == -1)
+	if (Character->GetActorLocation().Z > TargetLayerZCenter && DirectionScaleValue < 0)
 	{
 		FVector Velocity = Character->GetCharacterMovement()->Velocity;
 		Character->GetCharacterMovement()->Velocity += Velocity.Z * Direction;
@@ -84,7 +85,7 @@ void UFreeFallCharacterStateFastDive::StateTick(float DeltaTime)
 		ExitStateFastDive();
 		return;
 	}
-	if (Character->GetActorLocation().Z < TargetLayerZCenter && DirectionScaleValue == 1)
+	if (Character->GetActorLocation().Z < TargetLayerZCenter && DirectionScaleValue > 0)
 	{
 		FVector Velocity = Character->GetCharacterMovement()->Velocity;
 		Character->GetCharacterMovement()->Velocity += Velocity.Z * Direction;
@@ -92,7 +93,11 @@ void UFreeFallCharacterStateFastDive::StateTick(float DeltaTime)
 		ExitStateFastDive();
 		return;
 	}
-	Character->AddMovementInput(Direction, DirectionScaleValue);
+	Character->AddMovementInput(Direction, DirectionScaleValue,true);
+	//Character->GetCharacterMovement()->Velocity = Direction *  Character->GetCharacterMovement()->MaxFlySpeed * DirectionScaleValue;
+
+	//Change Angle by rotation
+	Character->InterpMeshPlayer(FRotator(Character->GetPlayerDefaultRotation().Pitch, Character->GetMesh()->GetRelativeRotation().Yaw, DirectionScaleValue * MeshMovementRotationAngle), DeltaTime, MeshMovementDampingSpeed);
 }
 
 void UFreeFallCharacterStateFastDive::CheckTargetedLayer()
@@ -105,7 +110,6 @@ void UFreeFallCharacterStateFastDive::CheckTargetedLayer()
 		{
 		case EDiveLayersID::Top:
 			TargetLayer = CurrentLayer;
-			//Exit StateFastDive;
 			break;
 		case EDiveLayersID::Middle:
 			TargetLayer = EDiveLayersID::Top;
@@ -138,11 +142,16 @@ void UFreeFallCharacterStateFastDive::CheckTargetedLayer()
 	if (TargetLayer == CurrentLayer)
 	{
 		ExitStateFastDive();
+		GEngine->AddOnScreenDebugMessage(-1,100.f, FColor::Cyan, "Jparsla");
 		return;
 	}
 	TargetLayerZCenter = DiveLevelsActor->GetDiveBoundZCoord(TargetLayer, EDiveLayerBoundsID::Middle);
-	Character->GetCharacterMovement()->MaxFlySpeed = FMath::Abs(TargetLayerZCenter - ZPosition)/CrossingLayerTime;
+	Character->GetCharacterMovement()->MaxFlySpeed = FMath::Abs(TargetLayerZCenter - ZPosition)/FMath::Max(0,CrossingLayerTime);
 	DirectionScaleValue = ZPosition < TargetLayerZCenter ? -1 : 1;
+	GEngine->AddOnScreenDebugMessage(-1,100.f, FColor::Purple, "FlySpeed = " + FString::SanitizeFloat(Character->GetCharacterMovement()->MaxFlySpeed));
+	GEngine->AddOnScreenDebugMessage(-1,100.f, FColor::Purple, "ZPosition = " + FString::SanitizeFloat(ZPosition));
+	GEngine->AddOnScreenDebugMessage(-1,100.f, FColor::Purple, "TargetLayerZCenter = " + FString::SanitizeFloat(TargetLayerZCenter));
+	GEngine->AddOnScreenDebugMessage(-1,100.f, FColor::Purple, "CrossingLayerTime = " + FString::SanitizeFloat(CrossingLayerTime));
 }
 
 void UFreeFallCharacterStateFastDive::ExitStateFastDive()
