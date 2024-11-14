@@ -15,6 +15,7 @@
 #include "Other/DiveLevels.h"
 #include "Other/Parachute.h"
 #include "PowerUps/PowerUpObject.h"
+#include "Settings/CharactersSettings.h"
 
 
 // Sets default values
@@ -61,7 +62,9 @@ void AFreeFallCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	DiveLevelsActor = Cast<ADiveLevels>(UGameplayStatics::GetActorOfClass(GetWorld(), ADiveLevels::StaticClass()));
-	PlayerMeshDefaultRotation = GetMesh()->GetRelativeRotation(); 
+	PlayerMeshDefaultRotation = GetMesh()->GetRelativeRotation();
+
+	CharactersSettings = GetDefault<UCharactersSettings>();
 
 	//Setup state machine
 	CreateStateMachine();
@@ -89,6 +92,8 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 	
 	//TODO: Delete that when Shader is created
 	SetDiveMaterialColor();
+
+	ApplyMovementFromAcceleration(DeltaTime);
 
 	if (GetCharacterMovement()->MovementMode != MOVE_Flying) GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 	
@@ -256,6 +261,60 @@ void AFreeFallCharacter::BindInputMoveAxisAndActions(UEnhancedInputComponent* En
 void AFreeFallCharacter::OnInputMove(const FInputActionValue& Value)
 {
 	InputMove = Value.Get<FVector2D>();
+}
+
+void AFreeFallCharacter::ApplyMovementFromAcceleration(float DeltaTime)
+{
+	Decelerate(DeltaTime);
+	const float ScaleValue = MovementSpeed / GetCharacterMovement()->MaxFlySpeed;
+	AddMovementInput(FVector(
+		AccelerationAlpha.X < CharactersSettings->AccelerationThreshold ? 0 : AccelerationAlpha.X,
+		AccelerationAlpha.Y < CharactersSettings->AccelerationThreshold ? 0 : AccelerationAlpha.Y,
+		0), ScaleValue);
+
+	
+	FVector MovementDirection = GetVelocity().GetSafeNormal();
+	FVector CharacterDirection = GetActorForwardVector();
+	
+	//Set Orient Rotation To Movement
+	if(GetCharacterMovement()->bOrientRotationToMovement && GrabbingState != EFreeFallCharacterGrabbingState::GrabHeavierObject)
+	{
+		//Get angle btw Character & movement direction
+		float DotProduct = FVector::DotProduct(MovementDirection, CharacterDirection);
+		
+		//If Reached orientation Threshold in his grabbing state -> stop orientation and let yourself influenced
+		if((DotProduct > OrientationThreshold && OtherCharacterGrabbing)
+			|| (DotProduct > GrabbedOrientationThreshold && OtherCharacterGrabbedBy)
+			|| IsLookingToCloseToGrabber(GrabToCloseToGrabbedAngle))
+		{
+			GetCharacterMovement()->bOrientRotationToMovement = false;
+			GrabOldInputDirection = InputMove;
+		}
+	}
+	else if(GrabOldInputDirection != InputMove)
+	{
+		//If you change direction -> Restore Orient Rotation Movement
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+	}
+
+	//Set mesh movement
+	FVector2D CharacterDirection2D = FVector2D(CharacterDirection.GetSafeNormal().X, CharacterDirection.GetSafeNormal().Y);
+	float AngleDiff = FMath::Clamp(FVector2d::DotProduct(InputMove.GetSafeNormal(), CharacterDirection2D.GetSafeNormal()) , -1.0f , 1.0f);
+	InterpMeshPlayer(FRotator((AngleDiff >= 0 ? 1 : -1) * FMath::Lerp(GetPlayerDefaultRotation().Pitch,MeshMovementRotationAngle, 1-FMath::Abs(AngleDiff)),
+		GetMesh()->GetRelativeRotation().Yaw, GetPlayerDefaultRotation().Roll), DeltaTime, MeshMovementDampingSpeed);
+	
+}
+
+void AFreeFallCharacter::Decelerate(float DeltaTime)
+{
+	if (InputMove.X < CharactersSettings->InputMoveThreshold && AccelerationAlpha.X > CharactersSettings->AccelerationThreshold)
+	{
+		AccelerationAlpha.X -= DecelerationSpeed * DeltaTime;
+	}
+	if (InputMove.Y < CharactersSettings->InputMoveThreshold && AccelerationAlpha.Y > CharactersSettings->AccelerationThreshold)
+	{
+		AccelerationAlpha.Y -= DecelerationSpeed * DeltaTime;
+	}
 }
 #pragma endregion
 
