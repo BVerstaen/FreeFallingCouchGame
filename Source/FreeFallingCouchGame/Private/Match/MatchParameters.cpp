@@ -10,12 +10,12 @@ void UMatchParameters::Init(TSubclassOf<UMatchParameters> UserParameters)
 	EraName = refClass->getEraChosen();
 	EventDelay = refClass->getTimerEventDelay();
 	RoundTimer = refClass->getRoundTimer();
-	memcpy(ScoreValue, refClass->getScoreValues(), sizeof(int*));
+	ScoreValue = refClass->getScoreValues();
 	TrackedValue = refClass->getTrackingRewardCategory();
 	MatchType = refClass->getMatchType();
 }
 
-const int* UMatchParameters::getScoreValues() const
+const TArray<int> UMatchParameters::getScoreValues() const
 {
 	return ScoreValue;
 }

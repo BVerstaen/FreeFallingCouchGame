@@ -14,18 +14,19 @@ class FREEFALLINGCOUCHGAME_API UPlayerMatchData : public UObject
 {
 	GENERATED_BODY()
 public:
-	const int* getScoreValues() const {return PlayerScores;};
+	const TArray<int> getScoreValues() const {return PlayerScores;};
 	void setScoreValue(int InID, int InScore)
 	{
-		PlayerScores[InID] += InScore;
+		PlayerScores[InID - 1] += InScore;
 		GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Yellow,
 FString::Printf(TEXT("Added %i points to player id %i !"), InScore, InID));
 	};
 	void resetScoreValue()
 	{
+		PlayerScores.Empty();
 		for (int x = 0; x < 4; x++)
 		{
-			PlayerScores[x] = 0;
+			PlayerScores.Add(0);
 		}
 	};
 
@@ -44,6 +45,6 @@ FString::Printf(TEXT("Added %i points to player id %i !"), InScore, InID));
 	}
 protected:
 	UPROPERTY(VisibleAnywhere)
-	int PlayerScores[4] = {0,0,0,0};
+	TArray<int> PlayerScores;
 	// And here could be stored other data such as who held an umbrella the longest etc etc
 };

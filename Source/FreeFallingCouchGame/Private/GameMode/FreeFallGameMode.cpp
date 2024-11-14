@@ -14,6 +14,13 @@
 void AFreeFallGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+
+	OldPlayerScore.Empty();
+	for(int i = 0; i < 4; i++)
+	{
+		OldPlayerScore.Add(0);
+	}
+	
 	CreatePlayerStarts();
 }
 
@@ -363,7 +370,7 @@ void AFreeFallGameMode::AddPoints(TArray<int> ArrayPlayers)
 	if(IsValid(PlayerMatchData))
 	{
 		// Assign points
-		const int*temp = CurrentParameters->getScoreValues();
+		const TArray<int> temp = CurrentParameters->getScoreValues();
 		for (int i  = 0; i< ArrayPlayers.Num(); i++)
 			PlayerMatchData->setScoreValue(ArrayPlayers[i], temp[i]);
 	}
@@ -375,29 +382,90 @@ void AFreeFallGameMode::AddPoints(TArray<int> ArrayPlayers)
 void AFreeFallGameMode::EndRound()
 {
 	ClearTimers();
-	// Reset CharactersInside Arena
 	
+	// Reset CharactersInside Arena
 	for (AFreeFallCharacter* Element : CharactersInsideArena)
 	{
 		if(Element)
 			Element->Destroy();
 	}
-	
 	CharactersInsideArena.Empty();
+
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "EndRound");
 
-	//Give extra points for rewards
-	TArray<int> ExtraPoints = TrackerActorInstance->GiveWinners();
-	for(int ExtraPointWinner : ExtraPoints)
+	//Create widget
+	//Round Score panel
+	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
+	RoundScorePanelWidget = CreateWidget<URoundScorePanelWidget>(UGameplayStatics::GetPlayerController(GetWorld(), 0), MapSettings->RoundScorePanelWidget);
+	if(RoundScorePanelWidget)
 	{
-		PlayerMatchData->setScoreValue(ExtraPointWinner, 1);
+		RoundScorePanelWidget->AddToViewport();
+		RoundScorePanelWidget->OnFinishShow.AddDynamic(this, &AFreeFallGameMode::EndRoundAddScore);
+
+		//Set player profile
+		int MaxNumberOfPoints = 3 * CurrentParameters->getMaxRounds();
+		for(int i = 0; i < 4; i++)
+		{
+			RoundScorePanelWidget->SetPlayerProfile(i+1, OldPlayerScore[i], MaxNumberOfPoints);
+		}
 	}
-	//Just a debug message to make sure the tracker works, meant to be removed
-	TrackerActorInstance->DebugPrintResultReward();
+}
+
+void AFreeFallGameMode::EndRoundAddScore()
+{
+	RoundScorePanelWidget->OnFinishShow.RemoveDynamic(this, &AFreeFallGameMode::EndRoundAddScore);
 	
+	for(int i = 0; i < 4; i++)
+	{
+		int NewScore = PlayerMatchData->getScoreValues()[i];
+		RoundScorePanelWidget->AddScoreToRound(i + 1, NewScore);
+		OldPlayerScore[i] = NewScore;
+	}
+
+	CurrentCategory = 0;
+	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
+	GetWorld()->GetTimerManager().SetTimer(EndRoundTimerHandle, this, &AFreeFallGameMode::EndRoundCycleAddRewardPoints, MapSettings->TimeBeforeRewardPoints, false, MapSettings->TimeBeforeRewardPoints);
+}
+
+void AFreeFallGameMode::EndRoundCycleAddRewardPoints()
+{
+	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
+	
+	ETrackingRewardCategory Category = TrackerActorInstance->CategoriesOfAward[CurrentCategory];
+	bool HasChangedReward = EndRoundAddRewardPoints(Category, MapSettings->TimeBetweenGivingRewards - .1f);
+	
+	CurrentCategory++;
+	if(CurrentCategory >= TrackerActorInstance->CategoriesOfAward.Num())
+	{
+		EndRoundTimerHandle.Invalidate();
+		GetWorld()->GetTimerManager().SetTimer(EndRoundTimerHandle, this, &AFreeFallGameMode::EndRoundWaitHide, MapSettings->TimeBeforeHideScorePanelWidget, false, MapSettings->TimeBeforeHideScorePanelWidget);
+	}
+	else if(HasChangedReward)
+	{
+		GetWorld()->GetTimerManager().SetTimer(EndRoundTimerHandle, this, &AFreeFallGameMode::EndRoundCycleAddRewardPoints, MapSettings->TimeBetweenGivingRewards, false, MapSettings->TimeBetweenGivingRewards);
+	}
+	else
+	{
+		//If no winner -> then shorter timer
+		GetWorld()->GetTimerManager().SetTimer(EndRoundTimerHandle, this, &AFreeFallGameMode::EndRoundCycleAddRewardPoints, 0.1f, false, 0.1f);
+	}
+}
+
+void AFreeFallGameMode::EndRoundWaitHide()
+{
+	RoundScorePanelWidget->HideRoundScoreAnimation();
+	RoundScorePanelWidget->OnFinishHide.AddDynamic(this, &AFreeFallGameMode::EndRoundHideScorePanel);
+}
+
+void AFreeFallGameMode::EndRoundHideScorePanel()
+{
+	RoundScorePanelWidget->OnFinishHide.RemoveDynamic(this, &AFreeFallGameMode::EndRoundHideScorePanel);
+	RoundScorePanelWidget->RemoveFromParent();
+
 	// Unlink event (to reapply properly later on, avoiding double linkage)
 	if(OnEndRound.IsBound())
 		OnEndRound.Broadcast();
+	
 	// Check for end match
 	if(CurrentRound >= CurrentParameters->getMaxRounds())
 	{
@@ -407,6 +475,32 @@ void AFreeFallGameMode::EndRound()
 	{
 		StartRound();
 	}
+}
+
+bool AFreeFallGameMode::EndRoundAddRewardPoints(ETrackingRewardCategory Category, float DelayOnScreen)
+{
+	bool DidChangeAnyScore = false;
+	
+	//Set points for category
+	TArray<int> ExtraPoints = TrackerActorInstance->GetTrackingWinners(Category);
+	for(int ExtraPointWinner : ExtraPoints)
+	{
+		PlayerMatchData->setScoreValue(ExtraPointWinner, 1);
+	}
+	
+	//Display new score if gained points
+	for(int i = 0; i < 4; i++){
+		int NewScore = PlayerMatchData->getScoreValues()[i];
+		
+		if (OldPlayerScore[i] != NewScore)
+		{
+			RoundScorePanelWidget->AddScoreReward(i+1, NewScore, Category, DelayOnScreen);
+			OldPlayerScore[i] = NewScore;
+			DidChangeAnyScore = true;
+		}
+	}
+
+	return DidChangeAnyScore;
 }
 
 void AFreeFallGameMode::ShowResults()
@@ -425,6 +519,7 @@ void AFreeFallGameMode::ShowResults()
 	StartMatch();
 }
 #pragma endregion
+
 //-------------------------------------------TIMERS---------------------------------------------------------
 #pragma region Timers
 
