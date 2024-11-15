@@ -5,6 +5,8 @@
 
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "Algo/RandomShuffle.h"
+#include "Audio/SoundSubsystem.h"
 #include "Camera/CameraActor.h"
 #include "Characters/FreeFallCharacterInputData.h"
 #include "Characters/FreeFallCharacterStateMachine.h"
@@ -159,6 +161,11 @@ void AFreeFallCharacter::DestroyPlayer()
 		OtherCharacterGrabbedBy->GrabbingState = EFreeFallCharacterGrabbingState::None;
 		OtherCharacterGrabbedBy = nullptr;
 	}
+
+	//Play death sound
+	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
+	SoundSubsystem->PlaySound("VOC_PLR_Death_ST", this, false);
+	
 	Destroy();
 }
 
@@ -761,13 +768,33 @@ void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBou
 	//Neutralize Z bounce velocity
 	NewVelocity.Z = 0;
 	OtherBounceableInterface->AddBounceForce(NewVelocity);
-	
+
+	//Play Bounce Sound
+	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
+	SoundSubsystem->PlaySound("SFX_PLR_Collision_ST", this, false);
+		
 	//Check if collided with players
 	if(AFreeFallCharacter* OtherFreeFallCharacter = OtherBounceableInterface->CollidedWithPlayer())
 	{
 		//Activate bounce cooldown & elimination timers
 		if (!OtherFreeFallCharacter->bAlreadyCollided)
 			OtherFreeFallCharacter->BounceCooldown();
+
+		//Play player bounce
+		SoundSubsystem->PlaySound("VOC_PLR_Hit", this, true);
+		SoundSubsystem->PlaySound("VOC_PLR_Shock_ST", OtherFreeFallCharacter, true);
+
+		//Play random "onomatopé"
+		TArray<FName> ExpressionHit = {
+			"VOC_PLR_Angry_ST",
+			"VOC_PLR_Joy_ST",
+			"VOC_PLR_Sad_ST",
+			"VOC_PLR_Fight_ST",
+			"VOC_PLR_Insult_ST",
+			"VOC_PLR_Warning_ST"
+		};
+		FName ExpressionName = ExpressionHit[FMath::RandRange(0, ExpressionHit.Num() - 1)];
+		SoundSubsystem->PlaySound(ExpressionName, this, false);
 		
 		SetWasRecentlyBouncedTimer(OtherFreeFallCharacter);
 		OtherFreeFallCharacter->SetWasRecentlyBouncedTimer(this);

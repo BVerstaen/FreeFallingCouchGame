@@ -3,6 +3,8 @@
 
 #include "Obstacle/ObstacleSpawner.h"
 
+#include "Audio/SoundSubsystem.h"
+
 AObstacleSpawner::AObstacleSpawner()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -78,6 +80,15 @@ void AObstacleSpawner::SpawnObstacle()
 	
 	SpawningObstacle->FinishSpawning(SpawnTransform);
 
+	//Play obstacle spawns sounds
+	for(FName SoundName : SpawningObstacle->SoundsOnSpawn)
+	{
+		if(SoundName == NAME_None) continue;
+
+		USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
+		SoundSubsystem->PlaySound(SoundName, SpawningObstacle, false);
+	}
+	
 	GetWorldTimerManager().ClearTimer(SpawnTimer);
 	//Reset timer
 	if(bPlaySpawnTimer)

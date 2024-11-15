@@ -3,6 +3,7 @@
 
 #include "Other/Parachute.h"
 
+#include "Audio/SoundSubsystem.h"
 #include "Characters/FreeFallCharacter.h"
 
 
@@ -56,6 +57,10 @@ void AParachute::Use(AFreeFallCharacter* Character)
 	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	Character->OnWasEliminated.AddDynamic(this, &AParachute::GiveToMurderer);
+
+	//Play grab sound
+	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
+	SoundSubsystem->PlaySound("SFX_GPE_Parachute_PickUp_ST", this, false);
 	
 	OnParachuteGrabbed.Broadcast(Character);
 
@@ -76,6 +81,10 @@ void AParachute::StealParachute(AFreeFallCharacter* PreviousOwner, AFreeFallChar
 	FAttachmentTransformRules AttachmentRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget,EAttachmentRule::KeepWorld, true);
 	AttachToComponent(NextOwner->GetParachuteAttachPoint(), AttachmentRules);
 
+	//Play steal sound
+	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
+	SoundSubsystem->PlaySound("SFX_GPE_Parachute_Changeplayer_ST", this, false);
+	
 	OnParachuteStolen.Broadcast(PreviousOwner, NextOwner);
 
 	SetActorRelativeScale3D(OriginScale);

@@ -52,6 +52,12 @@ public:
 	UPROPERTY(EditAnywhere)
 	FVector Direction;
 
+	UPROPERTY(EditAnywhere)
+	TArray<FName> SoundsOnSpawn;
+
+	UPROPERTY(EditAnywhere)
+	FName SoundsOnCollision;
+	
 #pragma endregion
 
 	UFUNCTION(BlueprintCallable)

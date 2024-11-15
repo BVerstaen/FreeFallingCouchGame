@@ -3,6 +3,7 @@
 
 #include "PowerUps/PowerUpCollectible.h"
 
+#include "Audio/SoundSubsystem.h"
 #include "Characters/FreeFallCharacter.h"
 #include "PowerUps/PowerUpObject.h"
 
@@ -27,7 +28,7 @@ void APowerUpCollectible::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	LifeClock += DeltaTime;
-	if (LifeClock >= LifeTime) Destroy();
+			if (LifeClock >= LifeTime) Destroy();
 }
 
 bool APowerUpCollectible::CanBeGrabbed()
@@ -53,6 +54,11 @@ void APowerUpCollectible::Use(AFreeFallCharacter* Character)
 	UPowerUpObject* CreatedPowerUpObj = NewObject<UPowerUpObject>(this, *PowerUpObject);
 	CreatedPowerUpObj->SetupCharacter(Character);
 	Character->SetPowerUp(CreatedPowerUpObj);
+
+	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
+	SoundSubsystem->PlaySound("SFX_GPE_Power-up_ST", this, false);
+	if(Character)
+		SoundSubsystem->PlaySound("VOC_PLR_power-up_ST", Character, true);
 	
 	GEngine->AddOnScreenDebugMessage(
 		-1, 5, FColor::Emerald,

@@ -28,9 +28,6 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category="Sound Settings")
 	TMap<FName, FSoundListData> SoundLists;
 
-	UFUNCTION()
-	void PlaySound(FName SoundName, AActor* ParentActor, bool bAttachToActor = true, float VolumeMultiplier = 1.0f, float PitchMultiplier = 1.0f, float StartTime = 0.0f);
-
-	UFUNCTION()
-	void PlaySound2D(FName SoundName);
+	UPROPERTY(Config, EditAnywhere, Category="Sound Settings")
+	TMap<FName, TSoftObjectPtr<USoundCue>> MusicLists;
 };

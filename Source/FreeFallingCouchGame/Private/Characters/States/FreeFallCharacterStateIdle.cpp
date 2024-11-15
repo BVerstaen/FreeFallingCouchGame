@@ -17,6 +17,8 @@ void UFreeFallCharacterStateIdle::StateEnter(EFreeFallCharacterStateID PreviousS
 {
 	Super::StateEnter(PreviousStateID);
 
+	Character->GetMesh()->PlayAnimation(IdleAnimation, true);
+	
 	Character->OnInputGrabEvent.AddDynamic(this, &UFreeFallCharacterStateIdle::OnInputGrab);
 	Character->OnInputUsePowerUpEvent.AddDynamic(this, &UFreeFallCharacterStateIdle::OnInputUsePowerUp);
 	Character->OnInputFastDiveEvent.AddDynamic(this, &UFreeFallCharacterStateIdle::OnInputFastDive);

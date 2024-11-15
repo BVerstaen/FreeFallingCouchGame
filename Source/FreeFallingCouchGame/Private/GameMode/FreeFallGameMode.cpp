@@ -14,13 +14,6 @@
 void AFreeFallGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-
-	OldPlayerScore.Empty();
-	for(int i = 0; i < 4; i++)
-	{
-		OldPlayerScore.Add(0);
-	}
-	
 	CreatePlayerStarts();
 }
 
@@ -266,6 +259,13 @@ void AFreeFallGameMode::StartMatch()
 		RoundCounterWidget->AddToViewport();
 		RoundCounterWidget->OnFinishCounter.AddDynamic(this, &AFreeFallGameMode::StartRound);
 	}
+
+	//Reset old player score
+	OldPlayerScore.Empty();
+	for(int i = 0; i < 4; i++)
+	{
+		OldPlayerScore.Add(0);
+	}
 }
 
 void AFreeFallGameMode::StartRound()
@@ -404,7 +404,7 @@ void AFreeFallGameMode::EndRound()
 		RoundScorePanelWidget->OnFinishShow.AddDynamic(this, &AFreeFallGameMode::EndRoundAddScore);
 
 		//Set player profile
-		int MaxNumberOfPoints = 3 * CurrentParameters->getMaxRounds();
+		int MaxNumberOfPoints = 8 * CurrentParameters->getMaxRounds();
 		for(int i = 0; i < MapSettings->NumberOfPlayers; i++)
 		{
 			RoundScorePanelWidget->SetPlayerProfile(i+1, OldPlayerScore[i], MaxNumberOfPoints);
