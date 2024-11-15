@@ -5,6 +5,7 @@
 
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "Audio/SoundSubsystem.h"
 #include "Camera/CameraActor.h"
 #include "Characters/FreeFallCharacterInputData.h"
 #include "Characters/FreeFallCharacterStateMachine.h"
@@ -696,7 +697,11 @@ void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBou
 	//Neutralize Z bounce velocity
 	NewVelocity.Z = 0;
 	OtherBounceableInterface->AddBounceForce(NewVelocity);
-	
+
+	//Play Bounce Sound
+	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
+	SoundSubsystem->PlaySound("SFX_PLR_Collision_ST", this, false);
+		
 	//Check if collided with players
 	if(AFreeFallCharacter* OtherFreeFallCharacter = OtherBounceableInterface->CollidedWithPlayer())
 	{
