@@ -266,10 +266,11 @@ void AFreeFallCharacter::OnInputMove(const FInputActionValue& Value)
 void AFreeFallCharacter::ApplyMovementFromAcceleration(float DeltaTime)
 {
 	Decelerate(DeltaTime);
+	GEngine->AddOnScreenDebugMessage(-1,DeltaTime,FColor::Orange, TEXT("AccelerationAlpha : " + AccelerationAlpha.ToString()));
 	const float ScaleValue = MovementSpeed / GetCharacterMovement()->MaxFlySpeed;
 	AddMovementInput(FVector(
-		AccelerationAlpha.X < CharactersSettings->AccelerationThreshold ? 0 : AccelerationAlpha.X,
-		AccelerationAlpha.Y < CharactersSettings->AccelerationThreshold ? 0 : AccelerationAlpha.Y,
+		FMath::Abs(AccelerationAlpha.X) < CharactersSettings->AccelerationThreshold ? 0 : AccelerationAlpha.X,
+		FMath::Abs(AccelerationAlpha.Y) < CharactersSettings->AccelerationThreshold ? 0 : AccelerationAlpha.Y,
 		0), ScaleValue);
 
 	
@@ -307,13 +308,13 @@ void AFreeFallCharacter::ApplyMovementFromAcceleration(float DeltaTime)
 
 void AFreeFallCharacter::Decelerate(float DeltaTime)
 {
-	if (InputMove.X < CharactersSettings->InputMoveThreshold && AccelerationAlpha.X > CharactersSettings->AccelerationThreshold)
+	if (FMath::Abs(InputMove.X) < CharactersSettings->InputMoveThreshold && FMath::Abs(AccelerationAlpha.X) > CharactersSettings->AccelerationThreshold)
 	{
-		AccelerationAlpha.X -= DecelerationSpeed * DeltaTime;
+		AccelerationAlpha.X -= DecelerationSpeed * FMath::Sign(AccelerationAlpha.X) * DeltaTime;
 	}
-	if (InputMove.Y < CharactersSettings->InputMoveThreshold && AccelerationAlpha.Y > CharactersSettings->AccelerationThreshold)
+	if (FMath::Abs(InputMove.Y) < CharactersSettings->InputMoveThreshold && FMath::Abs(AccelerationAlpha.Y) > CharactersSettings->AccelerationThreshold)
 	{
-		AccelerationAlpha.Y -= DecelerationSpeed * DeltaTime;
+		AccelerationAlpha.Y -= DecelerationSpeed * FMath::Sign(AccelerationAlpha.Y) * DeltaTime;
 	}
 }
 #pragma endregion

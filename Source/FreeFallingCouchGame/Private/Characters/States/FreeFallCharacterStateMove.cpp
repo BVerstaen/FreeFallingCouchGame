@@ -114,15 +114,18 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 		//Character->AddMovementInput(FVector::ForwardVector , InputMove.X);
 		//Character->AddMovementInput(FVector::RightVector , InputMove.Y);
 		
-		if (InputMove.X > CharactersSettings->InputMoveThreshold)
+		if (FMath::Abs(InputMove.X) > CharactersSettings->InputMoveThreshold)
 		{
-			Character->AccelerationAlpha.X = FMath::Max(Character->AccelerationAlpha.X + InputMove.X * DeltaTime * AccelerationSpeed, Character->MaxAccelerationValue);
+			Character->AccelerationAlpha.X = FMath::Clamp(Character->AccelerationAlpha.X + InputMove.X * DeltaTime * AccelerationSpeed,
+				-Character->MaxAccelerationValue, Character->MaxAccelerationValue);
 		}
-		if (InputMove.Y > CharactersSettings->InputMoveThreshold)
+		if (FMath::Abs(InputMove.Y) > CharactersSettings->InputMoveThreshold)
 		{
-			Character->AccelerationAlpha.Y = FMath::Max(Character->AccelerationAlpha.Y + InputMove.Y * DeltaTime * AccelerationSpeed, Character->MaxAccelerationValue);
+			Character->AccelerationAlpha.Y = FMath::Clamp(Character->AccelerationAlpha.Y + InputMove.Y * DeltaTime * AccelerationSpeed,
+				-Character->MaxAccelerationValue, Character->MaxAccelerationValue);
 		}
-		
+		FRotator RotationTarget = FVector(InputMove.X, InputMove.Y, 0).Rotation();
+		Character->SetActorRotation(FMath::RInterpTo(Character->GetActorRotation(), RotationTarget, DeltaTime, 5));
 	}
 	GEngine->AddOnScreenDebugMessage(
 		-1,
