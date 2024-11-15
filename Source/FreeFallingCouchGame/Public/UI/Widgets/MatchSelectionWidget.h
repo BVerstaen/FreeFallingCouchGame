@@ -31,4 +31,4 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Blueprint Data")
 	TSubclassOf<UUserWidget> ItemWidgetClass = nullptr;
-}
+};

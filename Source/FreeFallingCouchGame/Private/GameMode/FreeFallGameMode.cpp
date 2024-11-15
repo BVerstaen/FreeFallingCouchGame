@@ -8,6 +8,7 @@
 #include "Engine/LevelStreamingDynamic.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
+#include "Match/GameDataInstanceSubsystem.h"
 #include "Settings/CharactersSettings.h"
 #include "Settings/MapSettings.h"
 
@@ -257,7 +258,23 @@ void AFreeFallGameMode::StartMatch()
 	PlayerMatchData->resetScoreValue();
 	
 	ArenaActorInstance->OnCharacterDestroyed.AddDynamic(this, &AFreeFallGameMode::CheckEndRoundDeath);
-	SetupMatch(nullptr);
+
+	// receive match data from GameDataInstanceSubsystem and check its validity to start the match
+	UGameDataInstanceSubsystem* GameDataSubsystem = GetGameInstance()->GetSubsystem<UGameDataInstanceSubsystem>();
+	if(GameDataSubsystem->IsValidLowLevel())
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Blue, TEXT("Subsystem valid, checking match data"));
+		UMatchParameters* refParameters = GameDataSubsystem->GetMatchParameters();
+		if(refParameters->IsValidLowLevel())
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Blue, TEXT("Data received valid, starting with Subsystem parameters"));
+			SetupMatch(refParameters);
+		}
+	} else {
+		GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("Data received And/Or Subsystem invalid, starting with default parameters"));
+		SetupMatch(nullptr);
+	}
+	
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------MATCH START--------------------"));
 
 	//Round counter and delegate 
@@ -297,7 +314,8 @@ void AFreeFallGameMode::StartRound()
 		OnStartRound.Broadcast();
 	}
 }
-void AFreeFallGameMode::SetupMatch(TSubclassOf<UMatchParameters> UserParameters)
+//void AFreeFallGameMode::SetupMatch(TSubclassOf<UMatchParameters> UserParameters)
+void AFreeFallGameMode::SetupMatch(UMatchParameters *UserParameters)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "SetupMatch");
 	// Get Values passed in selection screen

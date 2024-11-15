@@ -37,5 +37,5 @@ void UMatchParameters::setMatchParameters(int inMaxRounds, float inEventDelay, f
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Received Data !");
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple, FString::Printf(
 	TEXT("Selected Rounds : %i \n  Event delay: %f"), 
-	inMaxRounds));
+	inMaxRounds, inEventDelay));
 }
