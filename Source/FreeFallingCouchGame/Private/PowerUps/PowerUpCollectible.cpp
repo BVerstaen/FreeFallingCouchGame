@@ -20,7 +20,6 @@ void APowerUpCollectible::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, "PowerUpCollectible::BeginPlay");
 }
 
 // Called every frame
@@ -31,17 +30,7 @@ void APowerUpCollectible::Tick(float DeltaTime)
 			if (LifeClock >= LifeTime) Destroy();
 }
 
-bool APowerUpCollectible::CanBeGrabbed()
-{
-	return false;
-}
-
-bool APowerUpCollectible::CanBeTaken()
-{
-	return true;
-}
-
-void APowerUpCollectible::Use(AFreeFallCharacter* Character)
+void APowerUpCollectible::GivePowerToCharacter(AFreeFallCharacter* Character)
 {
 	if (PowerUpObject == nullptr)
 	{
