@@ -312,12 +312,13 @@ void AFreeFallCharacter::ApplyMovementFromAcceleration(float DeltaTime)
 		GetCharacterMovement()->bOrientRotationToMovement = true;
 	}
 
+	/*
 	//Set mesh movement
 	FVector2D CharacterDirection2D = FVector2D(CharacterDirection.GetSafeNormal().X, CharacterDirection.GetSafeNormal().Y);
 	float AngleDiff = FMath::Clamp(FVector2d::DotProduct(InputMove.GetSafeNormal(), CharacterDirection2D.GetSafeNormal()) , -1.0f , 1.0f);
 	InterpMeshPlayer(FRotator((AngleDiff >= 0 ? 1 : -1) * FMath::Lerp(GetPlayerDefaultRotation().Pitch,MeshMovementRotationAngle, 1-FMath::Abs(AngleDiff)),
 		GetMesh()->GetRelativeRotation().Yaw, GetPlayerDefaultRotation().Roll), DeltaTime, MeshMovementDampingSpeed);
-	
+	*/
 }
 
 void AFreeFallCharacter::Decelerate(float DeltaTime)
