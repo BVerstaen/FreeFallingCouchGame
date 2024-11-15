@@ -44,6 +44,7 @@ bool AParachute::CanBeGrabbed()
 
 void AParachute::Use(AFreeFallCharacter* Character)
 {
+	OriginScale = GetActorRelativeScale3D();
 	if(!Character) return;
 	
 	//Give reference & attach self to Character
@@ -57,6 +58,8 @@ void AParachute::Use(AFreeFallCharacter* Character)
 	Character->OnWasEliminated.AddDynamic(this, &AParachute::GiveToMurderer);
 	
 	OnParachuteGrabbed.Broadcast(Character);
+
+	SetActorRelativeScale3D(OriginScale);
 }
 
 void AParachute::StealParachute(AFreeFallCharacter* PreviousOwner, AFreeFallCharacter* NextOwner)
@@ -74,6 +77,8 @@ void AParachute::StealParachute(AFreeFallCharacter* PreviousOwner, AFreeFallChar
 	AttachToComponent(NextOwner->GetParachuteAttachPoint(), AttachmentRules);
 
 	OnParachuteStolen.Broadcast(PreviousOwner, NextOwner);
+
+	SetActorRelativeScale3D(OriginScale);
 }
 
 AParachute* AParachute::DropParachute(AFreeFallCharacter* PreviousOwner)
