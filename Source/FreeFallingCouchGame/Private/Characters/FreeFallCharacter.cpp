@@ -5,7 +5,7 @@
 
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
-#include "Algo/RandomShuffle.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Audio/SoundSubsystem.h"
 #include "Camera/CameraActor.h"
 #include "Characters/FreeFallCharacterInputData.h"
@@ -767,6 +767,11 @@ void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBou
 	//Play Bounce Sound
 	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
 	SoundSubsystem->PlaySound("SFX_PLR_Collision_ST", this, false);
+
+	//Play bounce effect
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BounceEffect.LoadSynchronous(), GetActorLocation());
+	
+
 		
 	//Check if collided with players
 	if(AFreeFallCharacter* OtherFreeFallCharacter = OtherBounceableInterface->CollidedWithPlayer())

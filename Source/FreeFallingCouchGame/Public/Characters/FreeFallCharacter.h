@@ -8,6 +8,7 @@
 #include "Interface/DiveLayersSensible.h"
 #include "Other/DiveLayersID.h"
 #include "Interface/BounceableInterface.h"
+#include "NiagaraSystem.h"
 #include "FreeFallCharacter.generated.h"
 
 class UCharactersSettings;
@@ -420,6 +421,9 @@ public:
 	UFUNCTION()
 	void BounceRoutine(AActor* OtherActor, TScriptInterface<IBounceableInterface> OtherBounceableInterface, float SelfRestitutionMultiplier, float OtherRestitutionMultiplier, float GlobalMultiplier, bool bShouldConsiderMass, bool bShouldKeepRemainVelocity);
 
+protected:
+	UPROPERTY(EditAnywhere, Category="Bounce Collision")
+	TSoftObjectPtr<UNiagaraSystem> BounceEffect;
 	
 #pragma endregion
 
