@@ -10,6 +10,7 @@
 #include "Interface/BounceableInterface.h"
 #include "FreeFallCharacter.generated.h"
 
+class UCharactersSettings;
 class UPowerUpObject;
 class AParachute;
 enum class EDiveLayersID : uint8;
@@ -103,6 +104,62 @@ private:
 	void BindInputMoveAxisAndActions(UEnhancedInputComponent* EnhancedInputComponent);
 
 	void OnInputMove(const FInputActionValue& Value);
+	
+#pragma endregion
+
+#pragma region Move
+
+public:
+	UPROPERTY()
+	FVector2D AccelerationAlpha;
+
+	UPROPERTY(EditAnywhere, Category = "Horizontal Movement")
+	float MaxAccelerationValue;
+
+	UPROPERTY(EditAnywhere, Category = "Horizontal Movement")
+	float MovementSpeed;
+
+	UPROPERTY(EditAnywhere, Category = "Horizontal Movement")
+	float DecelerationSpeed;
+
+protected:
+	UPROPERTY()
+	const UCharactersSettings* CharactersSettings;
+	
+	/*Le seuil à partir duquel le joueur ne bloque plus sa rotation et permet d'être influencé (uniquement si attrape joueur)*/
+	UPROPERTY(EditAnywhere, Category="Grab Threshold")
+	float OrientationThreshold;
+	
+	/*Le seuil à partir duquel le joueur ne bloque plus sa rotation et permet d'être influencé (uniquement si attrape joueur)*/
+	UPROPERTY(EditAnywhere, Category="Grab Threshold")
+	float GrabbedOrientationThreshold;
+
+	/*Le seuil à partir duquel le joueur ne bloque plus sa rotation de risque qu'il colissionne le joueur grab avec le joueur grabbé (uniquement si attrape et attrapée)*/
+	UPROPERTY(EditAnywhere, Category="Grab Threshold")
+	float GrabToCloseToGrabbedAngle;
+
+private:
+	void ApplyMovementFromAcceleration(float DeltaTime);
+
+	void Decelerate(float DeltaTime);
+
+	FVector2D GrabOldInputDirection;
+
+#pragma region Mesh movement
+	
+protected:
+	/*Rotation maximum en Yaw du joueur lorsqu'il se déplace*/
+	UPROPERTY(EditAnywhere, Category="Mesh movement")
+	float MeshMovementRotationAngle;
+	
+	/*Vitesse de rotation du joueur lorsqu'il se déplace*/
+	UPROPERTY(EditAnywhere, Category="Mesh movement")
+	float MeshMovementDampingSpeed;
+
+	FVector2D PreviousInputMovement;
+	FRotator PreviousRotation = FRotator::ZeroRotator;
+	
+#pragma endregion
 	
 #pragma endregion
 
