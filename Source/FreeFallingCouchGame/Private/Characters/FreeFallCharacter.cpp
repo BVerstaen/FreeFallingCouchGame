@@ -650,7 +650,7 @@ void AFreeFallCharacter::UpdateDissociationProblems(float DeltaTime)
 														GetWorld(),
 														SphereLocation,
 														SphereLocation,
-														20,
+														30,
 														traceObjectTypes,
 														false,
 														ignoreActors,
