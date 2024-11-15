@@ -28,8 +28,8 @@ void UFreeFallCharacterStateDive::StateEnter(EFreeFallCharacterStateID PreviousS
 {
 	Super::StateEnter(PreviousStateID);
 
+	Character->GetMesh()->PlayAnimation(DiveAnimation, true);
 	Character->OnInputFastDiveEvent.AddDynamic(this, &UFreeFallCharacterStateDive::OnInputFastDive);
-
 	Character->bIsDiveForced = false;
 
 	//Not crash if DiveLevelsActor is not set in scene

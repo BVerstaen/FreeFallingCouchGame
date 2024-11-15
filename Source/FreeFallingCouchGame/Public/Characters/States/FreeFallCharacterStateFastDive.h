@@ -48,6 +48,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	float CrossingLayerTime;
 
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UAnimSequence> DiveAnimation;
+	
 	UPROPERTY()
 	float TargetLayerZCenter;
 
