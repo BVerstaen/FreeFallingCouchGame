@@ -113,16 +113,21 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 		break;
 	}
 
+	TArray<TObjectPtr<UPowerUpObject>> PowerUpsToRemove;
 	for (TObjectPtr<UPowerUpObject> PowerUpObject : UsedPowerUps)
 	{
 		PowerUpObject->Tick(DeltaTime);
 		if (PowerUpObject->bIsActionFinished)
 		{
 			PowerUpObject->PrepareForDestruction();
-			UsedPowerUps.Remove(PowerUpObject);
+			PowerUpsToRemove.Add(PowerUpObject);
 		}
 	}
-	
+	for (TObjectPtr<UPowerUpObject> PowerUpObject : PowerUpsToRemove)
+	{
+		UsedPowerUps.Remove(PowerUpObject);
+	}
+	PowerUpsToRemove.Empty();
 }
 
 void AFreeFallCharacter::DestroyPlayer()

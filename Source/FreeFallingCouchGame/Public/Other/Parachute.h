@@ -27,6 +27,8 @@ protected:
 	float LaunchForce;
 	
 	FVector StartingLocation;
+
+	FVector OriginScale = FVector(1, 1, 0);
 	
 public:
 	// Called every frame

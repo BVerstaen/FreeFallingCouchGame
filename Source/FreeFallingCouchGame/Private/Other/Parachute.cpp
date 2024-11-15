@@ -45,6 +45,7 @@ bool AParachute::CanBeGrabbed()
 
 void AParachute::Use(AFreeFallCharacter* Character)
 {
+	OriginScale = GetActorRelativeScale3D();
 	if(!Character) return;
 	
 	//Give reference & attach self to Character
@@ -62,6 +63,8 @@ void AParachute::Use(AFreeFallCharacter* Character)
 	SoundSubsystem->PlaySound("SFX_GPE_Parachute_PickUp_ST", this, false);
 	
 	OnParachuteGrabbed.Broadcast(Character);
+
+	SetActorRelativeScale3D(OriginScale);
 }
 
 void AParachute::StealParachute(AFreeFallCharacter* PreviousOwner, AFreeFallCharacter* NextOwner)
@@ -83,6 +86,8 @@ void AParachute::StealParachute(AFreeFallCharacter* PreviousOwner, AFreeFallChar
 	SoundSubsystem->PlaySound("SFX_GPE_Parachute_Changeplayer_ST", this, false);
 	
 	OnParachuteStolen.Broadcast(PreviousOwner, NextOwner);
+
+	SetActorRelativeScale3D(OriginScale);
 }
 
 AParachute* AParachute::DropParachute(AFreeFallCharacter* PreviousOwner)
