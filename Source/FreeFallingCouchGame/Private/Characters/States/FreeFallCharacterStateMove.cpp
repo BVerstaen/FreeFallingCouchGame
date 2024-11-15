@@ -19,13 +19,11 @@ void UFreeFallCharacterStateMove::StateEnter(EFreeFallCharacterStateID PreviousS
 {
 	Super::StateEnter(PreviousStateID);
 
-	Character->GetCharacterMovement()->MaxFlySpeed = StartMoveSpeed;
+	
+	//Character->GetCharacterMovement()->MaxFlySpeed = StartMoveSpeed;
 	Character->OnInputGrabEvent.AddDynamic(this, &UFreeFallCharacterStateMove::OnInputGrab);
 	Character->OnInputUsePowerUpEvent.AddDynamic(this, &UFreeFallCharacterStateMove::OnInputUsePowerUp);
 	Character->OnInputFastDiveEvent.AddDynamic(this, &UFreeFallCharacterStateMove::OnInputFastDive);
-
-	//Set OrientRotation to movement (deactivated if grab a heavier object)
-	Character->GetCharacterMovement()->bOrientRotationToMovement = Character->GrabbingState != EFreeFallCharacterGrabbingState::GrabHeavierObject;
 	
 	if(PreviousStateID != EFreeFallCharacterStateID::Grab)
 		AccelerationAlpha = 0;
@@ -62,14 +60,17 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 {
 	Super::StateTick(DeltaTime);
 
+	/*
 	AccelerationAlpha += DeltaTime;
 	Character->GetCharacterMovement()->MaxFlySpeed = FMath::Lerp(StartMoveSpeed,MaxMoveSpeed,FMath::Min(AccelerationAlpha/ReachMaxSpeedTime,1));
-
+	*/
 	const FVector2D InputMove = Character->GetInputMove();
-	
+
+	/*
 	FVector MovementDirection = Character->GetVelocity().GetSafeNormal();
-	FVector CharacterDirection = Character->GetActorForwardVector();
-	
+	FVector CharacterDirection = Character->GetActorForwardVector();*/
+
+	/*
 	//Set Orient Rotation To Movement
 	if(Character->GetCharacterMovement()->bOrientRotationToMovement && Character->GrabbingState != EFreeFallCharacterGrabbingState::GrabHeavierObject)
 	{
@@ -96,7 +97,7 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 	float AngleDiff = FMath::Clamp(FVector2d::DotProduct(InputMove.GetSafeNormal(), CharacterDirection2D.GetSafeNormal()) , -1.0f , 1.0f);
 	Character->InterpMeshPlayer(FRotator((AngleDiff >= 0 ? 1 : -1) * FMath::Lerp(Character->GetPlayerDefaultRotation().Pitch,MeshMovementRotationAngle, 1-FMath::Abs(AngleDiff)),
 		Character->GetMesh()->GetRelativeRotation().Yaw, Character->GetPlayerDefaultRotation().Roll), DeltaTime, MeshMovementDampingSpeed);
-	
+	*/
 	//Change state if other input
 	if (FMathf::Abs(Character->GetInputDive()) > CharactersSettings->InputDiveThreshold)
 	{
@@ -110,8 +111,21 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 	else
 	{
 		//Character->GetCharacterMovement()->AddForce(FVector::ForwardVector * FVector(InputMove.X, InputMove.Y, 0) );
-		Character->AddMovementInput(FVector::ForwardVector , InputMove.X);
-		Character->AddMovementInput(FVector::RightVector , InputMove.Y);
+		//Character->AddMovementInput(FVector::ForwardVector , InputMove.X);
+		//Character->AddMovementInput(FVector::RightVector , InputMove.Y);
+		
+		if (FMath::Abs(InputMove.X) > CharactersSettings->InputMoveThreshold)
+		{
+			Character->AccelerationAlpha.X = FMath::Clamp(Character->AccelerationAlpha.X + InputMove.X * DeltaTime * AccelerationSpeed,
+				-Character->MaxAccelerationValue, Character->MaxAccelerationValue);
+		}
+		if (FMath::Abs(InputMove.Y) > CharactersSettings->InputMoveThreshold)
+		{
+			Character->AccelerationAlpha.Y = FMath::Clamp(Character->AccelerationAlpha.Y + InputMove.Y * DeltaTime * AccelerationSpeed,
+				-Character->MaxAccelerationValue, Character->MaxAccelerationValue);
+		}
+		FRotator RotationTarget = FVector(InputMove.X, InputMove.Y, 0).Rotation();
+		Character->SetActorRotation(FMath::RInterpTo(Character->GetActorRotation(), RotationTarget, DeltaTime, 5));
 	}
 	GEngine->AddOnScreenDebugMessage(
 		-1,
