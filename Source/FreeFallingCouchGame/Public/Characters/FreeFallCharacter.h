@@ -141,6 +141,25 @@ private:
 
 #pragma endregion
 
+#pragma region Input FastDive
+
+public:
+	float GetInputFastDive();
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInputFastDive);
+	FInputFastDive OnInputFastDiveEvent;
+
+protected:
+	UPROPERTY()
+	float InputFastDive = 0.f;
+	
+private:
+	void BindInputFastDiveAxisAndActions(UEnhancedInputComponent* EnhancedInputComponent);
+
+	void OnInputFastDive(const FInputActionValue& Value);
+
+#pragma endregion
+
 #pragma region DiveLayerSensible Interface
 
 public:
@@ -376,7 +395,7 @@ public:
 	bool bInputUsePowerUpPressed = false;
 	
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInputUsePowerUp);
-	FInputGrabbing OnInputUsePowerUpEvent;
+	FInputUsePowerUp OnInputUsePowerUpEvent;
 	
 	void SetPowerUp(UPowerUpObject* PowerUpObject);
 	

@@ -89,6 +89,8 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 	
 	//TODO: Delete that when Shader is created
 	SetDiveMaterialColor();
+
+	if (GetCharacterMovement()->MovementMode != MOVE_Flying) GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 	
 	//Update physic based on grab
 	switch (GrabbingState)
@@ -137,9 +139,16 @@ void AFreeFallCharacter::DestroyPlayer()
 	if(OtherCharacterGrabbing)
 	{
 		OtherCharacterGrabbing->OtherCharacterGrabbedBy = nullptr;
+		OtherCharacterGrabbing->GrabbingState = EFreeFallCharacterGrabbingState::None;
 		OtherCharacterGrabbing = nullptr;
 	}
-	
+	//Remove reference if was grabbed
+	if(OtherCharacterGrabbedBy)
+	{
+		OtherCharacterGrabbedBy->OtherCharacterGrabbing = nullptr;
+		OtherCharacterGrabbedBy->GrabbingState = EFreeFallCharacterGrabbingState::None;
+		OtherCharacterGrabbedBy = nullptr;
+	}
 	Destroy();
 }
 
@@ -158,6 +167,7 @@ void AFreeFallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	BindInputDiveAxisAndActions(EnhancedInputComponent);
 	BindInputGrabActions(EnhancedInputComponent);
 	BindInputUsePowerUpActions(EnhancedInputComponent);
+	BindInputFastDiveAxisAndActions(EnhancedInputComponent);
 }
 
 void AFreeFallCharacter::InterpMeshPlayer(FRotator Destination, float DeltaTime, float DampingSpeed)
@@ -325,6 +335,51 @@ void AFreeFallCharacter::OnInputDive(const FInputActionValue& Value)
 		InputDive *= -1;
 }
 
+
+#pragma endregion
+
+#pragma region FastDive
+
+float AFreeFallCharacter::GetInputFastDive()
+{
+	return InputFastDive;
+}
+
+void AFreeFallCharacter::BindInputFastDiveAxisAndActions(UEnhancedInputComponent* EnhancedInputComponent)
+{
+	if (InputData == nullptr) return;
+
+	if (InputData == nullptr) return;
+	
+	if (InputData->InputActionFastDive)
+	{
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionFastDive,
+			ETriggerEvent::Started,
+			this,
+			&AFreeFallCharacter::OnInputFastDive
+			);
+
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionFastDive,
+			ETriggerEvent::Completed,
+			this,
+			&AFreeFallCharacter::OnInputFastDive
+			);
+	}
+	
+}
+
+void AFreeFallCharacter::OnInputFastDive(const FInputActionValue& Value)
+{
+	InputFastDive = Value.Get<float>();
+	//Invert FastDive input
+	if(InvertDiveInput)
+		InputFastDive *= -1;
+	if (FMath::Abs(InputFastDive) > 0.1) OnInputFastDiveEvent.Broadcast();
+	GEngine->AddOnScreenDebugMessage(-1,3.f,FColor::Purple, "Pressing Fast Dive : " + FString::SanitizeFloat(InputFastDive));
+}
+
 #pragma endregion
 
 #pragma region DiveLayerSensible Interface
@@ -422,6 +477,8 @@ bool AFreeFallCharacter::IsInCircularGrab()
 
 void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallCharacter* OtherCharacter, bool bIsCircularGrab)
 {
+	if(!OtherCharacter) return;
+	
 	//Calculate new offset of child actor based on Character rotation
 	if(OtherCharacterGrabbing == OtherCharacter && !bIsCircularGrab)
 	{
@@ -449,7 +506,8 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallChara
 
 	
 	//Set other Character rotation
-	if(!(OtherCharacterGrabbedBy == OtherCharacter) && !bIsCircularGrab)
+							//This comparaison -> prevent every character to circle around
+	if(!bIsCircularGrab && !(OtherCharacterGrabbing && OtherCharacterGrabbedBy))
 	{
 		FRotator TargetRotation = this->GetActorRotation();
 		TargetRotation += GrabDefaultRotationOffset;
@@ -484,11 +542,14 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallChara
 void AFreeFallCharacter::UpdateEveryMovementInfluence(float DeltaTime)
 {
 	bool bIsInCircularGrab = IsInCircularGrab();
-	
+
 	if(OtherCharacterGrabbedBy)
 		UpdateMovementInfluence(DeltaTime, OtherCharacterGrabbedBy, bIsInCircularGrab);
 	if(OtherCharacterGrabbing)
+	{
 		UpdateMovementInfluence(DeltaTime, OtherCharacterGrabbing, bIsInCircularGrab);
+		GEngine->AddOnScreenDebugMessage(-1,15, FColor::Red, OtherCharacterGrabbing->GetName());
+	}
 }
 
 void AFreeFallCharacter::UpdateObjectPosition(float DeltaTime) const
@@ -600,6 +661,7 @@ EBounceParameters AFreeFallCharacter::GetBounceParameterType()
 void AFreeFallCharacter::AddBounceForce(FVector Velocity)
 {
 	LaunchCharacter(Velocity, true, true);
+	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 }
 
 AFreeFallCharacter* AFreeFallCharacter::CollidedWithPlayer()

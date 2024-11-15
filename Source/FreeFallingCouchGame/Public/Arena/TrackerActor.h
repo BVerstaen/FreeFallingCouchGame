@@ -12,7 +12,7 @@
  */
 class AFreeFallGameMode;
 
-UENUM()
+UENUM(BlueprintType)
 enum ETrackingRewardCategory
 {
 	MostStealParachute,
@@ -52,6 +52,7 @@ private:
 	UPROPERTY()
 	TObjectPtr<AParachute> CurrentParachute;
 
+public:
 	//Categories of awards
 	UPROPERTY()
 	TArray<TEnumAsByte<ETrackingRewardCategory>> CategoriesOfAward = {
