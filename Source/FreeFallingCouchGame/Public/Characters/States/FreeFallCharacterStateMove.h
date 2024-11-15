@@ -26,6 +26,9 @@ public:
 
 protected:
 	UPROPERTY(EditAnywhere)
+	float AccelerationSpeed;
+	
+	UPROPERTY(EditAnywhere)
 	float MaxMoveSpeed;
 
 	UPROPERTY(EditAnywhere)
@@ -76,6 +79,9 @@ private:
 
 	UFUNCTION()
 	void OnInputUsePowerUp();
+
+	UFUNCTION()
+	void OnInputFastDive();
 	
 	FVector2D GrabOldInputDirection;
 #pragma endregion
