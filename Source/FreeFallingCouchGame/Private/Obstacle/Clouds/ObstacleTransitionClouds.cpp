@@ -3,6 +3,7 @@
 
 #include "Obstacle/Clouds/ObstacleTransitionClouds.h"
 
+#include "Audio/SoundSubsystem.h"
 #include "Characters/FreeFallCharacter.h"
 #include "GameMode/FreeFallGameMode.h"
 #include "Math/UnitConversion.h"
@@ -44,12 +45,17 @@ void AObstacleTransitionClouds::EndTransition()
 
 void AObstacleTransitionClouds::RandomizePlayersPositions()
 {
+	
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, FString::Printf(TEXT("%f"), FVector::Dist(-SpawnExtent, SpawnExtent)));
 	if(DistanceTolerance >= FVector::Dist(-SpawnExtent, SpawnExtent)/2)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "!!!! DISTANCE TOLERANCE IS TOO HIGH !!!!");
 		return;
 	}
+
+	//Play randomizer sound
+	USoundSubsystem* SoundSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USoundSubsystem>();
+	SoundSubsystem->PlaySound("SFX_GPE_weather_ST", this, true);
 	
 	//Get existing characters
 	const AFreeFallGameMode* FreeFallGameMode = Cast<AFreeFallGameMode>(GetWorld()->GetAuthGameMode());
@@ -86,6 +92,9 @@ void AObstacleTransitionClouds::RandomizePlayersPositions()
 		Player->GrabbingState = EFreeFallCharacterGrabbingState::None;
 		Player->OtherCharacterGrabbedBy = nullptr;
 		Player->OtherCharacterGrabbing = nullptr;
+
+		//Play scream sound
+		SoundSubsystem->PlaySound("VOC_PLR_scream_ST", this, true);
 	}
 
 	//Wait a bit for randomizing effect

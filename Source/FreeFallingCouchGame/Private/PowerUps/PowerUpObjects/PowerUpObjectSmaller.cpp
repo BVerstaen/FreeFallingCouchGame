@@ -3,6 +3,7 @@
 
 #include "PowerUps/PowerUpObjects/PowerUpObjectSmaller.h"
 
+#include "Audio/SoundSubsystem.h"
 #include "Characters/FreeFallCharacter.h"
 #include "PowerUps/PowerUpsID.h"
 
@@ -22,6 +23,10 @@ void UPowerUpObjectSmaller::Use()
 {
 	Super::Use();
 
+	USoundSubsystem* SoundSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USoundSubsystem>();
+	SoundSubsystem->PlaySound("SFX_PLR_Potiondrink_ST", OwnerCharacter, false);
+	SoundSubsystem->PlaySound("SFX_PLR_becomelittle_ST", OwnerCharacter, false);
+	
 	CharacterBaseScale = OwnerCharacter->GetActorScale();
 	OwnerCharacter->SetActorScale3D(CharacterBaseScale * ScaleMultiplier);
 }

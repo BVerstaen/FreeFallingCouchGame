@@ -3,6 +3,8 @@
 
 #include "Obstacle/Obstacle.h"
 
+#include "Audio/SoundSubsystem.h"
+
 
 // Sets default values
 AObstacle::AObstacle()
@@ -130,10 +132,15 @@ EBounceParameters AObstacle::GetBounceParameterType()
 void AObstacle::AddBounceForce(FVector Velocity)
 {
 	Mesh->AddForce(Velocity);
+	
 }
 
 AFreeFallCharacter* AObstacle::CollidedWithPlayer()
 {
+	//Play collision sound
+	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
+	SoundSubsystem->PlaySound(SoundsOnCollision, this, true);
+	
 	return nullptr;
 }
 

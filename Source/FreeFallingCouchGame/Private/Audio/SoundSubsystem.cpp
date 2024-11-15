@@ -17,6 +17,12 @@ void USoundSubsystem::PlaySound(FName SoundName, const AActor* ParentActor, bool
 		return;
 	}
 
+	if(SoundData->Sounds.Num() <= 0)
+	{
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Sound List Empty !");
+		return;
+	}
+	
 	//Load Sound Cue
 	USoundCue* Cue = SoundData->Sounds[FMath::RandRange(0, SoundData->Sounds.Num() - 1)].LoadSynchronous();
 

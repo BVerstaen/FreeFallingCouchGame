@@ -3,6 +3,7 @@
 
 #include "PowerUps/PowerUpObjects/PowerUpObjectAngry.h"
 
+#include "Audio/SoundSubsystem.h"
 #include "Characters/FreeFallCharacter.h"
 #include "PowerUps/PowerUpsID.h"
 
@@ -22,6 +23,10 @@ void UPowerUpObjectAngry::Use()
 {
 	Super::Use();
 
+	USoundSubsystem* SoundSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USoundSubsystem>();
+	SoundSubsystem->PlaySound("SFX_PLR_Potiondrink_ST", OwnerCharacter, false);
+	SoundSubsystem->PlaySound("SFX_PLR_Piment_ST", OwnerCharacter, false);
+	
 	CharacterBaseMass = OwnerCharacter->PlayerMass;
 	OwnerCharacter->PlayerMass = CharacterBaseMass * MassMultiplier;
 }
