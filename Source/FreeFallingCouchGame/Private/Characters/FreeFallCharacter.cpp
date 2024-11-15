@@ -788,7 +788,8 @@ void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBou
 			"VOC_PLR_Insult_ST",
 			"VOC_PLR_Warning_ST"
 		};
-		SoundSubsystem->PlaySound(ExpressionHit[FMath::RandRange(0, ExpressionHit.Num())], this, false);
+		FName ExpressionName = ExpressionHit[FMath::RandRange(0, ExpressionHit.Num() - 1)];
+		SoundSubsystem->PlaySound(ExpressionName, this, false);
 		
 		SetWasRecentlyBouncedTimer(OtherFreeFallCharacter);
 		OtherFreeFallCharacter->SetWasRecentlyBouncedTimer(this);
