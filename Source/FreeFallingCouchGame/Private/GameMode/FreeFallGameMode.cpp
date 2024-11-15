@@ -249,8 +249,6 @@ void AFreeFallGameMode::StartMatch()
 	if(!IsValid(PlayerMatchData))
 		PlayerMatchData = NewObject<UPlayerMatchData>();
 	PlayerMatchData->resetScoreValue();
-	
-	ArenaActorInstance->OnCharacterDestroyed.AddDynamic(this, &AFreeFallGameMode::CheckEndRoundDeath);
 
 	// receive match data from GameDataInstanceSubsystem and check its validity to start the match
 	UGameDataInstanceSubsystem* GameDataSubsystem = GetGameInstance()->GetSubsystem<UGameDataInstanceSubsystem>();
@@ -302,7 +300,8 @@ void AFreeFallGameMode::StartRound()
 	ParachuteInstance = RespawnParachute(ParachuteSpawnLocation);
 	ArenaActorInstance->Init(this);
 	TrackerActorInstance->Init(ParachuteInstance, CharactersInsideArena);
-	
+
+	SetupMatch(nullptr); //Possiblement à enlever, j'ai juste rerajouté pour pas tout péter :)
 	ArenaActorInstance->OnCharacterDestroyed.AddDynamic(this, &AFreeFallGameMode::CheckEndRoundDeath);
 	
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------ROUND START--------------------"));
