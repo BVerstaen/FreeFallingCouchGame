@@ -110,6 +110,8 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	UMatchParameters *CurrentParameters;
+
+public:
 	// Delegate declaration
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDStartRound);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDEndRound);
@@ -176,7 +178,8 @@ private:
 	// Checks if end condition is reached
 	void CheckEndRoundDeath(AFreeFallCharacter* Character);
 	// Sets up the values for the match & rounds to follow
-	void SetupMatch(TSubclassOf<UMatchParameters> UserParameters);
+	//void SetupMatch(TSubclassOf<UMatchParameters> UserParameters);
+	void SetupMatch(UMatchParameters *UserParameters);
 	
 #pragma endregion
 };

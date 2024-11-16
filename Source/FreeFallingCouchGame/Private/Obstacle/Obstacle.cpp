@@ -121,7 +121,7 @@ FVector AObstacle::GetVelocity()
 
 float AObstacle::GetMass()
 {
-	return Mesh->GetMass();
+	return ObjectMass;
 }
 
 EBounceParameters AObstacle::GetBounceParameterType()
