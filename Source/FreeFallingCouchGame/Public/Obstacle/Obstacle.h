@@ -52,6 +52,10 @@ public:
 	UPROPERTY(EditAnywhere)
 	FVector Direction;
 
+	/*le poids de l'obstacle*/
+	UPROPERTY(EditAnywhere)
+	float ObjectMass;
+	
 	UPROPERTY(EditAnywhere)
 	TArray<FName> SoundsOnSpawn;
 
