@@ -168,6 +168,7 @@ void UFreeFallCharacterStateGrab::ReleasePlayerGrab(EFreeFallCharacterStateID Pr
 		{
 			Character->OtherCharacterGrabbing->GetStateMachine()->ChangeState(EFreeFallCharacterStateID::Dive);
 			//Remove references
+			Character->OtherCharacterGrabbing->StopEffectDeGrab();
 			Character->OtherCharacterGrabbing->OtherCharacterGrabbedBy = nullptr;
 			Character->OtherCharacterGrabbing = nullptr;
 			
@@ -186,8 +187,10 @@ void UFreeFallCharacterStateGrab::ReleasePlayerGrab(EFreeFallCharacterStateID Pr
 		SoundSubsystem->PlaySound("VOC_PLR_Push_ST", Character, true);
 		
 		//Remove references
+		Character->OtherCharacterGrabbing->StopEffectDeGrab();
 		Character->OtherCharacterGrabbing->OtherCharacterGrabbedBy = nullptr;
 		Character->OtherCharacterGrabbing = nullptr;
+		
 	}
 }
 
@@ -272,6 +275,9 @@ void UFreeFallCharacterStateGrab::PlayerGrab() const
 	Character->GrabDefaultRotationOffset = FoundCharacter->GetActorRotation() - Character->GetActorRotation();
 	FoundCharacter->GrabDefaultRotationOffset = Character->GetActorRotation() - FoundCharacter->GetActorRotation();
 
+	//Set Degrab counter
+	FoundCharacter->ActivateDeGrab();
+	
 	//Play grab sound
 	USoundSubsystem* SoundSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USoundSubsystem>();
 	SoundSubsystem->PlaySound("VOC_PLR_Death_ST", Character, true);
