@@ -872,6 +872,7 @@ void AFreeFallCharacter::BindInputUsePowerUpActions(UEnhancedInputComponent* Enh
 
 void AFreeFallCharacter::OnInputUsePowerUp(const FInputActionValue& Value)
 {
+	bInputUsePowerUpPressed = Value.Get<bool>();
 	OnInputUsePowerUpEvent.Broadcast();
 }
 
