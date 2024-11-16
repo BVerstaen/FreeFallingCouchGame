@@ -183,6 +183,7 @@ void AFreeFallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	BindInputMoveAxisAndActions(EnhancedInputComponent);
 	BindInputDiveAxisAndActions(EnhancedInputComponent);
 	BindInputGrabActions(EnhancedInputComponent);
+	BindInputDeGrabActions(EnhancedInputComponent);
 	BindInputUsePowerUpActions(EnhancedInputComponent);
 	BindInputFastDiveAxisAndActions(EnhancedInputComponent);
 }
@@ -683,6 +684,48 @@ bool AFreeFallCharacter::IsLookingToCloseToGrabber(float AngleLimit)
 TObjectPtr<USceneComponent> AFreeFallCharacter::GetObjectGrabPoint() const
 {
 	return ObjectGrabPoint;
+}
+
+#pragma endregion
+
+#pragma region DeGrabbing
+
+void AFreeFallCharacter::BindInputDeGrabActions(UEnhancedInputComponent* EnhancedInputComponent)
+{
+	if (InputData == nullptr) return;
+	
+	if (InputData->InputActionGrab)
+	{
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionDeGrab,
+			ETriggerEvent::Started,
+			this,
+			&AFreeFallCharacter::OnInputDeGrab
+			);
+	}
+}
+
+void AFreeFallCharacter::OnInputDeGrab(const FInputActionValue& Value)
+{
+	GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Emerald, "Degrab Input");
+	if(!OtherCharacterGrabbedBy) return;
+
+	CurrentNumberOfDeGrabInput--;
+
+	if(CurrentNumberOfDeGrabInput <= 0)
+	{
+		OtherCharacterGrabbedBy->OtherCharacterGrabbing = nullptr;
+		OtherCharacterGrabbedBy->GrabbingState = EFreeFallCharacterGrabbingState::None;
+		OtherCharacterGrabbedBy = nullptr;
+
+		StopEffectDeGrab();
+	}
+}
+
+void AFreeFallCharacter::ActivateDeGrab()
+{
+	CurrentNumberOfDeGrabInput = MaxNumberOfDeGrabInput;
+	ActivateEffectDeGrab();
 }
 
 #pragma endregion

@@ -317,6 +317,32 @@ public :
 	
 #pragma endregion 
 
+#pragma region Input DeGrab
+
+private:
+	void BindInputDeGrabActions(UEnhancedInputComponent* EnhancedInputComponent);
+
+	void OnInputDeGrab(const FInputActionValue& Value);
+
+	/*Nombre maximum d'input degrab à appuyer pour se libérer*/
+	UPROPERTY(EditAnywhere, Category="DeGrab")
+	int MaxNumberOfDeGrabInput = 10;
+	
+	UPROPERTY()
+	int CurrentNumberOfDeGrabInput = 0;
+
+public:
+	UFUNCTION()
+	void ActivateDeGrab();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ActivateEffectDeGrab();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void StopEffectDeGrab();
+
+#pragma endregion 
+	
 #pragma region IDPlayer
 protected:
 	uint8 ID_PlayerLinked = -1;

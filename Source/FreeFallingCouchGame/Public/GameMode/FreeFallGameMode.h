@@ -110,6 +110,8 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	UMatchParameters *CurrentParameters;
+
+public:
 	// Delegate declaration
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDStartRound);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDEndRound);
