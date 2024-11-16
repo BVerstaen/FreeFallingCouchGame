@@ -74,4 +74,7 @@ public:
 	
 	UPROPERTY(Config, EditAnywhere, Category="Diving")
 	float DiveLayerThreshold;
+
+	UPROPERTY(Config, EditAnywhere, Category="Camera")
+	TSubclassOf<UCameraShakeBase> CameraShake;
 };

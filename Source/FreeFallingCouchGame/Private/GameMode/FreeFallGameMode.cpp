@@ -35,6 +35,10 @@ void AFreeFallGameMode::Init()
 	{
 		ParachuteSpawnLocation = FVector(0, 0, 0);
 	}
+
+	//Add wobble to camera
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	PlayerController->ClientStartCameraShake(GetDefault<UMapSettings>()->CameraShake, 50);
 	
 	//TODO Find way to receive player made modifications
 	StartMatch();
