@@ -28,6 +28,14 @@ void APowerUpCollectible::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	LifeClock += DeltaTime;
 			if (LifeClock >= LifeTime) Destroy();
+	if (OverlappingCharacter != nullptr)
+	{
+		if (OverlappingCharacter->CurrentPowerUp == nullptr)
+		{
+			GivePowerToCharacter(OverlappingCharacter);
+			RemoveCharacterFromOverlappingCharacters(OverlappingCharacter);
+		}
+	}
 }
 
 void APowerUpCollectible::GivePowerToCharacter(AFreeFallCharacter* Character)
@@ -39,7 +47,14 @@ void APowerUpCollectible::GivePowerToCharacter(AFreeFallCharacter* Character)
 		TEXT("Can't collect PowerUp Collectible, UObject is nullptr")
 		);
 		return;
-	} 
+	}
+
+	if (Character->CurrentPowerUp != nullptr)
+	{
+		OverlappingCharacter = Character;
+		return;
+	}
+	
 	UPowerUpObject* CreatedPowerUpObj = NewObject<UPowerUpObject>(this, *PowerUpObject);
 	CreatedPowerUpObj->SetupCharacter(Character);
 	Character->SetPowerUp(CreatedPowerUpObj);
@@ -53,7 +68,14 @@ void APowerUpCollectible::GivePowerToCharacter(AFreeFallCharacter* Character)
 		-1, 5, FColor::Emerald,
 		TEXT("Player : " + Character->GetSelfActor()->GetName() + " Collected PowerUp : " + UEnum::GetDisplayValueAsText(CreatedPowerUpObj->GetPowerUpID()).ToString())
 		);
-
 	this->Destroy();
+}
+
+void APowerUpCollectible::RemoveCharacterFromOverlappingCharacters(AFreeFallCharacter* Character)
+{
+	if (Character == OverlappingCharacter)
+	{
+		OverlappingCharacter = nullptr;
+	}
 }
 
