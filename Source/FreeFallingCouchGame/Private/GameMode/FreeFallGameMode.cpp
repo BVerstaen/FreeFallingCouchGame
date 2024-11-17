@@ -36,10 +36,13 @@ void AFreeFallGameMode::Init()
 		ParachuteSpawnLocation = FVector(0, 0, 0);
 	}
 
+	//Reset next parachute holder ID
+	NextParachuteHolderID = -1;
+	
 	//Add wobble to camera
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	PlayerController->ClientStartCameraShake(GetDefault<UMapSettings>()->CameraShake, 50);
-	
+
 	//TODO Find way to receive player made modifications
 	StartMatch();
 }
@@ -301,12 +304,23 @@ void AFreeFallGameMode::StartRound()
 	TArray<APlayerStart*> PlayerStartsPoints;
 	FindPlayerStartActorsInMap(PlayerStartsPoints);
 	SpawnCharacters(PlayerStartsPoints);
-	ParachuteInstance = RespawnParachute(ParachuteSpawnLocation);
-	ArenaActorInstance->Init(this);
-	TrackerActorInstance->Init(ParachuteInstance, CharactersInsideArena);
 
-	SetupMatch(nullptr); //Possiblement à enlever, j'ai juste rerajouté pour pas tout péter :)
+	//Create parachute & equip to next player
+	ParachuteInstance = RespawnParachute(ParachuteSpawnLocation);
+	ParachuteInstance->OnParachuteDropped.AddDynamic(this, &AFreeFallGameMode::FindNewOwnerForParachute);
+	for(AFreeFallCharacter* Character : CharactersInsideArena)
+	{
+		if(Character->getIDPlayerLinked() == NextParachuteHolderID)
+		{
+			ParachuteInstance->EquipToPlayer(Character);
+			break;
+		}
+	}
+	
+	ArenaActorInstance->Init(this);
 	ArenaActorInstance->OnCharacterDestroyed.AddDynamic(this, &AFreeFallGameMode::CheckEndRoundDeath);
+	TrackerActorInstance->Init(ParachuteInstance, CharactersInsideArena);
+	SetupMatch(nullptr); //Possiblement à enlever, j'ai juste rerajouté pour pas tout péter :)
 	
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------ROUND START--------------------"));
 	CurrentRound++;
@@ -371,10 +385,14 @@ void AFreeFallGameMode::CheckEndRoundDeath(AFreeFallCharacter* Character)
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "One character, remaining, end match!");
 		ArenaActorInstance->OnCharacterDestroyed.RemoveDynamic(this, &AFreeFallGameMode::CheckEndRoundDeath);
 		TrackerActorInstance->RemoveDelegates();
-		AddPoints(SetDeathOrder());
+		
+		TArray<int> DeathOrder = SetDeathOrder();
+		AddPoints(DeathOrder);
+
 		EndRound();
 	}
 }
+
 TArray<int> AFreeFallGameMode::SetDeathOrder()
 {
 	TArray<int> RoundRanking;
@@ -384,6 +402,16 @@ TArray<int> AFreeFallGameMode::SetDeathOrder()
 	RoundRanking.Append(LossOrder);
 	return RoundRanking;
 }
+
+void AFreeFallGameMode::FindNewOwnerForParachute(AFreeFallCharacter* PreviousOwner)
+{
+	if(!ParachuteInstance) return;
+	if(CharactersInsideArena.Num() <= 0) return;
+
+	AFreeFallCharacter* NewOwner = CharactersInsideArena[FMath::RandRange(0, CharactersInsideArena.Num() - 1)];
+	ParachuteInstance->EquipToPlayer(NewOwner);
+}
+
 #pragma endregion
 
 #pragma region PostRound
@@ -413,9 +441,25 @@ void AFreeFallGameMode::EndRound()
 			Element->Destroy();
 	}
 	CharactersInsideArena.Empty();
-
+	
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "EndRound");
 
+	//remove Parachute instance dynamic
+	ParachuteInstance->OnParachuteDropped.RemoveDynamic(this, &AFreeFallGameMode::FindNewOwnerForParachute);
+	
+	//Give next parachute to last player
+	int MinimumScoreID = 0;
+	for(int i = 0; i < PlayerMatchData->getScoreValues().Num(); i++)
+	{
+		if(PlayerMatchData->getScoreValues()[i] < PlayerMatchData->getScoreValues()[MinimumScoreID])
+			MinimumScoreID = i;
+	}
+	NextParachuteHolderID = MinimumScoreID + 1;
+
+	//Destroy parachute if already exists
+	if(ParachuteInstance)
+		ParachuteInstance->Destroy();
+	
 	//Create widget
 	//Round Score panel
 	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
@@ -445,7 +489,6 @@ void AFreeFallGameMode::EndRoundAddScore()
 		RoundScorePanelWidget->AddScoreToRound(i + 1, NewScore);
 		OldPlayerScore[i] = NewScore;
 	}
-
 	CurrentCategory = 0;
 	GetWorld()->GetTimerManager().SetTimer(EndRoundTimerHandle, this, &AFreeFallGameMode::EndRoundCycleAddRewardPoints, MapSettings->TimeBeforeRewardPoints, false, MapSettings->TimeBeforeRewardPoints);
 }
