@@ -36,6 +36,9 @@ public:
 
 	virtual bool CanBeTaken() override;
 	virtual bool CanBeGrabbed() override;
+
+	UFUNCTION()
+	virtual void EquipToPlayer(AFreeFallCharacter* Character);
 	
 	UFUNCTION()
 	virtual void Use(AFreeFallCharacter* Character) override;
