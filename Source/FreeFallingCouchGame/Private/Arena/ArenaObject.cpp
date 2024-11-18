@@ -76,8 +76,9 @@ void UArenaObject::GetViewportBounds(FVector2D& OutViewportBoundsMin, FVector2D&
 		Viewport->GetInitialPositionXY() + Viewport->GetSizeXY()
 	);
 
-	
-	FIntRect ViewportRect = Viewport->CalculateViewExtents(CameraMain->AspectRatio, ViewRect);
+	FIntRect ViewportRect;
+	if(CameraMain)
+		ViewportRect = Viewport->CalculateViewExtents(CameraMain->AspectRatio, ViewRect);
 
 	//Fill Output parameters with Viewport Rect
 	OutViewportBoundsMin.X = ViewportRect.Min.X;
@@ -94,13 +95,12 @@ void UArenaObject::Tick(float DeltaTime)
 		return;
 
 	CheckAndRemoveOutOfBoundPlayers();
-
 	LastFrameNumberWeTicked = GFrameCounter;
 }
 
 void UArenaObject::CheckAndRemoveOutOfBoundPlayers()
 {
-	TArray<AFreeFallCharacter*> CharactersToRemove;
+	TArray<TObjectPtr<AFreeFallCharacter>> CharactersToRemove;
 	
 	//Check if character was rendered on screen (inverted loop to avoid indexation problems)
 	for(int i = CharactersInsideArena.Num() - 1; i > -1; i--)
@@ -128,6 +128,7 @@ void UArenaObject::CheckAndRemoveOutOfBoundPlayers()
 				if(OnCharacterDestroyed.IsBound())
 					OnCharacterDestroyed.Broadcast(Character);
 
+				if(!Character) continue;
 				CharactersToRemove.Add(Character);
 			}
 			else if (IsNearOutOfBounds(ScreenPosition, ViewportSizeMin, ViewportSizeMax))

@@ -3,7 +3,7 @@
 
 #include "Obstacle/Obstacle.h"
 
-#include "InputBehavior.h"
+#include "Audio/SoundSubsystem.h"
 
 
 // Sets default values
@@ -28,19 +28,18 @@ void AObstacle::BeginPlay()
 {
 	Super::BeginPlay();
 	
-
+	FVector refDirection = Direction;
 	Direction.Normalize();
 	FVector ImpulseVector = Direction * Speed;
 	if(Mesh != nullptr)
 	{
 		Mesh->AddImpulse(ImpulseVector, NAME_None, true);
 		// Shoot raytrace to set warning
-		//SetupWarning(ImpulseVector);
+		SetupWarning(ImpulseVector, refDirection);
 	}
 }
 
-
-void AObstacle::SetupWarning(FVector ImpulseVector)
+void AObstacle::SetupWarning(FVector ImpulseVector, FVector InDirection)
 {
 	//Setup parameters
 	TArray<FHitResult> RV_Hits;
@@ -61,6 +60,11 @@ void AObstacle::SetupWarning(FVector ImpulseVector)
 	DrawDebugLine(GetWorld(), GetActorLocation(), EndLocation, FColor::Red, false, 2.0f);
 	if(!RV_Hits.IsEmpty())
 	{
+		for (const FHitResult& Hit : RV_Hits)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Hit Actor: %s, Channel: %d"), *Hit.GetActor()->GetName(), (int32)Hit.GetComponent()->GetCollisionObjectType());
+		}
+		
 		if (RV_Hits.GetData()[0].IsValidBlockingHit())
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Hit detected"));
@@ -81,6 +85,9 @@ void AObstacle::SetupWarning(FVector ImpulseVector)
 			ThingToSpawn,
 			SpawnTransform
 			);
+		GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Cyan, FString::Printf(
+		TEXT("Vector of X:%f Y:%f Z:%f value "),InDirection.X,InDirection.Y,InDirection.Z));
+		LinkedWarningActor->SetDirection(InDirection);
 		LinkedWarningActor->SetHitResult(RV_Hits.GetData()[0]);
 		LinkedWarningActor->SetLinkedObstacle(this);
 		LinkedWarningActor->FinishSpawning(SpawnTransform);
@@ -114,7 +121,7 @@ FVector AObstacle::GetVelocity()
 
 float AObstacle::GetMass()
 {
-	return Mesh->GetMass();
+	return ObjectMass;
 }
 
 EBounceParameters AObstacle::GetBounceParameterType()
@@ -125,11 +132,25 @@ EBounceParameters AObstacle::GetBounceParameterType()
 void AObstacle::AddBounceForce(FVector Velocity)
 {
 	Mesh->AddForce(Velocity);
+	
 }
 
 AFreeFallCharacter* AObstacle::CollidedWithPlayer()
 {
+	//Play collision sound
+	if(bCanPlayCollisionSound)
+	{
+		USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
+		SoundSubsystem->PlaySound(SoundsOnCollision, this, true);
+
+		bCanPlayCollisionSound = false;
+		GetWorldTimerManager().SetTimer(CollisionSoundCooldownTimerHandle, this, &AObstacle::ResetCollisionSoundCooldown,
+			CollisionSoundCooldownTime, false, CollisionSoundCooldownTime);
+	}
+	
 	return nullptr;
 }
+
+void AObstacle::ResetCollisionSoundCooldown() { bCanPlayCollisionSound = true; }
 
 #pragma endregion

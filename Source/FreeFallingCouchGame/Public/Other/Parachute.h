@@ -27,6 +27,8 @@ protected:
 	float LaunchForce;
 	
 	FVector StartingLocation;
+
+	FVector OriginScale = FVector(1, 1, 0);
 	
 public:
 	// Called every frame
@@ -34,11 +36,18 @@ public:
 
 	virtual bool CanBeTaken() override;
 	virtual bool CanBeGrabbed() override;
-	virtual void Use(AFreeFallCharacter* Character) override;
+
+	UFUNCTION()
+	virtual void EquipToPlayer(AFreeFallCharacter* Character);
 	
+	UFUNCTION()
+	virtual void Use(AFreeFallCharacter* Character) override;
+
+	UFUNCTION()
 	void StealParachute(AFreeFallCharacter* PreviousOwner, AFreeFallCharacter* NextOwner);
 	
 	//Give back reference -> if need it to launch Parachute
+	UFUNCTION()
 	AParachute* DropParachute(AFreeFallCharacter* PreviousOwner);
 
 	UE_DEPRECATED(5.3, "Function is depreciated, no need to RecenterParachute anymore")

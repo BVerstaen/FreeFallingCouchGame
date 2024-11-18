@@ -39,6 +39,8 @@ void ATrackerActor::Init(AParachute* ParachuteInstance, TArray<AFreeFallCharacte
 		PlayerTrackedDataList.Add(TrackedData);
 
 		Character->OnWasEliminated.AddDynamic(this, &ATrackerActor::AddNbOfElimination);
+		Character->OnTakePowerUp.AddDynamic(this, &ATrackerActor::AddNbBonusTaken);
+		Character->OnUsePowerUp.AddDynamic(this, &ATrackerActor::AddNbBonusUsed);
 	}
 
 	//Bind steal parachute
@@ -125,6 +127,24 @@ TArray<int> ATrackerActor::GetTrackingWinners(ETrackingRewardCategory Category)
 			}
 		}
 		return WinningPlayer;
+
+	case MostBonusTaken:
+		for(FPlayerTrackedData& TrackedData : PlayerTrackedDataList)
+		{
+			//In case of equality
+			if(TrackedData.NbBonusTaken == HighestNumberInt && HighestNumberInt > 0)
+			{
+				WinningPlayer.Add(TrackedData.PlayerId);
+			}
+			//In case of highest number
+			else if(TrackedData.NbBonusTaken > HighestNumberInt)
+			{
+				WinningPlayer.Empty();
+				WinningPlayer.Add(TrackedData.PlayerId);
+				HighestNumberInt = TrackedData.NbBonusTaken;
+			}
+		}
+		return WinningPlayer;
 		
 	case MostBonusUsed:
 		for(FPlayerTrackedData& TrackedData : PlayerTrackedDataList)
@@ -171,6 +191,17 @@ void ATrackerActor::AddNbOfElimination(AFreeFallCharacter* PreviousOwner, AFreeF
 	}
 }
 
+void ATrackerActor::AddNbBonusTaken(const AFreeFallCharacter* Character)
+{
+	for(FPlayerTrackedData& TrackedData : PlayerTrackedDataList)
+	{
+		if(TrackedData.PlayerId == Character->getIDPlayerLinked())
+		{
+			TrackedData.NbBonusTaken++;
+		}
+	}
+}
+
 void ATrackerActor::AddNbBonusUsed(const AFreeFallCharacter* Character)
 {
 	for(FPlayerTrackedData& TrackedData : PlayerTrackedDataList)
@@ -184,41 +215,37 @@ void ATrackerActor::AddNbBonusUsed(const AFreeFallCharacter* Character)
 
 void ATrackerActor::DebugPrintResultReward()
 {
-	//Categories of awards
-	TArray<ETrackingRewardCategory> Categories = {
-		MostStealParachute,
-		LongestTimeWithParachute,
-		MostElimination,
-		MostBonusUsed
-	};
-
 	//Names of Categories
 	TMap<ETrackingRewardCategory, FString> CategoryNames = {
 		{MostStealParachute, TEXT("Most Steal Parachute")},
 		{LongestTimeWithParachute, TEXT("Longest Time With Parachute")},
 		{MostElimination, TEXT("Most Eliminations")},
-		{MostBonusUsed, TEXT("Most Bonuses Used")}
+		{MostBonusUsed, TEXT("Most Bonuses Used")},
+		{MostBonusTaken, TEXT("Most Bonuses Taken")}
 	};
 
 	//Get winners and display them in viewport
-	for (ETrackingRewardCategory Category : Categories)
+	for (ETrackingRewardCategory Category : CategoriesOfAward)
 	{
-		TArray<int> WinningPlayers = GetTrackingWinners(Category);
-        
+		//Check if category contains name
+		if (!CategoryNames.Contains(Category)) continue;
+    
 		//Display reward name
-		FString RewardMessage = FString::Printf(TEXT("Reward: %s"), *CategoryNames[Category]);
+		FString RewardMessage = "Reward:" + CategoryNames[Category];
 
+		
+		TArray<int> WinningPlayers = GetTrackingWinners(Category);
 		if (WinningPlayers.Num() > 0)
 		{
-			RewardMessage += TEXT(" - Winner(s): ");
+			RewardMessage += " - Winner(s): ";
 			for (int PlayerId : WinningPlayers)
 			{
-				RewardMessage += FString::FromInt(PlayerId) + TEXT(" ");
+				RewardMessage += FString::FromInt(PlayerId) + " ";
 			}
 		}
 		else
 		{
-			RewardMessage += TEXT(" - No winner");
+			RewardMessage += " - No winner";
 		}
 		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Yellow, RewardMessage);
 	}
@@ -238,16 +265,8 @@ void ATrackerActor::RemoveDelegates()
 TArray<int> ATrackerActor::GiveWinners()
 {
 	TArray<int> WinnersList;
-	
-	//Categories of awards
-	TArray<ETrackingRewardCategory> Categories = {
-		MostStealParachute,
-		LongestTimeWithParachute,
-		MostElimination,
-		MostBonusUsed
-	};
 
-	for(ETrackingRewardCategory Category : Categories)
+	for(ETrackingRewardCategory Category : CategoriesOfAward)
 	{
 		TArray<int> CategoryWinners = GetTrackingWinners(Category);
 		WinnersList.Append(CategoryWinners);

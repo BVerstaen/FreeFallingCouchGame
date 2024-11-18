@@ -5,6 +5,8 @@
 
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "Audio/SoundSubsystem.h"
 #include "Camera/CameraActor.h"
 #include "Characters/FreeFallCharacterInputData.h"
 #include "Characters/FreeFallCharacterStateMachine.h"
@@ -14,6 +16,8 @@
 #include "Obstacle/Obstacle.h"
 #include "Other/DiveLevels.h"
 #include "Other/Parachute.h"
+#include "PowerUps/PowerUpObject.h"
+#include "Settings/CharactersSettings.h"
 
 
 // Sets default values
@@ -60,7 +64,10 @@ void AFreeFallCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	DiveLevelsActor = Cast<ADiveLevels>(UGameplayStatics::GetActorOfClass(GetWorld(), ADiveLevels::StaticClass()));
-	
+	PlayerMeshDefaultRotation = GetMesh()->GetRelativeRotation();
+
+	CharactersSettings = GetDefault<UCharactersSettings>();
+
 	//Setup state machine
 	CreateStateMachine();
 	InitStateMachine();
@@ -87,19 +94,40 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 	
 	//TODO: Delete that when Shader is created
 	SetDiveMaterialColor();
+
+	ApplyMovementFromAcceleration(DeltaTime);
+
+	if (GetCharacterMovement()->MovementMode != MOVE_Flying) GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 	
 	//Update physic based on grab
 	switch (GrabbingState)
 	{
 	case EFreeFallCharacterGrabbingState::None:
-	case EFreeFallCharacterGrabbingState::GrabHeavierObject:
 	case EFreeFallCharacterGrabbingState::GrabPlayer:
+		break;
+	case EFreeFallCharacterGrabbingState::GrabHeavierObject:
+		UpdateHeavyObjectPosition(DeltaTime);
 		break;
 	case EFreeFallCharacterGrabbingState::GrabObject:
 		UpdateObjectPosition(DeltaTime);
 		break;
 	}
-	
+
+	TArray<TObjectPtr<UPowerUpObject>> PowerUpsToRemove;
+	for (TObjectPtr<UPowerUpObject> PowerUpObject : UsedPowerUps)
+	{
+		PowerUpObject->Tick(DeltaTime);
+		if (PowerUpObject->bIsActionFinished)
+		{
+			PowerUpObject->PrepareForDestruction();
+			PowerUpsToRemove.Add(PowerUpObject);
+		}
+	}
+	for (TObjectPtr<UPowerUpObject> PowerUpObject : PowerUpsToRemove)
+	{
+		UsedPowerUps.Remove(PowerUpObject);
+	}
+	PowerUpsToRemove.Empty();
 }
 
 void AFreeFallCharacter::DestroyPlayer()
@@ -118,6 +146,25 @@ void AFreeFallCharacter::DestroyPlayer()
 			Parachute->DropParachute(this);
 		}
 	}
+
+	//Remove reference if was grabbing
+	if(OtherCharacterGrabbing)
+	{
+		OtherCharacterGrabbing->OtherCharacterGrabbedBy = nullptr;
+		OtherCharacterGrabbing->GrabbingState = EFreeFallCharacterGrabbingState::None;
+		OtherCharacterGrabbing = nullptr;
+	}
+	//Remove reference if was grabbed
+	if(OtherCharacterGrabbedBy)
+	{
+		OtherCharacterGrabbedBy->OtherCharacterGrabbing = nullptr;
+		OtherCharacterGrabbedBy->GrabbingState = EFreeFallCharacterGrabbingState::None;
+		OtherCharacterGrabbedBy = nullptr;
+	}
+
+	//Play death sound
+	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
+	SoundSubsystem->PlaySound("VOC_PLR_Death_ST", this, false);
 	
 	Destroy();
 }
@@ -136,6 +183,19 @@ void AFreeFallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	BindInputMoveAxisAndActions(EnhancedInputComponent);
 	BindInputDiveAxisAndActions(EnhancedInputComponent);
 	BindInputGrabActions(EnhancedInputComponent);
+	BindInputDeGrabActions(EnhancedInputComponent);
+	BindInputUsePowerUpActions(EnhancedInputComponent);
+	BindInputFastDiveAxisAndActions(EnhancedInputComponent);
+}
+
+void AFreeFallCharacter::InterpMeshPlayer(FRotator Destination, float DeltaTime, float DampingSpeed)
+{
+	GetMesh()->SetRelativeRotation(FMath::RInterpTo(GetMesh()->GetRelativeRotation(), Destination, DeltaTime, DampingSpeed));
+}
+
+FRotator AFreeFallCharacter::GetPlayerDefaultRotation()
+{
+	return PlayerMeshDefaultRotation;
 }
 
 
@@ -222,12 +282,70 @@ void AFreeFallCharacter::OnInputMove(const FInputActionValue& Value)
 {
 	InputMove = Value.Get<FVector2D>();
 }
+
+void AFreeFallCharacter::ApplyMovementFromAcceleration(float DeltaTime)
+{
+	Decelerate(DeltaTime);
+	GEngine->AddOnScreenDebugMessage(-1,DeltaTime,FColor::Orange, TEXT("AccelerationAlpha : " + AccelerationAlpha.ToString()));
+	const float ScaleValue = MovementSpeed / GetCharacterMovement()->MaxFlySpeed;
+	AddMovementInput(FVector(
+		FMath::Abs(AccelerationAlpha.X) < CharactersSettings->AccelerationThreshold ? 0 : AccelerationAlpha.X,
+		FMath::Abs(AccelerationAlpha.Y) < CharactersSettings->AccelerationThreshold ? 0 : AccelerationAlpha.Y,
+		0), ScaleValue);
+
+	
+	FVector MovementDirection = GetVelocity().GetSafeNormal();
+	FVector CharacterDirection = GetActorForwardVector();
+	
+	//Set Orient Rotation To Movement
+	if(GetCharacterMovement()->bOrientRotationToMovement && GrabbingState != EFreeFallCharacterGrabbingState::GrabHeavierObject)
+	{
+		//Get angle btw Character & movement direction
+		float DotProduct = FVector::DotProduct(MovementDirection, CharacterDirection);
+		
+		//If Reached orientation Threshold in his grabbing state -> stop orientation and let yourself influenced
+		if((DotProduct > OrientationThreshold && OtherCharacterGrabbing)
+			|| (DotProduct > GrabbedOrientationThreshold && OtherCharacterGrabbedBy)
+			|| IsLookingToCloseToGrabber(GrabToCloseToGrabbedAngle))
+		{
+			GetCharacterMovement()->bOrientRotationToMovement = false;
+			GrabOldInputDirection = InputMove;
+		}
+	}
+	else if(GrabOldInputDirection != InputMove)
+	{
+		//If you change direction -> Restore Orient Rotation Movement
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+	}
+
+	/*
+	//Set mesh movement
+	FVector2D CharacterDirection2D = FVector2D(CharacterDirection.GetSafeNormal().X, CharacterDirection.GetSafeNormal().Y);
+	float AngleDiff = FMath::Clamp(FVector2d::DotProduct(InputMove.GetSafeNormal(), CharacterDirection2D.GetSafeNormal()) , -1.0f , 1.0f);
+	InterpMeshPlayer(FRotator((AngleDiff >= 0 ? 1 : -1) * FMath::Lerp(GetPlayerDefaultRotation().Pitch,MeshMovementRotationAngle, 1-FMath::Abs(AngleDiff)),
+		GetMesh()->GetRelativeRotation().Yaw, GetPlayerDefaultRotation().Roll), DeltaTime, MeshMovementDampingSpeed);
+	*/
+}
+
+void AFreeFallCharacter::Decelerate(float DeltaTime)
+{
+	if (FMath::Abs(InputMove.X) < CharactersSettings->InputMoveThreshold && FMath::Abs(AccelerationAlpha.X) > CharactersSettings->AccelerationThreshold)
+	{
+		AccelerationAlpha.X -= DecelerationSpeed * FMath::Sign(AccelerationAlpha.X) * DeltaTime;
+	}
+	if (FMath::Abs(InputMove.Y) < CharactersSettings->InputMoveThreshold && FMath::Abs(AccelerationAlpha.Y) > CharactersSettings->AccelerationThreshold)
+	{
+		AccelerationAlpha.Y -= DecelerationSpeed * FMath::Sign(AccelerationAlpha.Y) * DeltaTime;
+	}
+}
 #pragma endregion
 
 #pragma region Dive
-float AFreeFallCharacter::GetInputDive() const
+float AFreeFallCharacter::GetInputDive()
 {
+	//Can't dive if is grabbing a heavier object
 	if(GrabbingState == EFreeFallCharacterGrabbingState::GrabHeavierObject) return 0.0f;
+	
 	return InputDive;
 }
 
@@ -246,13 +364,10 @@ ADiveLevels* AFreeFallCharacter::GetDiveLevelsActor() const
 	return DiveLevelsActor;
 }
 
-float AFreeFallCharacter::GetDiveLayerForceStrength() const
-{
-	return DiveLayerForceStrength;
-}
-
 ACameraActor* AFreeFallCharacter::GetCameraActor() const
 {
+	if(!CameraActor)
+		return nullptr;
 	return CameraActor;
 }
 
@@ -289,6 +404,54 @@ void AFreeFallCharacter::BindInputDiveAxisAndActions(UEnhancedInputComponent* En
 void AFreeFallCharacter::OnInputDive(const FInputActionValue& Value)
 {
 	InputDive = Value.Get<float>();
+	//Invert dive input
+	if(InvertDiveInput)
+		InputDive *= -1;
+}
+
+
+#pragma endregion
+
+#pragma region FastDive
+
+float AFreeFallCharacter::GetInputFastDive()
+{
+	return InputFastDive;
+}
+
+void AFreeFallCharacter::BindInputFastDiveAxisAndActions(UEnhancedInputComponent* EnhancedInputComponent)
+{
+	if (InputData == nullptr) return;
+
+	if (InputData == nullptr) return;
+	
+	if (InputData->InputActionFastDive)
+	{
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionFastDive,
+			ETriggerEvent::Started,
+			this,
+			&AFreeFallCharacter::OnInputFastDive
+			);
+
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionFastDive,
+			ETriggerEvent::Completed,
+			this,
+			&AFreeFallCharacter::OnInputFastDive
+			);
+	}
+	
+}
+
+void AFreeFallCharacter::OnInputFastDive(const FInputActionValue& Value)
+{
+	InputFastDive = Value.Get<float>();
+	//Invert FastDive input
+	if(InvertDiveInput)
+		InputFastDive *= -1;
+	if (FMath::Abs(InputFastDive) > 0.1) OnInputFastDiveEvent.Broadcast();
+	GEngine->AddOnScreenDebugMessage(-1,3.f,FColor::Purple, "Pressing Fast Dive : " + FString::SanitizeFloat(InputFastDive));
 }
 
 #pragma endregion
@@ -297,6 +460,7 @@ void AFreeFallCharacter::OnInputDive(const FInputActionValue& Value)
 
 void AFreeFallCharacter::ApplyDiveForce(FVector DiveForceDirection, float DiveStrength)
 {
+	GetCharacterMovement()->bOrientRotationToMovement = (GrabbingState != EFreeFallCharacterGrabbingState::GrabHeavierObject);
 	AddMovementInput(DiveForceDirection,DiveStrength / GetCharacterMovement()->MaxFlySpeed);
 }
 
@@ -387,13 +551,16 @@ bool AFreeFallCharacter::IsInCircularGrab()
 
 void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallCharacter* OtherCharacter, bool bIsCircularGrab)
 {
+	if(!OtherCharacter) return;
+	
 	//Calculate new offset of child actor based on Character rotation
 	if(OtherCharacterGrabbing == OtherCharacter && !bIsCircularGrab)
 	{
 		FVector RotatedOffset = this->GetActorRotation().RotateVector(GrabInitialOffset);
 		FVector NewOtherCharacterPosition = this->GetActorLocation() + RotatedOffset;
-		OtherCharacter->SetActorLocation(NewOtherCharacterPosition);
+		OtherCharacter->SetActorLocation(NewOtherCharacterPosition, true);
 	}
+
 	
 	//Get both players velocity
 	FVector CharacterVelocity = GetVelocity();
@@ -411,12 +578,17 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallChara
 	GetMovementComponent()->Velocity = NewCharacterVelocity;
 	OtherCharacter->GetMovementComponent()->Velocity = NewOtherCharacterVelocity;
 
+	
 	//Set other Character rotation
-	if(!(OtherCharacterGrabbedBy == OtherCharacter && OtherCharacterGrabbing) && !bIsCircularGrab)
+							//This comparaison -> prevent every character to circle around
+	if(!bIsCircularGrab && !(OtherCharacterGrabbing && OtherCharacterGrabbedBy))
 	{
 		FRotator TargetRotation = this->GetActorRotation();
 		TargetRotation += GrabDefaultRotationOffset;
 		FRotator NewGrabbedRotation = FMath::RInterpTo(OtherCharacter->GetActorRotation(), TargetRotation, DeltaTime, GrabRotationSpeed);
+
+		GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Cyan, GetName() + " - " + TargetRotation.ToString());
+
 		OtherCharacter->SetActorRotation(NewGrabbedRotation);
 	}
 	//Set self rotation if is in a circular grab
@@ -433,16 +605,25 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallChara
 		FRotator NewStabilizedRotation = FMath::RInterpTo(GetActorRotation(), StabilizedRotation, DeltaTime, GrabRotationSpeed);
 		SetActorRotation(NewStabilizedRotation);
 	}
+
+	//Update dissociation problem if there's any
+	if(OtherCharacterGrabbing)
+	{
+		UpdateDissociationProblems(DeltaTime);
+	}
 }
 
 void AFreeFallCharacter::UpdateEveryMovementInfluence(float DeltaTime)
 {
 	bool bIsInCircularGrab = IsInCircularGrab();
-	
+
 	if(OtherCharacterGrabbedBy)
 		UpdateMovementInfluence(DeltaTime, OtherCharacterGrabbedBy, bIsInCircularGrab);
 	if(OtherCharacterGrabbing)
+	{
 		UpdateMovementInfluence(DeltaTime, OtherCharacterGrabbing, bIsInCircularGrab);
+		GEngine->AddOnScreenDebugMessage(-1,15, FColor::Red, OtherCharacterGrabbing->GetName());
+	}
 }
 
 void AFreeFallCharacter::UpdateObjectPosition(float DeltaTime) const
@@ -452,14 +633,99 @@ void AFreeFallCharacter::UpdateObjectPosition(float DeltaTime) const
 
 void AFreeFallCharacter::UpdateHeavyObjectPosition(float DeltaTime)
 {
-
 	FVector NewPosition = OtherObject->GetActorLocation() + GrabHeavyObjectRelativeLocationPoint;
 	SetActorLocation(NewPosition);
+}
+
+void AFreeFallCharacter::UpdateDissociationProblems(float DeltaTime)
+{
+	//Check if still has grabbing player in front of me
+	FTransform CharacterTransform = GetTransform();
+	FVector SphereLocation = CharacterTransform.GetLocation() + CharacterTransform.GetRotation().GetForwardVector() * 150;
+	TArray<TEnumAsByte<EObjectTypeQuery>> traceObjectTypes;
+	traceObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
+	TArray<AActor*> ignoreActors;
+	FHitResult HitResult;
+	
+	bool CanGrab = UKismetSystemLibrary::SphereTraceSingleForObjects(
+														GetWorld(),
+														SphereLocation,
+														SphereLocation,
+														30,
+														traceObjectTypes,
+														false,
+														ignoreActors,
+														EDrawDebugTrace::ForOneFrame,
+														HitResult,
+														true);
+
+	if(!CanGrab || OtherCharacterGrabbing != HitResult.GetActor())
+	{
+		//If notice any dissociation problem -> then launch character to free character space in front of him.
+		FVector DissociationFeedbackDirection = OtherCharacterGrabbing->GetActorLocation() - GetActorLocation();
+		DissociationFeedbackDirection *= -.8;
+		LaunchCharacter(DissociationFeedbackDirection, false, false);
+	}
+}
+
+bool AFreeFallCharacter::IsLookingToCloseToGrabber(float AngleLimit)
+{
+	if(!OtherCharacterGrabbedBy || !OtherCharacterGrabbing) return false;
+
+	float SelfYRotation = GetActorRotation().Yaw;
+	float OtherYRotation = OtherCharacterGrabbedBy->GetActorRotation().Yaw;
+	float LookDiffAngle = FMath::Abs(OtherYRotation - SelfYRotation);
+
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, GetName() + " - " + (LookDiffAngle > 180.f - AngleLimit && LookDiffAngle < 180 + AngleLimit ? "Yes" : "No"));
+	
+	return LookDiffAngle > 180.f - AngleLimit && LookDiffAngle < 180 + AngleLimit;
 }
 
 TObjectPtr<USceneComponent> AFreeFallCharacter::GetObjectGrabPoint() const
 {
 	return ObjectGrabPoint;
+}
+
+#pragma endregion
+
+#pragma region DeGrabbing
+
+void AFreeFallCharacter::BindInputDeGrabActions(UEnhancedInputComponent* EnhancedInputComponent)
+{
+	if (InputData == nullptr) return;
+	
+	if (InputData->InputActionGrab)
+	{
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionDeGrab,
+			ETriggerEvent::Started,
+			this,
+			&AFreeFallCharacter::OnInputDeGrab
+			);
+	}
+}
+
+void AFreeFallCharacter::OnInputDeGrab(const FInputActionValue& Value)
+{
+	GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Emerald, "Degrab Input");
+	if(!OtherCharacterGrabbedBy) return;
+
+	CurrentNumberOfDeGrabInput--;
+
+	if(CurrentNumberOfDeGrabInput <= 0)
+	{
+		OtherCharacterGrabbedBy->OtherCharacterGrabbing = nullptr;
+		OtherCharacterGrabbedBy->GrabbingState = EFreeFallCharacterGrabbingState::None;
+		OtherCharacterGrabbedBy = nullptr;
+
+		StopEffectDeGrab();
+	}
+}
+
+void AFreeFallCharacter::ActivateDeGrab()
+{
+	CurrentNumberOfDeGrabInput = MaxNumberOfDeGrabInput;
+	ActivateEffectDeGrab();
 }
 
 #pragma endregion
@@ -511,6 +777,7 @@ EBounceParameters AFreeFallCharacter::GetBounceParameterType()
 void AFreeFallCharacter::AddBounceForce(FVector Velocity)
 {
 	LaunchCharacter(Velocity, true, true);
+	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 }
 
 AFreeFallCharacter* AFreeFallCharacter::CollidedWithPlayer()
@@ -545,13 +812,38 @@ void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBou
 	//Neutralize Z bounce velocity
 	NewVelocity.Z = 0;
 	OtherBounceableInterface->AddBounceForce(NewVelocity);
+
+	//Play Bounce Sound
+	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
+	SoundSubsystem->PlaySound("SFX_PLR_Collision_ST", this, false);
+
+	//Play bounce effect
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BounceEffect.LoadSynchronous(), GetActorLocation());
 	
+
+		
 	//Check if collided with players
 	if(AFreeFallCharacter* OtherFreeFallCharacter = OtherBounceableInterface->CollidedWithPlayer())
 	{
 		//Activate bounce cooldown & elimination timers
 		if (!OtherFreeFallCharacter->bAlreadyCollided)
 			OtherFreeFallCharacter->BounceCooldown();
+
+		//Play player bounce
+		SoundSubsystem->PlaySound("VOC_PLR_Hit", this, true);
+		SoundSubsystem->PlaySound("VOC_PLR_Shock_ST", OtherFreeFallCharacter, true);
+
+		//Play random "onomatopé"
+		TArray<FName> ExpressionHit = {
+			"VOC_PLR_Angry_ST",
+			"VOC_PLR_Joy_ST",
+			"VOC_PLR_Sad_ST",
+			"VOC_PLR_Fight_ST",
+			"VOC_PLR_Insult_ST",
+			"VOC_PLR_Warning_ST"
+		};
+		FName ExpressionName = ExpressionHit[FMath::RandRange(0, ExpressionHit.Num() - 1)];
+		SoundSubsystem->PlaySound(ExpressionName, this, false);
 		
 		SetWasRecentlyBouncedTimer(OtherFreeFallCharacter);
 		OtherFreeFallCharacter->SetWasRecentlyBouncedTimer(this);
@@ -578,7 +870,7 @@ void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent
 		break;
 	case Player:
 		BounceRoutine(OtherActor, OtherBounceableInterface, BouncePlayerRestitutionMultiplier,
-	BouncePlayerRestitutionMultiplier, BouncePlayerMultiplier, false, bShouldKeepRemainingVelocity);
+	BouncePlayerRestitutionMultiplier, BouncePlayerMultiplier, true, bShouldKeepRemainingVelocity);
 		break;
 	}
 	
@@ -592,6 +884,45 @@ void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent
 USceneComponent* AFreeFallCharacter::GetParachuteAttachPoint()
 {
 	return ParachuteAttachPoint;
+}
+
+#pragma endregion
+
+#pragma region PowerUp Fuctions
+
+void AFreeFallCharacter::SetPowerUp(UPowerUpObject* PowerUpObject)
+{
+	if (CurrentPowerUp != nullptr) CurrentPowerUp->PrepareForDestruction();
+	CurrentPowerUp = PowerUpObject;
+	OnTakePowerUp.Broadcast(this);
+}
+
+void AFreeFallCharacter::BindInputUsePowerUpActions(UEnhancedInputComponent* EnhancedInputComponent)
+{
+	if (InputData == nullptr) return;
+	
+	if (InputData->InputActionUsePowerUp)
+	{
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionUsePowerUp,
+			ETriggerEvent::Started,
+			this,
+			&AFreeFallCharacter::OnInputUsePowerUp
+			);
+
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionUsePowerUp,
+			ETriggerEvent::Completed,
+			this,
+			&AFreeFallCharacter::OnInputUsePowerUp
+			);
+	}
+}
+
+void AFreeFallCharacter::OnInputUsePowerUp(const FInputActionValue& Value)
+{
+	bInputUsePowerUpPressed = Value.Get<bool>();
+	OnInputUsePowerUpEvent.Broadcast();
 }
 
 #pragma endregion

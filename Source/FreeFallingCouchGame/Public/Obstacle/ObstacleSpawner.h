@@ -36,7 +36,7 @@ public:
 public :
 	
 	/* Liste des obstacles à faire spawn ( NE METTRE QUE DES "BP_" ) */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<TSubclassOf<AObstacle>> ObstaclesList;
 
 	/* Taille de la zone où les obstacles peuvent spawner (visible en play mode) */
@@ -51,24 +51,24 @@ public :
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector ObstacleMinTorqueRotation;
 	
-	/* La rotation minimal qui sera donnée à l'obstacle (la rotation sera entre ObstacleMinTorqueRotation et ObstacleMaxTorqueRotation)*/
+		/* La rotation maximal qui sera donnée à l'obstacle (la rotation sera entre ObstacleMinTorqueRotation et ObstacleMaxTorqueRotation)*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector ObstacleMaxTorqueRotation;
 	
 	/* Vitesse minimum de l'obstacle */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ObstacleMinSpeed;
 
 	/* Vitesse maximum de l'obstacle */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ObstacleMaxSpeed;
 
 	/* Delay minimum entre 2 spawns */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ObstacleMinTimer;
 
 	/* Delay maximum entre 2 spawns */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ObstacleMaxTimer;
 
 #pragma endregion

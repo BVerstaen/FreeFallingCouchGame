@@ -17,7 +17,11 @@ void UFreeFallCharacterStateIdle::StateEnter(EFreeFallCharacterStateID PreviousS
 {
 	Super::StateEnter(PreviousStateID);
 
+	Character->GetMesh()->PlayAnimation(IdleAnimation, true);
+	
 	Character->OnInputGrabEvent.AddDynamic(this, &UFreeFallCharacterStateIdle::OnInputGrab);
+	Character->OnInputUsePowerUpEvent.AddDynamic(this, &UFreeFallCharacterStateIdle::OnInputUsePowerUp);
+	Character->OnInputFastDiveEvent.AddDynamic(this, &UFreeFallCharacterStateIdle::OnInputFastDive);
 	
 	// GEngine->AddOnScreenDebugMessage(
 	// 	-1,
@@ -32,6 +36,9 @@ void UFreeFallCharacterStateIdle::StateExit(EFreeFallCharacterStateID NextStateI
 	Super::StateExit(NextStateID);
 
 	Character->OnInputGrabEvent.RemoveDynamic(this, &UFreeFallCharacterStateIdle::OnInputGrab);
+	Character->OnInputUsePowerUpEvent.RemoveDynamic(this, &UFreeFallCharacterStateIdle::OnInputUsePowerUp);
+	Character->OnInputFastDiveEvent.RemoveDynamic(this, &UFreeFallCharacterStateIdle::OnInputFastDive);
+
 	// GEngine->AddOnScreenDebugMessage(
 	// 	-1,
 	// 	3.f,
@@ -44,6 +51,7 @@ void UFreeFallCharacterStateIdle::StateTick(float DeltaTime)
 {
 	Super::StateTick(DeltaTime);
 
+	//Change State on input
 	if (FMathf::Abs(Character->GetInputDive()) > CharactersSettings->InputDiveThreshold)
 	{
 		StateMachine->ChangeState(EFreeFallCharacterStateID::Dive);
@@ -54,6 +62,16 @@ void UFreeFallCharacterStateIdle::StateTick(float DeltaTime)
 	{
 		StateMachine->ChangeState(EFreeFallCharacterStateID::Move);
 	}
+
+	//Reset mesh rotation
+	Character->InterpMeshPlayer(Character->GetPlayerDefaultRotation(), DeltaTime, MeshMovementDampingSpeed);
+
+	GEngine->AddOnScreenDebugMessage(
+			-1,
+			DeltaTime,
+			FColor::Cyan,
+			"Player : " + Character->GetPlayerDefaultRotation().ToString()
+			);
 	
 	GEngine->AddOnScreenDebugMessage(
 		-1,
@@ -66,4 +84,14 @@ void UFreeFallCharacterStateIdle::StateTick(float DeltaTime)
 void UFreeFallCharacterStateIdle::OnInputGrab()
 {
 	StateMachine->ChangeState(EFreeFallCharacterStateID::Grab);
+}
+
+void UFreeFallCharacterStateIdle::OnInputUsePowerUp()
+{
+	StateMachine->ChangeState(EFreeFallCharacterStateID::PowerUp);
+}
+
+void UFreeFallCharacterStateIdle::OnInputFastDive()
+{
+	StateMachine->ChangeState(EFreeFallCharacterStateID::FastDive);
 }

@@ -28,6 +28,16 @@ void AEventsManager::BeginPlay()
 	}
 }
 
+void AEventsManager::Destroyed()
+{
+	Super::Destroyed();
+
+	if (EventHappening && CurrentEventActor != nullptr)
+	{
+		CurrentEventActor->OnEventEnded.RemoveDynamic(this, &AEventsManager::OnEventEnded);
+	}
+}
+
 // Called every frame
 void AEventsManager::Tick(float DeltaTime)
 {
@@ -58,6 +68,7 @@ void AEventsManager::Tick(float DeltaTime)
 		if (EventActor == nullptr) return;
 		EventActor->OnEventEnded.AddDynamic(this, &AEventsManager::OnEventEnded);
 		EventActor->TriggerEvent();
+		CurrentEventActor = EventActor;
 		EventHappening = true;
 		if (ObstacleSpawnerManager->IsTimerPlaying()) ObstacleSpawnerManager->PauseTimer();
 		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red,"Trigger Event");
@@ -67,6 +78,7 @@ void AEventsManager::Tick(float DeltaTime)
 void AEventsManager::OnEventEnded(AEventActor* TriggeringActor)
 {
 	TriggeringActor->OnEventEnded.RemoveDynamic(this, &AEventsManager::OnEventEnded);
+	CurrentEventActor = nullptr;
 	EventHappening = false;
 	EventClock = 0.f;
 	ObstacleSpawnerManager->ResumeTimer();

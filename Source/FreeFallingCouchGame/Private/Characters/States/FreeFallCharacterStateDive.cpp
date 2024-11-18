@@ -28,6 +28,15 @@ void UFreeFallCharacterStateDive::StateEnter(EFreeFallCharacterStateID PreviousS
 {
 	Super::StateEnter(PreviousStateID);
 
+	//Exit State if is grabbed
+	if(Character->OtherCharacterGrabbedBy)
+	{
+		StateMachine->ChangeState(EFreeFallCharacterStateID::Idle);
+		return;
+	}
+	
+	Character->GetMesh()->PlayAnimation(DiveAnimation, true);
+	Character->OnInputFastDiveEvent.AddDynamic(this, &UFreeFallCharacterStateDive::OnInputFastDive);
 	Character->bIsDiveForced = false;
 
 	//Not crash if DiveLevelsActor is not set in scene
@@ -60,6 +69,8 @@ void UFreeFallCharacterStateDive::StateExit(EFreeFallCharacterStateID NextStateI
 	Super::StateExit(NextStateID);
 
 	Character->bIsDiveForced = true;
+
+	Character->OnInputFastDiveEvent.RemoveDynamic(this, &UFreeFallCharacterStateDive::OnInputFastDive);
 }
 
 void UFreeFallCharacterStateDive::StateTick(float DeltaTime)
@@ -86,7 +97,10 @@ void UFreeFallCharacterStateDive::StateTick(float DeltaTime)
 		FColor::Turquoise,
 		TEXT("TargetLayer = " + GetLayerName(TargetLayer))
 		);
-	
+
+	//Change Angle by rotation
+	Character->InterpMeshPlayer(FRotator(Character->GetPlayerDefaultRotation().Pitch, Character->GetMesh()->GetRelativeRotation().Yaw, InputDive * MeshMovementRotationAngle), DeltaTime, MeshMovementDampingSpeed);
+
 	
 	if (FMath::Abs(InputDive) < CharactersSettings->InputMoveThreshold)
 	{
@@ -300,4 +314,9 @@ void UFreeFallCharacterStateDive::SetMoveStats(float Move_MaxMoveSpeed, float Mo
 	ReachMaxSpeedTime = Move_ReachMaxSpeedTime;
 	OrientationThreshold = Move_OrientationThreshold;
 	AccelerationAlpha = Move_AccelerationAlpha;
+}
+
+void UFreeFallCharacterStateDive::OnInputFastDive()
+{
+	StateMachine->ChangeState(EFreeFallCharacterStateID::FastDive);
 }

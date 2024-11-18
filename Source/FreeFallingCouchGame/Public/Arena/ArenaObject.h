@@ -46,7 +46,7 @@ protected:
 	TObjectPtr<APlayerController> MainCameraController;
 	
 	UPROPERTY()
-	TArray<AFreeFallCharacter*> CharactersInsideArena;
+	TArray<TObjectPtr<AFreeFallCharacter>> CharactersInsideArena;
 
 	UPROPERTY()
 	TObjectPtr<AParachute> Parachute;

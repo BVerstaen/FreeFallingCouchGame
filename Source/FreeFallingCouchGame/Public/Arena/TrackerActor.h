@@ -12,13 +12,14 @@
  */
 class AFreeFallGameMode;
 
-UENUM()
+UENUM(BlueprintType)
 enum ETrackingRewardCategory
 {
 	MostStealParachute,
 	LongestTimeWithParachute,
 	MostElimination,
-	MostBonusUsed
+	MostBonusUsed,
+	MostBonusTaken
 };
 
 USTRUCT()
@@ -35,6 +36,7 @@ public:
 	int NbOfStealParachute = 0;
 	float TimeWithParachute = 0.f;
 	int NbOfElimination = 0;
+	int NbBonusTaken = 0;
 	int NbBonusUsed = 0;
 };
 
@@ -49,14 +51,27 @@ private:
 	TArray<FPlayerTrackedData> PlayerTrackedDataList;
 	UPROPERTY()
 	TObjectPtr<AParachute> CurrentParachute;
+
+public:
+	//Categories of awards
+	UPROPERTY()
+	TArray<TEnumAsByte<ETrackingRewardCategory>> CategoriesOfAward = {
+		MostStealParachute,
+		LongestTimeWithParachute,
+		MostElimination,
+		MostBonusUsed,
+		MostBonusTaken
+	};
 	
 public:
 	ATrackerActor();
 	
+	UFUNCTION()
 	TArray<int> GetTrackingWinners(ETrackingRewardCategory Category);
 	
+	UFUNCTION()
 	void Init(AParachute* ParachuteInstance, TArray<AFreeFallCharacter*>& CharactersInsideArena);
-	void Tick(float DeltaTime) override;
+	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
 	void TrackHoldParachute(float DeltaTime);
@@ -66,6 +81,9 @@ public:
 	
 	UFUNCTION()
 	void AddNbOfElimination(AFreeFallCharacter* PreviousOwner, AFreeFallCharacter* NextOwner);
+
+	UFUNCTION()
+	void AddNbBonusTaken(const AFreeFallCharacter* Character);
 	
 	UFUNCTION()
 	void AddNbBonusUsed(const AFreeFallCharacter* Character);
@@ -78,6 +96,8 @@ public:
 
 	UFUNCTION()
 	TArray<int> GiveWinners();
+
+#pragma region Parachute
 	
 private:
 	UPROPERTY()
@@ -89,4 +109,6 @@ private:
 	void ChangeParachuteTracking(AFreeFallCharacter* PreviousOwner, AFreeFallCharacter* NewOwner);
 	UFUNCTION()
 	void StopParachuteTracking(AFreeFallCharacter* PreviousOwner);
+
+#pragma endregion
 };

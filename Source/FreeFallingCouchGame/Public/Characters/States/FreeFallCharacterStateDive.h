@@ -28,7 +28,7 @@ class FREEFALLINGCOUCHGAME_API UFreeFallCharacterStateDive : public UFreeFallCha
 	virtual EFreeFallCharacterStateID GetStateID() override;
 
 	virtual void StateInit(UFreeFallCharacterStateMachine* InStateMachine) override;
-
+	
 	virtual void StateEnter(EFreeFallCharacterStateID PreviousStateID) override;
 
 	virtual void StateExit(EFreeFallCharacterStateID NextStateID) override;
@@ -83,12 +83,27 @@ private:
 
 #pragma endregion
 
+#pragma region Mesh movement
+	
+protected:
+	/*Rotation maximum en Roll du joueur lorsqu'il se déplace*/
+	UPROPERTY(EditAnywhere, Category="Mesh movement")
+	float MeshMovementRotationAngle;
+	
+	/*Vitesse de rotation du joueur lorsqu'il se déplace*/
+	UPROPERTY(EditAnywhere, Category="Mesh movement")
+	float MeshMovementDampingSpeed;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UAnimSequence> DiveAnimation;
+#pragma endregion
+	
 private:
 	UPROPERTY()
 	float EnterDiveLevelThreshold = 5.f;
 	
 	UPROPERTY()
-	ADiveLevels* DiveLevelsActor;
+	TObjectPtr<ADiveLevels> DiveLevelsActor;
 
 	UPROPERTY()
 	EDivePhase CurrentDivePhase;
@@ -98,4 +113,8 @@ private:
 
 	UPROPERTY()
 	float CrossLayerClock;
+
+private:
+	UFUNCTION()
+	void OnInputFastDive();
 };

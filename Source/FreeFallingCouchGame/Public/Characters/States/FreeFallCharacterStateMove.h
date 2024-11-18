@@ -26,13 +26,7 @@ public:
 
 protected:
 	UPROPERTY(EditAnywhere)
-	float MaxMoveSpeed;
-
-	UPROPERTY(EditAnywhere)
-	float StartMoveSpeed;
-
-	UPROPERTY(EditAnywhere)
-	float ReachMaxSpeedTime;
+	float AccelerationSpeed;
 
 	/*Le seuil à partir duquel le joueur ne bloque plus sa rotation et permet d'être influencé (uniquement si attrape joueur)*/
 	UPROPERTY(EditAnywhere, Category="Grab Threshold")
@@ -42,19 +36,44 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Grab Threshold")
 	float GrabbedOrientationThreshold;
 
+	/*Le seuil à partir duquel le joueur ne bloque plus sa rotation de risque qu'il colissionne le joueur grab avec le joueur grabbé (uniquement si attrape et attrapée)*/
+	UPROPERTY(EditAnywhere, Category="Grab Threshold")
+	float GrabToCloseToGrabbedAngle;
+
+
+#pragma region Mesh movement
 	
+protected:
+	/*Rotation maximum en Yaw du joueur lorsqu'il se déplace*/
+	UPROPERTY(EditAnywhere, Category="Mesh movement")
+	float MeshMovementRotationAngle;
 	
-	FVector2D OldInputDirection;
+	/*Vitesse de rotation du joueur lorsqu'il se déplace*/
+	UPROPERTY(EditAnywhere, Category="Mesh movement")
+	float MeshMovementDampingSpeed;
+
+	FVector2D PreviousInputMovement;
+	FRotator PreviousRotation = FRotator::ZeroRotator;
+	
+#pragma endregion
 	
 private:
 	UPROPERTY()
 	float AccelerationAlpha;
+
 
 #pragma region  Input Event
 	
 private:
 	UFUNCTION()
 	void OnInputGrab();
+
+	UFUNCTION()
+	void OnInputUsePowerUp();
+
+	UFUNCTION()
+	void OnInputFastDive();
 	
+	FVector2D GrabOldInputDirection;
 #pragma endregion
 };

@@ -25,25 +25,35 @@ protected:
 public:
 	void LaunchSpawn();
 
+	UFUNCTION(CallInEditor)
 	void PauseTimer();
 
+	UFUNCTION(CallInEditor)
 	void ResumeTimer();
 
 	bool IsTimerPlaying();
 
 	/* Liste des spawners d'obstacles*/
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<AObstacleSpawner*> LinkedObstacleSpawners;
 
 	/* Delay minimum entre 2 spawns */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ObstacleMinTimer;
 
 	/* Delay maximum entre 2 spawns */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ObstacleMaxTimer;
-
+	
 	UPROPERTY()
 	FTimerHandle SpawnerTimer;
-	
+
+#pragma region Camera Activation
+public:
+	/* Sous quel index de position de la caméra dois-je m'activer*/
+	UPROPERTY(EditAnywhere)
+	TArray<int> CameraPositionIndex;
+
+	void ActivateCamera(int NewCamPosition);
+#pragma endregion
 };
