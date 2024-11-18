@@ -132,7 +132,6 @@ void AParachute::RecenterParachute() const
 void AParachute::GiveToMurderer(AFreeFallCharacter* PreviousOwner, AFreeFallCharacter* NextOwner)
 {
 	//Drop then give parachute to murderer
-	DropParachute(PreviousOwner);
-	Use(NextOwner);
+	StealParachute(PreviousOwner, NextOwner);
 }
 
