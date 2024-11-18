@@ -34,7 +34,7 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 			if(PlayerIndex < 0)
 			{
 				PlayerIndex = LocalMultiplayerSubsystem->AssignNewPlayerToKeyboardProfile(KeyboardProfile);
-				LocalMultiplayerSubsystem->AssignKeyboardMapping(PlayerIndex ,KeyboardProfile, InGame);
+				LocalMultiplayerSubsystem->AssignKeyboardMapping(PlayerIndex ,KeyboardProfile, LocalMultiplayerSubsystem->CurrentMappingType);
 
 				//Add new player & call event
 				GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Red, "Player Index :" + FString::FromInt(PlayerIndex));
@@ -53,7 +53,7 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 		if(PlayerIndex < 0)
 		{
 			PlayerIndex = LocalMultiplayerSubsystem->AssignNewPlayerToGamepadDeviceID(GamepadID);
-			LocalMultiplayerSubsystem->AssignGamepadInputMapping(PlayerIndex, InGame);
+			LocalMultiplayerSubsystem->AssignGamepadInputMapping(PlayerIndex, LocalMultiplayerSubsystem->CurrentMappingType);
 
 			LocalMultiplayerSubsystem->NumberOfPlayers++;
 			LocalMultiplayerSubsystem->OnNewPlayerCreated.Broadcast(PlayerIndex);

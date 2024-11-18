@@ -10,7 +10,9 @@ void ULocalMultiplayerSubsystem::CreateAndInitPlayers(ELocalMultiplayerInputMapp
 {
 	const ULocalMultiplayerSettings* LocalMultiplayerSettings = GetDefault<ULocalMultiplayerSettings>();
 	int NumberOfControllers = LocalMultiplayerSettings->GetNbKeyboardProfiles() + LocalMultiplayerSettings->NbMaxGamepad;
-	
+
+	CurrentMappingType = MappingType;
+
 	//Create PC keyboard & gamepad
 	for(int i=0; i < NumberOfControllers; i++)
 	{

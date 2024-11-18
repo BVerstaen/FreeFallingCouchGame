@@ -47,6 +47,9 @@ public:
 
 	UPROPERTY()
 	int NumberOfPlayers = 0;
+
+	UPROPERTY()
+	TEnumAsByte<ELocalMultiplayerInputMappingType> CurrentMappingType;
 	
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNewPlayerCreated, int, NewPlayerID);
 	UPROPERTY(BlueprintAssignable)
