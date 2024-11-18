@@ -141,6 +141,12 @@ private:
 	void RoundTimer();
 	void ClearTimers();
 
+	UPROPERTY()
+	int NextParachuteHolderID = -1;
+
+	UFUNCTION()
+	void FindNewOwnerForParachute(AFreeFallCharacter* PreviousOwner);
+	
 	/*
 	 *	End round functions
 	 */
