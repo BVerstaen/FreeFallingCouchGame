@@ -40,4 +40,15 @@ protected:
 
 	UPROPERTY()
 	TMap<int, int> PlayerIndexFromGamepadProfileIndex;
+
+public:
+	UPROPERTY()
+	bool bCanCreateNewPlayer = true;
+
+	UPROPERTY()
+	int NumberOfPlayers = 0;
+	
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNewPlayerCreated, int, NewPlayerID);
+	UPROPERTY(BlueprintAssignable)
+	FOnNewPlayerCreated OnNewPlayerCreated;
 };
