@@ -1,6 +1,8 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 #include "UI/BaseWarningActor.h"
 
+#include "Kismet/KismetMathLibrary.h"
+
 // Sets default values
 ABaseWarningActor::ABaseWarningActor()
 {
@@ -108,6 +110,7 @@ void ABaseWarningActor::CheckDistanceColor()
 	//GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple, FString::Printf(
 	//	TEXT("Distance of %f between obstacle and warning "),distance));
 
+	//TODO UKismetMathLibrary::LinearColorLerp()
 	if(distance >= 1000) {
 		Arrow->SetTintColorAndOpacity(FLinearColor(0.0f, 1.0f, 0.0f));
 	} else if (distance >= 500 && distance <= 999) {

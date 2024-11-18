@@ -6,7 +6,9 @@
 #include "Audio/SoundSubsystem.h"
 #include "Characters/FreeFallCharacter.h"
 #include "GameMode/FreeFallGameMode.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Math/UnitConversion.h"
+#include "Obstacle/Obstacle.h"
 #include "Settings/MapSettings.h"
 
 
@@ -69,6 +71,10 @@ void AObstacleTransitionClouds::RandomizePlayersPositions()
 	TArray<FVector> ExistingLocations;
 	FVector NewLocation;
 
+	//Get every obstacle as ExistingLocations
+	GetAllNearObstacles(ExistingLocations);
+	
+	//Teleport player randomly
 	for(AFreeFallCharacter* Player : CharactersInArena)
 	{
 		if(!Player)
@@ -116,6 +122,40 @@ bool AObstacleTransitionClouds::IsNearAnyPlayer(const FVector& SpawnPosition, fl
 	}
 
 	return false;
+}
+
+void AObstacleTransitionClouds::GetAllNearObstacles(TArray<FVector>& SpawnedPositionList)
+{
+	FVector SelfLocation = GetTransform().GetLocation();
+	ETraceTypeQuery TraceChannel = UEngineTypes::ConvertToTraceType(ECC_WorldDynamic);
+	TArray<AActor*> ignoreActors;
+	TArray<FHitResult> HitResults;
+	
+	bool CanGrab = UKismetSystemLibrary::BoxTraceMulti(
+														GetWorld(),
+														SelfLocation,
+														SelfLocation,
+														SpawnExtent,
+														GetTransform().GetRotation().Rotator(),
+														TraceChannel,
+														false,
+														ignoreActors,
+														EDrawDebugTrace::None,
+														HitResults,
+														true);
+
+	
+	//Has grabbed anything
+	if (CanGrab)
+	{
+		for (FHitResult HitResult : HitResults)
+		{
+			if(Cast<AObstacle>(HitResult.GetActor()))
+			{
+				SpawnedPositionList.Add(HitResult.Location);
+			}
+		}
+	}
 }
 
 void AObstacleTransitionClouds::TriggerEvent()

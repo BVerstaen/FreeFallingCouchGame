@@ -52,14 +52,34 @@ public:
 	UPROPERTY(EditAnywhere)
 	FVector Direction;
 
+	/*le poids de l'obstacle*/
+	UPROPERTY(EditAnywhere)
+	float ObjectMass;
+	
+#pragma endregion
+
+#pragma region Sounds
+	
 	UPROPERTY(EditAnywhere)
 	TArray<FName> SoundsOnSpawn;
 
 	UPROPERTY(EditAnywhere)
 	FName SoundsOnCollision;
+
+	UPROPERTY(EditAnywhere)
+	float CollisionSoundCooldownTime = 1.0f;
+	
+	UPROPERTY()
+	bool bCanPlayCollisionSound = true;
+
+	UPROPERTY()
+	FTimerHandle CollisionSoundCooldownTimerHandle;
+
+	UFUNCTION()
+	void ResetCollisionSoundCooldown();
 	
 #pragma endregion
-
+	
 	UFUNCTION(BlueprintCallable)
 	void ResetLaunch();
 
@@ -74,10 +94,16 @@ public:
 
 #pragma region Bounceable
 public:
+	
 	virtual FVector GetVelocity() override;
+	
 	virtual float GetMass() override;
+	
 	virtual EBounceParameters GetBounceParameterType() override;
+	
 	virtual void AddBounceForce(FVector Velocity) override;
+	
 	virtual AFreeFallCharacter* CollidedWithPlayer() override;
+	
 #pragma endregion 
 };

@@ -20,7 +20,6 @@ void APowerUpCollectible::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, "PowerUpCollectible::BeginPlay");
 }
 
 // Called every frame
@@ -29,19 +28,17 @@ void APowerUpCollectible::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	LifeClock += DeltaTime;
 			if (LifeClock >= LifeTime) Destroy();
+	if (OverlappingCharacter != nullptr)
+	{
+		if (OverlappingCharacter->CurrentPowerUp == nullptr)
+		{
+			GivePowerToCharacter(OverlappingCharacter);
+			RemoveCharacterFromOverlappingCharacters(OverlappingCharacter);
+		}
+	}
 }
 
-bool APowerUpCollectible::CanBeGrabbed()
-{
-	return false;
-}
-
-bool APowerUpCollectible::CanBeTaken()
-{
-	return true;
-}
-
-void APowerUpCollectible::Use(AFreeFallCharacter* Character)
+void APowerUpCollectible::GivePowerToCharacter(AFreeFallCharacter* Character)
 {
 	if (PowerUpObject == nullptr)
 	{
@@ -50,7 +47,14 @@ void APowerUpCollectible::Use(AFreeFallCharacter* Character)
 		TEXT("Can't collect PowerUp Collectible, UObject is nullptr")
 		);
 		return;
-	} 
+	}
+
+	if (Character->CurrentPowerUp != nullptr)
+	{
+		OverlappingCharacter = Character;
+		return;
+	}
+	
 	UPowerUpObject* CreatedPowerUpObj = NewObject<UPowerUpObject>(this, *PowerUpObject);
 	CreatedPowerUpObj->SetupCharacter(Character);
 	Character->SetPowerUp(CreatedPowerUpObj);
@@ -64,7 +68,14 @@ void APowerUpCollectible::Use(AFreeFallCharacter* Character)
 		-1, 5, FColor::Emerald,
 		TEXT("Player : " + Character->GetSelfActor()->GetName() + " Collected PowerUp : " + UEnum::GetDisplayValueAsText(CreatedPowerUpObj->GetPowerUpID()).ToString())
 		);
-
 	this->Destroy();
+}
+
+void APowerUpCollectible::RemoveCharacterFromOverlappingCharacters(AFreeFallCharacter* Character)
+{
+	if (Character == OverlappingCharacter)
+	{
+		OverlappingCharacter = nullptr;
+	}
 }
 

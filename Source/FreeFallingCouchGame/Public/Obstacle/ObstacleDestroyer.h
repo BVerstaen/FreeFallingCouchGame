@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "ObstacleDestroyer.generated.h"
 
+class AObstacle;
 class UBoxComponent;
 
 UCLASS()
@@ -24,6 +25,11 @@ protected:
 	UFUNCTION()
 	void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	UFUNCTION()
+	void DestroyObstacleInside();
+
+	TArray<TObjectPtr<AActor>> FindObstaclesInside();
+	
 public:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UBoxComponent> BoxCollision;

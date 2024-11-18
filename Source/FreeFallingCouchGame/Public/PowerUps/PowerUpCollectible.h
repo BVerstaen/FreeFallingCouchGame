@@ -11,7 +11,7 @@ class UPowerUpObject;
 enum class EPowerUpsID : uint8;
 
 UCLASS()
-class FREEFALLINGCOUCHGAME_API APowerUpCollectible : public AActor, public IGrabbableInterface
+class FREEFALLINGCOUCHGAME_API APowerUpCollectible : public AActor
 {
 	GENERATED_BODY()
 
@@ -26,12 +26,12 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	
-	virtual bool CanBeGrabbed() override;
-	
-	virtual bool CanBeTaken() override;
 
-	virtual void Use(AFreeFallCharacter* Character) override;
+	UFUNCTION(BlueprintCallable)
+	void GivePowerToCharacter(AFreeFallCharacter* Character);
+	
+	UFUNCTION(BlueprintCallable)
+	void RemoveCharacterFromOverlappingCharacters(AFreeFallCharacter* Character);
 
 	//For Game Programming
 	UPROPERTY(EditAnywhere)
@@ -40,6 +40,9 @@ public:
 	//Lifetime of PowerUps Collectibles
 	UPROPERTY(EditAnywhere)
 	float LifeTime = 10.0f;
+
+	UPROPERTY()
+	TObjectPtr<AFreeFallCharacter> OverlappingCharacter;
 
 	private:
 	float LifeClock = 0.f;

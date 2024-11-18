@@ -65,6 +65,13 @@ void UFreeFallCharacterStateIdle::StateTick(float DeltaTime)
 
 	//Reset mesh rotation
 	Character->InterpMeshPlayer(Character->GetPlayerDefaultRotation(), DeltaTime, MeshMovementDampingSpeed);
+
+	GEngine->AddOnScreenDebugMessage(
+			-1,
+			DeltaTime,
+			FColor::Cyan,
+			"Player : " + Character->GetPlayerDefaultRotation().ToString()
+			);
 	
 	GEngine->AddOnScreenDebugMessage(
 		-1,

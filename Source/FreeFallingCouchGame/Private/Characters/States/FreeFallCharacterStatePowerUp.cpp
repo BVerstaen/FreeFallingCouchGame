@@ -11,8 +11,7 @@
 void UFreeFallCharacterStatePowerUp::StateEnter(EFreeFallCharacterStateID PreviousStateID)
 {
 	Super::StateEnter(PreviousStateID);
-
-	if (Character->CurrentPowerUp ==nullptr || Character->CurrentPowerUp->bHasBeenUsed)
+	if (Character->CurrentPowerUp ==nullptr || Character->CurrentPowerUp->bHasBeenUsed || !Character->bInputUsePowerUpPressed)
 	{
 		ExitStatePowerUp();
 		return;

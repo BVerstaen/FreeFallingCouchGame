@@ -52,6 +52,7 @@ public:
 	void RandomizePlayersPositions();
 	UFUNCTION(BlueprintCallable)
 	bool IsNearAnyPlayer(const FVector& SpawnPosition, float Tolerance, TArray<FVector>& SpawnedPositionList);
-
+	UFUNCTION()
+	void GetAllNearObstacles(TArray<FVector>& SpawnedPositionList);
 	virtual void TriggerEvent() override;
 };
