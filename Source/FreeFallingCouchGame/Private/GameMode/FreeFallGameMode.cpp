@@ -267,9 +267,12 @@ void AFreeFallGameMode::StartMatch()
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Blue, TEXT("Data received valid, starting with Subsystem parameters"));
 			SetupMatch(refParameters);
+		} else {
+			GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("Data not received, starting with default parameters"));
+			SetupMatch(nullptr);
 		}
 	} else {
-		GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("Data received And/Or Subsystem invalid, starting with default parameters"));
+		GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("Subsystem invalid, starting with default parameters"));
 		SetupMatch(nullptr);
 	}
 	
@@ -320,7 +323,7 @@ void AFreeFallGameMode::StartRound()
 	ArenaActorInstance->Init(this);
 	ArenaActorInstance->OnCharacterDestroyed.AddDynamic(this, &AFreeFallGameMode::CheckEndRoundDeath);
 	TrackerActorInstance->Init(ParachuteInstance, CharactersInsideArena);
-	SetupMatch(nullptr); //Possiblement à enlever, j'ai juste rerajouté pour pas tout péter :)
+	//SetupMatch(nullptr); //Possiblement à enlever, j'ai juste rerajouté pour pas tout péter :)
 	
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------ROUND START--------------------"));
 	CurrentRound++;
