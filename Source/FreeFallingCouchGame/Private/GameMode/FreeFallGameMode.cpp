@@ -15,6 +15,12 @@
 void AFreeFallGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
+	ULocalMultiplayerSubsystem* LocalMultiplayerSubsystem = GetGameInstance()->GetSubsystem<ULocalMultiplayerSubsystem>();
+	if(LocalMultiplayerSubsystem == nullptr) return;
+	NumberOfPlayers = MapSettings->bActivateControlsInGame? MapSettings->NumberOfPlayers : LocalMultiplayerSubsystem->NumberOfPlayers;
+	
 	CreatePlayerStarts();
 }
 
@@ -43,6 +49,10 @@ void AFreeFallGameMode::Init()
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	PlayerController->ClientStartCameraShake(GetDefault<UMapSettings>()->CameraShake, 50);
 
+	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
+	ULocalMultiplayerSubsystem* LocalMultiplayerSubsystem = GetGameInstance()->GetSubsystem<ULocalMultiplayerSubsystem>();
+	LocalMultiplayerSubsystem->bCanCreateNewPlayer = MapSettings->bActivateControlsInGame;
+	
 	//TODO Find way to receive player made modifications
 	StartMatch();
 }
@@ -63,9 +73,8 @@ void AFreeFallGameMode::CreatePlayerStarts()
 {
 	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
 	if (MapSettings == nullptr) return;
-
+	
 	const TArray<TSoftObjectPtr<UWorld>>& WorldList = MapSettings->PlayerStartsLevels;
-	int NumberOfPlayers = MapSettings->NumberOfPlayers;
 	FVector SpawnLocation = MapSettings->PlayerStartSubLevelLocation;
 	
 	if(NumberOfPlayers <= 1)
@@ -471,7 +480,7 @@ void AFreeFallGameMode::EndRound()
 
 		//Set player profile
 		int MaxNumberOfPoints = 8 * CurrentParameters->getMaxRounds();
-		for(int i = 0; i < MapSettings->NumberOfPlayers; i++)
+		for(int i = 0; i < NumberOfPlayers; i++)
 		{
 			RoundScorePanelWidget->SetPlayerProfile(i+1, OldPlayerScore[i], MaxNumberOfPoints);
 		}
@@ -483,7 +492,7 @@ void AFreeFallGameMode::EndRoundAddScore()
 	RoundScorePanelWidget->OnFinishShow.RemoveDynamic(this, &AFreeFallGameMode::EndRoundAddScore);
 	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
 
-	for(int i = 0; i < MapSettings->NumberOfPlayers; i++)
+	for(int i = 0; i < NumberOfPlayers; i++)
 	{
 		int NewScore = PlayerMatchData->getScoreValues()[i];
 		RoundScorePanelWidget->AddScoreToRound(i + 1, NewScore);
@@ -556,7 +565,7 @@ bool AFreeFallGameMode::EndRoundAddRewardPoints(ETrackingRewardCategory Category
 	
 	//Display new score if gained points
 	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
-	for(int i = 0; i < MapSettings->NumberOfPlayers; i++){
+	for(int i = 0; i < NumberOfPlayers; i++){
 		int NewScore = PlayerMatchData->getScoreValues()[i];
 		
 		if (OldPlayerScore[i] != NewScore)

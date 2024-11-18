@@ -60,7 +60,8 @@ void ULocalMultiplayerSubsystem::AssignKeyboardMapping(int PlayerIndex, int Keyb
 {
 	const ULocalMultiplayerSettings* LocalMultiplayerSettings = GetDefault<ULocalMultiplayerSettings>();
 
-	 APlayerController* LocalPlayer = UGameplayStatics::GetPlayerController(GetWorld(), PlayerIndex);
+	APlayerController* LocalPlayer = UGameplayStatics::GetPlayerController(GetWorld(), PlayerIndex);
+	if(LocalPlayer == nullptr) return;
 	UEnhancedInputLocalPlayerSubsystem* PlayerSubsystem = LocalPlayer->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
 	if(PlayerSubsystem == nullptr) return;
 	

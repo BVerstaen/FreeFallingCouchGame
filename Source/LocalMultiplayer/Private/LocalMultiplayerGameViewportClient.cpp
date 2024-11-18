@@ -20,6 +20,9 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 	ULocalMultiplayerSubsystem* LocalMultiplayerSubsystem = GameInstance->GetSubsystem<ULocalMultiplayerSubsystem>();
 	const ULocalMultiplayerSettings* LocalMultiplayerSettings = GetDefault<ULocalMultiplayerSettings>();
 
+	//Can't spawn player if is in game
+	if(!LocalMultiplayerSubsystem->bCanCreateNewPlayer) return Super::InputKey(EventArgs);
+	
 	bool IsGamepad = EventArgs.IsGamepad();
 	if(!IsGamepad)
 	{
@@ -30,9 +33,13 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 			int PlayerIndex = LocalMultiplayerSubsystem->GetAssignedPlayerIndexFromKeyboardProfileIndex(KeyboardProfile);
 			if(PlayerIndex < 0)
 			{
-				//GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Red, "Player Index :" + FString::FromInt(PlayerIndex));
 				PlayerIndex = LocalMultiplayerSubsystem->AssignNewPlayerToKeyboardProfile(KeyboardProfile);
 				LocalMultiplayerSubsystem->AssignKeyboardMapping(PlayerIndex ,KeyboardProfile, InGame);
+
+				//Add new player & call event
+				GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Red, "Player Index :" + FString::FromInt(PlayerIndex));
+				LocalMultiplayerSubsystem->NumberOfPlayers++;
+				LocalMultiplayerSubsystem->OnNewPlayerCreated.Broadcast(PlayerIndex);
 			}
 			FInputKeyParams Params(EventArgs.Key, EventArgs.Event, static_cast<double>(EventArgs.AmountDepressed), EventArgs.IsGamepad());
 			return UGameplayStatics::GetPlayerController(GetGameInstance()->GetWorld(), PlayerIndex)->InputKey(Params);
@@ -47,6 +54,9 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 		{
 			PlayerIndex = LocalMultiplayerSubsystem->AssignNewPlayerToGamepadDeviceID(GamepadID);
 			LocalMultiplayerSubsystem->AssignGamepadInputMapping(PlayerIndex, InGame);
+
+			LocalMultiplayerSubsystem->NumberOfPlayers++;
+			LocalMultiplayerSubsystem->OnNewPlayerCreated.Broadcast(PlayerIndex);
 			
 		}
 		FInputKeyParams Params(EventArgs.Key, EventArgs.Event, static_cast<double>(EventArgs.AmountDepressed), EventArgs.IsGamepad());
@@ -60,6 +70,10 @@ bool ULocalMultiplayerGameViewportClient::InputAxis(FViewport* InViewport, FInpu
 	float Delta, float DeltaTime, int32 NumSamples, bool bGamepad)
 {
 	ULocalMultiplayerSubsystem* LocalMultiplayerSubsystem = GameInstance->GetSubsystem<ULocalMultiplayerSubsystem>();
+
+	//Can't spawn player if is in game
+	if(!LocalMultiplayerSubsystem->bCanCreateNewPlayer) return Super::InputAxis(Viewport, InputDevice, Key, Delta, DeltaTime, NumSamples, bGamepad);
+	
 	if(bGamepad)
 	{
 		int GamepadID = InputDevice.GetId();
