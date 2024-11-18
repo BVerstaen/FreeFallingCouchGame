@@ -5,6 +5,8 @@
 
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "Audio/SoundSubsystem.h"
 #include "Camera/CameraActor.h"
 #include "Characters/FreeFallCharacterInputData.h"
 #include "Characters/FreeFallCharacterStateMachine.h"
@@ -111,16 +113,21 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 		break;
 	}
 
+	TArray<TObjectPtr<UPowerUpObject>> PowerUpsToRemove;
 	for (TObjectPtr<UPowerUpObject> PowerUpObject : UsedPowerUps)
 	{
 		PowerUpObject->Tick(DeltaTime);
 		if (PowerUpObject->bIsActionFinished)
 		{
 			PowerUpObject->PrepareForDestruction();
-			UsedPowerUps.Remove(PowerUpObject);
+			PowerUpsToRemove.Add(PowerUpObject);
 		}
 	}
-	
+	for (TObjectPtr<UPowerUpObject> PowerUpObject : PowerUpsToRemove)
+	{
+		UsedPowerUps.Remove(PowerUpObject);
+	}
+	PowerUpsToRemove.Empty();
 }
 
 void AFreeFallCharacter::DestroyPlayer()
@@ -154,6 +161,11 @@ void AFreeFallCharacter::DestroyPlayer()
 		OtherCharacterGrabbedBy->GrabbingState = EFreeFallCharacterGrabbingState::None;
 		OtherCharacterGrabbedBy = nullptr;
 	}
+
+	//Play death sound
+	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
+	SoundSubsystem->PlaySound("VOC_PLR_Death_ST", this, false);
+	
 	Destroy();
 }
 
@@ -171,6 +183,7 @@ void AFreeFallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	BindInputMoveAxisAndActions(EnhancedInputComponent);
 	BindInputDiveAxisAndActions(EnhancedInputComponent);
 	BindInputGrabActions(EnhancedInputComponent);
+	BindInputDeGrabActions(EnhancedInputComponent);
 	BindInputUsePowerUpActions(EnhancedInputComponent);
 	BindInputFastDiveAxisAndActions(EnhancedInputComponent);
 }
@@ -305,12 +318,13 @@ void AFreeFallCharacter::ApplyMovementFromAcceleration(float DeltaTime)
 		GetCharacterMovement()->bOrientRotationToMovement = true;
 	}
 
+	/*
 	//Set mesh movement
 	FVector2D CharacterDirection2D = FVector2D(CharacterDirection.GetSafeNormal().X, CharacterDirection.GetSafeNormal().Y);
 	float AngleDiff = FMath::Clamp(FVector2d::DotProduct(InputMove.GetSafeNormal(), CharacterDirection2D.GetSafeNormal()) , -1.0f , 1.0f);
 	InterpMeshPlayer(FRotator((AngleDiff >= 0 ? 1 : -1) * FMath::Lerp(GetPlayerDefaultRotation().Pitch,MeshMovementRotationAngle, 1-FMath::Abs(AngleDiff)),
 		GetMesh()->GetRelativeRotation().Yaw, GetPlayerDefaultRotation().Roll), DeltaTime, MeshMovementDampingSpeed);
-	
+	*/
 }
 
 void AFreeFallCharacter::Decelerate(float DeltaTime)
@@ -637,7 +651,7 @@ void AFreeFallCharacter::UpdateDissociationProblems(float DeltaTime)
 														GetWorld(),
 														SphereLocation,
 														SphereLocation,
-														20,
+														30,
 														traceObjectTypes,
 														false,
 														ignoreActors,
@@ -670,6 +684,48 @@ bool AFreeFallCharacter::IsLookingToCloseToGrabber(float AngleLimit)
 TObjectPtr<USceneComponent> AFreeFallCharacter::GetObjectGrabPoint() const
 {
 	return ObjectGrabPoint;
+}
+
+#pragma endregion
+
+#pragma region DeGrabbing
+
+void AFreeFallCharacter::BindInputDeGrabActions(UEnhancedInputComponent* EnhancedInputComponent)
+{
+	if (InputData == nullptr) return;
+	
+	if (InputData->InputActionGrab)
+	{
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionDeGrab,
+			ETriggerEvent::Started,
+			this,
+			&AFreeFallCharacter::OnInputDeGrab
+			);
+	}
+}
+
+void AFreeFallCharacter::OnInputDeGrab(const FInputActionValue& Value)
+{
+	GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Emerald, "Degrab Input");
+	if(!OtherCharacterGrabbedBy) return;
+
+	CurrentNumberOfDeGrabInput--;
+
+	if(CurrentNumberOfDeGrabInput <= 0)
+	{
+		OtherCharacterGrabbedBy->OtherCharacterGrabbing = nullptr;
+		OtherCharacterGrabbedBy->GrabbingState = EFreeFallCharacterGrabbingState::None;
+		OtherCharacterGrabbedBy = nullptr;
+
+		StopEffectDeGrab();
+	}
+}
+
+void AFreeFallCharacter::ActivateDeGrab()
+{
+	CurrentNumberOfDeGrabInput = MaxNumberOfDeGrabInput;
+	ActivateEffectDeGrab();
 }
 
 #pragma endregion
@@ -756,13 +812,38 @@ void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBou
 	//Neutralize Z bounce velocity
 	NewVelocity.Z = 0;
 	OtherBounceableInterface->AddBounceForce(NewVelocity);
+
+	//Play Bounce Sound
+	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
+	SoundSubsystem->PlaySound("SFX_PLR_Collision_ST", this, false);
+
+	//Play bounce effect
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BounceEffect.LoadSynchronous(), GetActorLocation());
 	
+
+		
 	//Check if collided with players
 	if(AFreeFallCharacter* OtherFreeFallCharacter = OtherBounceableInterface->CollidedWithPlayer())
 	{
 		//Activate bounce cooldown & elimination timers
 		if (!OtherFreeFallCharacter->bAlreadyCollided)
 			OtherFreeFallCharacter->BounceCooldown();
+
+		//Play player bounce
+		SoundSubsystem->PlaySound("VOC_PLR_Hit", this, true);
+		SoundSubsystem->PlaySound("VOC_PLR_Shock_ST", OtherFreeFallCharacter, true);
+
+		//Play random "onomatopé"
+		TArray<FName> ExpressionHit = {
+			"VOC_PLR_Angry_ST",
+			"VOC_PLR_Joy_ST",
+			"VOC_PLR_Sad_ST",
+			"VOC_PLR_Fight_ST",
+			"VOC_PLR_Insult_ST",
+			"VOC_PLR_Warning_ST"
+		};
+		FName ExpressionName = ExpressionHit[FMath::RandRange(0, ExpressionHit.Num() - 1)];
+		SoundSubsystem->PlaySound(ExpressionName, this, false);
 		
 		SetWasRecentlyBouncedTimer(OtherFreeFallCharacter);
 		OtherFreeFallCharacter->SetWasRecentlyBouncedTimer(this);
@@ -840,6 +921,7 @@ void AFreeFallCharacter::BindInputUsePowerUpActions(UEnhancedInputComponent* Enh
 
 void AFreeFallCharacter::OnInputUsePowerUp(const FInputActionValue& Value)
 {
+	bInputUsePowerUpPressed = Value.Get<bool>();
 	OnInputUsePowerUpEvent.Broadcast();
 }
 

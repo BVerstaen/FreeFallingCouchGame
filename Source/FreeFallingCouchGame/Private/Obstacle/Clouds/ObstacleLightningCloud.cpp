@@ -3,6 +3,8 @@
 
 #include "Obstacle/Clouds/ObstacleLightningCloud.h"
 
+#include "Audio/SoundSubsystem.h"
+
 
 // Sets default values
 AObstacleLightningCloud::AObstacleLightningCloud()
@@ -29,5 +31,9 @@ void AObstacleLightningCloud::TriggerEvent()
 	Super::TriggerEvent();
 
 	//Launch Event
+
+	//Play sound
+	USoundSubsystem* SoundSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USoundSubsystem>();
+	SoundSubsystem->PlaySound("SFX_GPE_Thunder/Flash_ST", this, true);
 }
 

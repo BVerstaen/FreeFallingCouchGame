@@ -27,15 +27,6 @@ public:
 protected:
 	UPROPERTY(EditAnywhere)
 	float AccelerationSpeed;
-	
-	UPROPERTY(EditAnywhere)
-	float MaxMoveSpeed;
-
-	UPROPERTY(EditAnywhere)
-	float StartMoveSpeed;
-
-	UPROPERTY(EditAnywhere)
-	float ReachMaxSpeedTime;
 
 	/*Le seuil à partir duquel le joueur ne bloque plus sa rotation et permet d'être influencé (uniquement si attrape joueur)*/
 	UPROPERTY(EditAnywhere, Category="Grab Threshold")

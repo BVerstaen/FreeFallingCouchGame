@@ -27,6 +27,7 @@ void UFreeFallCharacterStateFastDive::StateEnter(EFreeFallCharacterStateID Previ
 {
 	Super::StateEnter(PreviousStateID);
 
+	Character->GetMesh()->PlayAnimation(DiveAnimation, true);
 	Character->bIsDiveForced = false;
 
 	//Not crash if DiveLevelsActor is not set in scene

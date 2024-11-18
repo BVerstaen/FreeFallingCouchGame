@@ -3,6 +3,7 @@
 
 #include "Characters/States/FreeFallCharacterStateGrab.h"
 
+#include "Audio/SoundSubsystem.h"
 #include "Characters/FreeFallCharacter.h"
 #include "Characters/FreeFallCharacterStateID.h"
 #include "Characters/FreeFallCharacterStateMachine.h"
@@ -167,6 +168,7 @@ void UFreeFallCharacterStateGrab::ReleasePlayerGrab(EFreeFallCharacterStateID Pr
 		{
 			Character->OtherCharacterGrabbing->GetStateMachine()->ChangeState(EFreeFallCharacterStateID::Dive);
 			//Remove references
+			Character->OtherCharacterGrabbing->StopEffectDeGrab();
 			Character->OtherCharacterGrabbing->OtherCharacterGrabbedBy = nullptr;
 			Character->OtherCharacterGrabbing = nullptr;
 			
@@ -179,10 +181,16 @@ void UFreeFallCharacterStateGrab::ReleasePlayerGrab(EFreeFallCharacterStateID Pr
 		FVector LaunchVelocity = Character->GetMovementComponent()->Velocity * LaunchOtherCharacterForceMultiplier;
 		LaunchVelocity += Character->GetActorForwardVector() * LaunchOtherCharacterBaseLaunchMultiplier;
 		Character->OtherCharacterGrabbing->LaunchCharacter(LaunchVelocity, true, true);
-			
+
+		//Play push sound
+		USoundSubsystem* SoundSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USoundSubsystem>();
+		SoundSubsystem->PlaySound("VOC_PLR_Push_ST", Character, true);
+		
 		//Remove references
+		Character->OtherCharacterGrabbing->StopEffectDeGrab();
 		Character->OtherCharacterGrabbing->OtherCharacterGrabbedBy = nullptr;
 		Character->OtherCharacterGrabbing = nullptr;
+		
 	}
 }
 
@@ -223,7 +231,12 @@ void UFreeFallCharacterStateGrab::PlayerGrab() const
 	//Find player to grab
  	AFreeFallCharacter* FoundCharacter = FindPlayerToGrab();
 	if(!FoundCharacter) return;
-	if (!FoundCharacter->bIsGrabbable) return;
+	if (!FoundCharacter->bIsGrabbable)
+	{
+		USoundSubsystem* SoundSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USoundSubsystem>();
+		SoundSubsystem->PlaySound("SFX_PLR_SlurpGrab_ST", Character, true);
+		return;
+	}
 	
 	//Can't grab the one I'm grabbing
 	if(FoundCharacter == Character->OtherCharacterGrabbedBy) return;
@@ -262,6 +275,12 @@ void UFreeFallCharacterStateGrab::PlayerGrab() const
 	Character->GrabDefaultRotationOffset = FoundCharacter->GetActorRotation() - Character->GetActorRotation();
 	FoundCharacter->GrabDefaultRotationOffset = Character->GetActorRotation() - FoundCharacter->GetActorRotation();
 
+	//Set Degrab counter
+	FoundCharacter->ActivateDeGrab();
+	
+	//Play grab sound
+	USoundSubsystem* SoundSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USoundSubsystem>();
+	SoundSubsystem->PlaySound("VOC_PLR_Death_ST", Character, true);
 }
 
 void UFreeFallCharacterStateGrab::ObjectGrab() const
@@ -286,10 +305,10 @@ void UFreeFallCharacterStateGrab::ObjectGrab() const
 	Character->OtherObject = FoundActor;
 		
 	//If is an obstacle
-	if(const AObstacle* FoundObstacle = Cast<AObstacle>(FoundActor))
+	if(AObstacle* FoundObstacle = Cast<AObstacle>(FoundActor))
 	{
 		//Check who's heavier
-		if(FoundObstacle->Mesh->GetMass() > Character->GetMass())
+		if(FoundObstacle->GetMass() > Character->GetMass())
 		{
 			Character->GrabbingState = EFreeFallCharacterGrabbingState::GrabHeavierObject;
 			Character->GetMovementComponent()->Velocity = FVector(0, 0, 0);

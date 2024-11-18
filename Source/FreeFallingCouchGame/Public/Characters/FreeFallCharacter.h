@@ -8,6 +8,7 @@
 #include "Interface/DiveLayersSensible.h"
 #include "Other/DiveLayersID.h"
 #include "Interface/BounceableInterface.h"
+#include "NiagaraSystem.h"
 #include "FreeFallCharacter.generated.h"
 
 class UCharactersSettings;
@@ -316,6 +317,32 @@ public :
 	
 #pragma endregion 
 
+#pragma region Input DeGrab
+
+private:
+	void BindInputDeGrabActions(UEnhancedInputComponent* EnhancedInputComponent);
+
+	void OnInputDeGrab(const FInputActionValue& Value);
+
+	/*Nombre maximum d'input degrab à appuyer pour se libérer*/
+	UPROPERTY(EditAnywhere, Category="DeGrab")
+	int MaxNumberOfDeGrabInput = 10;
+	
+	UPROPERTY()
+	int CurrentNumberOfDeGrabInput = 0;
+
+public:
+	UFUNCTION()
+	void ActivateDeGrab();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ActivateEffectDeGrab();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void StopEffectDeGrab();
+
+#pragma endregion 
+	
 #pragma region IDPlayer
 protected:
 	uint8 ID_PlayerLinked = -1;
@@ -420,6 +447,9 @@ public:
 	UFUNCTION()
 	void BounceRoutine(AActor* OtherActor, TScriptInterface<IBounceableInterface> OtherBounceableInterface, float SelfRestitutionMultiplier, float OtherRestitutionMultiplier, float GlobalMultiplier, bool bShouldConsiderMass, bool bShouldKeepRemainVelocity);
 
+protected:
+	UPROPERTY(EditAnywhere, Category="Bounce Collision")
+	TSoftObjectPtr<UNiagaraSystem> BounceEffect;
 	
 #pragma endregion
 

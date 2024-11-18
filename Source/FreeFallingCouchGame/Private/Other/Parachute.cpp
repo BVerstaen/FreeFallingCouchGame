@@ -3,6 +3,7 @@
 
 #include "Other/Parachute.h"
 
+#include "Audio/SoundSubsystem.h"
 #include "Characters/FreeFallCharacter.h"
 
 
@@ -42,8 +43,9 @@ bool AParachute::CanBeGrabbed()
 	return false;
 }
 
-void AParachute::Use(AFreeFallCharacter* Character)
+void AParachute::EquipToPlayer(AFreeFallCharacter* Character)
 {
+	OriginScale = GetActorRelativeScale3D();
 	if(!Character) return;
 	
 	//Give reference & attach self to Character
@@ -55,38 +57,59 @@ void AParachute::Use(AFreeFallCharacter* Character)
 	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	Character->OnWasEliminated.AddDynamic(this, &AParachute::GiveToMurderer);
-	
 	OnParachuteGrabbed.Broadcast(Character);
+
+	SetActorRelativeScale3D(OriginScale);
+}
+
+void AParachute::Use(AFreeFallCharacter* Character)
+{
+	if(!Character) return;
+
+	//Play grab sound
+	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
+	SoundSubsystem->PlaySound("SFX_GPE_Parachute_PickUp_ST", this, false);
+	
+	//Equip parachute to player
+	EquipToPlayer(Character);
+
 }
 
 void AParachute::StealParachute(AFreeFallCharacter* PreviousOwner, AFreeFallCharacter* NextOwner)
 {
 	if(!PreviousOwner || !NextOwner) return;
 	
-	//Change Reference between Characters
+	//Remove previous actor reference
+	PreviousOwner->OnWasEliminated.RemoveDynamic(this, &AParachute::GiveToMurderer);
 	PreviousOwner->Parachute = nullptr;
-	NextOwner->Parachute = this;
 
 	//Detach from old actor and attach to new one
 	FDetachmentTransformRules DetachmentRules = FDetachmentTransformRules(EDetachmentRule::KeepWorld, false);
 	DetachFromActor(DetachmentRules);
-	FAttachmentTransformRules AttachmentRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget,EAttachmentRule::KeepWorld, true);
-	AttachToComponent(NextOwner->GetParachuteAttachPoint(), AttachmentRules);
+	EquipToPlayer(NextOwner);
 
+	//Play steal sound
+	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
+	SoundSubsystem->PlaySound("SFX_GPE_Parachute_Changeplayer_ST", this, false);
+
+	
 	OnParachuteStolen.Broadcast(PreviousOwner, NextOwner);
+
+	SetActorRelativeScale3D(OriginScale);
 }
 
 AParachute* AParachute::DropParachute(AFreeFallCharacter* PreviousOwner)
 {
 	if(!PreviousOwner) return nullptr;
 
+	//Remove previous actor reference
+	PreviousOwner->OnWasEliminated.RemoveDynamic(this, &AParachute::GiveToMurderer);
 	PreviousOwner->Parachute = nullptr;
 	
 	//Detach from old actor and attach to new one
 	FDetachmentTransformRules DetachmentRules = FDetachmentTransformRules(EDetachmentRule::KeepWorld, false);
 	DetachFromActor(DetachmentRules);
-
-	SetActorLocation(StartingLocation);
+	
 	Mesh->SetSimulatePhysics(false);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
 

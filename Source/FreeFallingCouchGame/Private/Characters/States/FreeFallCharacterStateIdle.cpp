@@ -17,6 +17,8 @@ void UFreeFallCharacterStateIdle::StateEnter(EFreeFallCharacterStateID PreviousS
 {
 	Super::StateEnter(PreviousStateID);
 
+	Character->GetMesh()->PlayAnimation(IdleAnimation, true);
+	
 	Character->OnInputGrabEvent.AddDynamic(this, &UFreeFallCharacterStateIdle::OnInputGrab);
 	Character->OnInputUsePowerUpEvent.AddDynamic(this, &UFreeFallCharacterStateIdle::OnInputUsePowerUp);
 	Character->OnInputFastDiveEvent.AddDynamic(this, &UFreeFallCharacterStateIdle::OnInputFastDive);
@@ -63,6 +65,13 @@ void UFreeFallCharacterStateIdle::StateTick(float DeltaTime)
 
 	//Reset mesh rotation
 	Character->InterpMeshPlayer(Character->GetPlayerDefaultRotation(), DeltaTime, MeshMovementDampingSpeed);
+
+	GEngine->AddOnScreenDebugMessage(
+			-1,
+			DeltaTime,
+			FColor::Cyan,
+			"Player : " + Character->GetPlayerDefaultRotation().ToString()
+			);
 	
 	GEngine->AddOnScreenDebugMessage(
 		-1,

@@ -42,7 +42,7 @@ void UFreeFallCharacterStateMove::StateExit(EFreeFallCharacterStateID NextStateI
 
 	if (NextStateID == EFreeFallCharacterStateID::Dive)
 	{
-		Cast<UFreeFallCharacterStateDive>(Character->GetStateMachine()->GetState(NextStateID))->SetMoveStats(MaxMoveSpeed, StartMoveSpeed, ReachMaxSpeedTime, OrientationThreshold, &AccelerationAlpha);
+		//Cast<UFreeFallCharacterStateDive>(Character->GetStateMachine()->GetState(NextStateID))->SetMoveStats(MaxMoveSpeed, StartMoveSpeed, ReachMaxSpeedTime, OrientationThreshold, &AccelerationAlpha);
 	}
 
 	Character->OnInputGrabEvent.RemoveDynamic(this, &UFreeFallCharacterStateMove::OnInputGrab);
@@ -68,7 +68,7 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 
 	/*
 	FVector MovementDirection = Character->GetVelocity().GetSafeNormal();
-	FVector CharacterDirection = Character->GetActorForwardVector();*/
+	
 
 	/*
 	//Set Orient Rotation To Movement
@@ -91,13 +91,15 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 		//If you change direction -> Restore Orient Rotation Movement
 		Character->GetCharacterMovement()->bOrientRotationToMovement = true;
 	}
-
+	*/
+	
 	//Set mesh movement
-	FVector2D CharacterDirection2D = FVector2D(CharacterDirection.GetSafeNormal().X, CharacterDirection.GetSafeNormal().Y);
+	FVector CharacterDirection = Character->GetActorForwardVector();
+	FVector2D CharacterDirection2D = FVector2D( CharacterDirection.GetSafeNormal().X, CharacterDirection.GetSafeNormal().Y);
 	float AngleDiff = FMath::Clamp(FVector2d::DotProduct(InputMove.GetSafeNormal(), CharacterDirection2D.GetSafeNormal()) , -1.0f , 1.0f);
 	Character->InterpMeshPlayer(FRotator((AngleDiff >= 0 ? 1 : -1) * FMath::Lerp(Character->GetPlayerDefaultRotation().Pitch,MeshMovementRotationAngle, 1-FMath::Abs(AngleDiff)),
 		Character->GetMesh()->GetRelativeRotation().Yaw, Character->GetPlayerDefaultRotation().Roll), DeltaTime, MeshMovementDampingSpeed);
-	*/
+	
 	//Change state if other input
 	if (FMathf::Abs(Character->GetInputDive()) > CharactersSettings->InputDiveThreshold)
 	{
@@ -124,8 +126,17 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 			Character->AccelerationAlpha.Y = FMath::Clamp(Character->AccelerationAlpha.Y + InputMove.Y * DeltaTime * AccelerationSpeed,
 				-Character->MaxAccelerationValue, Character->MaxAccelerationValue);
 		}
+
+		
 		FRotator RotationTarget = FVector(InputMove.X, InputMove.Y, 0).Rotation();
 		Character->SetActorRotation(FMath::RInterpTo(Character->GetActorRotation(), RotationTarget, DeltaTime, 5));
+
+		GEngine->AddOnScreenDebugMessage(
+			-1,
+			DeltaTime,
+			FColor::Cyan,
+			"Move : " +Character->GetActorRotation().ToString()
+			);
 	}
 	GEngine->AddOnScreenDebugMessage(
 		-1,
