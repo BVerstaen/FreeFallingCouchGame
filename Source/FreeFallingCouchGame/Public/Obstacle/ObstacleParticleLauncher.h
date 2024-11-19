@@ -36,14 +36,18 @@ public:
 	FTimerHandle LifeTimerHandle;
 
 protected:
-	UNiagaraComponent* EffectInstance; 
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<UNiagaraComponent> EffectInstance; 
 	
 public:
 	UFUNCTION()
 	void SpawnParticle();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void InitParticleBlueprint();
 	
 	UFUNCTION()
-	void HitPlayer();
+	void HitPlayer(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 	
 	UFUNCTION()
 	void LifeTimeEnd();
