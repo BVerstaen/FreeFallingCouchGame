@@ -369,12 +369,14 @@ float AFreeFallCharacter::GetInputDive()
 
 void AFreeFallCharacter::SetDiveMaterialColor()
 {
+	/*
 	if (DiveMaterialInstance == nullptr || DiveLevelsActor == nullptr) return;
 	EDiveLayersID DiveLayer = DiveLevelsActor->GetDiveLayersFromCoord(GetActorLocation().Z);
 	if (DiveLevelsColors.Contains(DiveLayer))
 	{
 		DiveMaterialInstance->SetVectorParameterValue("MaterialColor", DiveLevelsColors[DiveLayer]);
 	}
+	*/
 }
 
 ADiveLevels* AFreeFallCharacter::GetDiveLevelsActor() const
