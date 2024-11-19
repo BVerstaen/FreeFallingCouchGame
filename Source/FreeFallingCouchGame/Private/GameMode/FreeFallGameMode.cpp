@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "GameMode/FreeFallGameMode.h"
@@ -56,7 +56,7 @@ void AFreeFallGameMode::Init()
 		OldPlayerScore.Empty();
 		for (int i = 0; i < GetDefault<UMapSettings>()->NumberOfPlayers; i++)
 		{
-			OldPlayerScore.Add(GameDataSubsystem->GetPlayerScoreFromID(0));
+			OldPlayerScore.Add(GameDataSubsystem->GetPlayerScoreFromID(i));
 		}
 		StartRound();
 	}
