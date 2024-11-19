@@ -298,7 +298,7 @@ void AFreeFallCharacter::ApplyMovementFromAcceleration(float DeltaTime)
 	FVector CharacterDirection = GetActorForwardVector();
 	
 	//Set Orient Rotation To Movement
-	if(GetCharacterMovement()->bOrientRotationToMovement && GrabbingState != EFreeFallCharacterGrabbingState::GrabHeavierObject)
+	if(bShouldOrientToMovement && GrabbingState != EFreeFallCharacterGrabbingState::GrabHeavierObject)
 	{
 		//Get angle btw Character & movement direction
 		float DotProduct = FVector::DotProduct(MovementDirection, CharacterDirection);
@@ -308,14 +308,14 @@ void AFreeFallCharacter::ApplyMovementFromAcceleration(float DeltaTime)
 			|| (DotProduct > GrabbedOrientationThreshold && OtherCharacterGrabbedBy)
 			|| IsLookingToCloseToGrabber(GrabToCloseToGrabbedAngle))
 		{
-			GetCharacterMovement()->bOrientRotationToMovement = false;
+			bShouldOrientToMovement = false;
 			GrabOldInputDirection = InputMove;
 		}
 	}
 	else if(GrabOldInputDirection != InputMove)
 	{
 		//If you change direction -> Restore Orient Rotation Movement
-		GetCharacterMovement()->bOrientRotationToMovement = true;
+		bShouldOrientToMovement = true;
 	}
 
 	/*
@@ -460,7 +460,7 @@ void AFreeFallCharacter::OnInputFastDive(const FInputActionValue& Value)
 
 void AFreeFallCharacter::ApplyDiveForce(FVector DiveForceDirection, float DiveStrength)
 {
-	GetCharacterMovement()->bOrientRotationToMovement = (GrabbingState != EFreeFallCharacterGrabbingState::GrabHeavierObject);
+	bShouldOrientToMovement = (GrabbingState != EFreeFallCharacterGrabbingState::GrabHeavierObject);
 	AddMovementInput(DiveForceDirection,DiveStrength / GetCharacterMovement()->MaxFlySpeed);
 }
 
