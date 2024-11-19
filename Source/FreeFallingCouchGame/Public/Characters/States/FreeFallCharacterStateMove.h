@@ -24,10 +24,11 @@ public:
 
 	virtual void StateTick(float DeltaTime) override;
 
-protected:
+public:
 	UPROPERTY(EditAnywhere)
 	float AccelerationSpeed;
 
+protected:
 	/*Le seuil à partir duquel le joueur ne bloque plus sa rotation et permet d'être influencé (uniquement si attrape joueur)*/
 	UPROPERTY(EditAnywhere, Category="Grab Threshold")
 	float OrientationThreshold;

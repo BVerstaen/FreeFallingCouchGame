@@ -7,6 +7,7 @@
 #include "Characters/FreeFallCharacter.h"
 #include "Characters/FreeFallCharacterStateID.h"
 #include "Characters/FreeFallCharacterStateMachine.h"
+#include "Characters/States/FreeFallCharacterStateMove.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Other/DiveLayersID.h"
 #include "Other/DiveLevels.h"
@@ -27,6 +28,9 @@ void UFreeFallCharacterStateDive::StateInit(UFreeFallCharacterStateMachine* InSt
 void UFreeFallCharacterStateDive::StateEnter(EFreeFallCharacterStateID PreviousStateID)
 {
 	Super::StateEnter(PreviousStateID);
+
+	UFreeFallCharacterStateMove* StateMove = Cast<UFreeFallCharacterStateMove>(StateMachine->GetState(EFreeFallCharacterStateID::Move));
+	AccelerationSpeed = StateMove == nullptr? 0 : StateMove->AccelerationSpeed;
 
 	//Exit State if is grabbed
 	if(Character->OtherCharacterGrabbedBy)
@@ -239,50 +243,25 @@ void UFreeFallCharacterStateDive::ApplyDiveForce()
 
 void UFreeFallCharacterStateDive::ApplyMoveInputs(float DeltaTime)
 {
-	if (AccelerationAlpha == nullptr)
+	GEngine->AddOnScreenDebugMessage(-1,3.f,FColor::Blue,TEXT("Can't apply move inputs"));
+	FVector2D InputMove = Character->GetInputMove();
+	if (FMath::Abs(InputMove.X) > CharactersSettings->InputMoveThreshold)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, "Acceleration is not set");
-		return;
+		GEngine->AddOnScreenDebugMessage(-1,3.f,FColor::Blue,FString::SanitizeFloat(AccelerationSpeed));
+		Character->AccelerationAlpha.X = FMath::Clamp(Character->AccelerationAlpha.X + InputMove.X * DeltaTime * AccelerationSpeed,
+			-Character->MaxAccelerationValue, Character->MaxAccelerationValue);
 	}
-	*AccelerationAlpha += DeltaTime;
-	float MoveSpeed = FMath::Lerp(StartMoveSpeed,MaxMoveSpeed,FMath::Min(*AccelerationAlpha / ReachMaxSpeedTime,1));
-
-	const FVector2D InputMove = Character->GetInputMove();
-	
-	FVector MovementDirection = Character->GetVelocity().GetSafeNormal();
-	FVector CharacterDirection = Character->GetActorForwardVector();
-
-	//Set Orient Rotation To Movement
-	if(Character->GrabbingState == EFreeFallCharacterGrabbingState::GrabPlayer)
+	if (FMath::Abs(InputMove.Y) > CharactersSettings->InputMoveThreshold)
 	{
-		if(Character->GetCharacterMovement()->bOrientRotationToMovement)
-		{
-			//Get angle btw Character & movement direction
-			float DotProduct = FVector::DotProduct(MovementDirection, CharacterDirection);
-			if(DotProduct > OrientationThreshold)
-			{
-				Character->GetCharacterMovement()->bOrientRotationToMovement = false;
-				OldInputDirection = InputMove;
-			}
-		}
-		else if(OldInputDirection != InputMove)
-		{
-			//If you change direction -> Restore Orient Rotation Movement
-			Character->GetCharacterMovement()->bOrientRotationToMovement = true;
-		}		
+		GEngine->AddOnScreenDebugMessage(-1,3.f,FColor::Blue,TEXT("MoveY"));
+		Character->AccelerationAlpha.Y = FMath::Clamp(Character->AccelerationAlpha.Y + InputMove.Y * DeltaTime * AccelerationSpeed,
+			-Character->MaxAccelerationValue, Character->MaxAccelerationValue);
 	}
 
-	
-	
-	if (FMath::Abs(InputMove.Y) > CharactersSettings->InputMoveThreshold || FMath::Abs(InputMove.X) > CharactersSettings->InputMoveThreshold)
+	if (Character->bShouldOrientToMovement)
 	{
-		//Character->GetCharacterMovement()->AddForce(FVector::ForwardVector * FVector(InputMove.X, InputMove.Y, 0) );
-		Character->AddMovementInput(FVector::ForwardVector , InputMove.X * (MoveSpeed / Character->GetCharacterMovement()->MaxFlySpeed));
-		Character->AddMovementInput(FVector::RightVector , InputMove.Y * (MoveSpeed / Character->GetCharacterMovement()->MaxFlySpeed));
-	}
-	else
-	{
-		*AccelerationAlpha = 0.f;
+		FRotator RotationTarget = FVector(InputMove.X, InputMove.Y, 0).Rotation();
+		Character->SetActorRotation(FMath::RInterpTo(Character->GetActorRotation(), RotationTarget, DeltaTime, 5));
 	}
 }
 
@@ -306,14 +285,9 @@ FString UFreeFallCharacterStateDive::GetLayerName(EDiveLayersID LayerID) const
 	}
 }
 
-void UFreeFallCharacterStateDive::SetMoveStats(float Move_MaxMoveSpeed, float Move_StartMoveSpeed,
-	float Move_ReachMaxSpeedTime, float Move_OrientationThreshold, float* Move_AccelerationAlpha)
+void UFreeFallCharacterStateDive::SetMoveStat(float Move_AccelerationSpeed)
 {
-	MaxMoveSpeed = Move_MaxMoveSpeed;
-	StartMoveSpeed = Move_StartMoveSpeed;
-	ReachMaxSpeedTime = Move_ReachMaxSpeedTime;
-	OrientationThreshold = Move_OrientationThreshold;
-	AccelerationAlpha = Move_AccelerationAlpha;
+	AccelerationSpeed = Move_AccelerationSpeed;
 }
 
 void UFreeFallCharacterStateDive::OnInputFastDive()

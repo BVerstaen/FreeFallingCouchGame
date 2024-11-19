@@ -56,7 +56,9 @@ void AParachute::EquipToPlayer(AFreeFallCharacter* Character)
 	Mesh->SetSimulatePhysics(false);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	Character->OnWasEliminated.AddDynamic(this, &AParachute::GiveToMurderer);
+	if(!Character->OnWasEliminated.IsAlreadyBound(this, &AParachute::GiveToMurderer))
+		Character->OnWasEliminated.AddDynamic(this, &AParachute::GiveToMurderer);
+	
 	OnParachuteGrabbed.Broadcast(Character);
 
 	SetActorRelativeScale3D(OriginScale);
@@ -130,7 +132,6 @@ void AParachute::RecenterParachute() const
 void AParachute::GiveToMurderer(AFreeFallCharacter* PreviousOwner, AFreeFallCharacter* NextOwner)
 {
 	//Drop then give parachute to murderer
-	DropParachute(PreviousOwner);
-	Use(NextOwner);
+	StealParachute(PreviousOwner, NextOwner);
 }
 
