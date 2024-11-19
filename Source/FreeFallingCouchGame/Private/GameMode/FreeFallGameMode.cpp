@@ -15,12 +15,6 @@
 void AFreeFallGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
-	ULocalMultiplayerSubsystem* LocalMultiplayerSubsystem = GetGameInstance()->GetSubsystem<ULocalMultiplayerSubsystem>();
-	if(LocalMultiplayerSubsystem == nullptr) return;
-	NumberOfPlayers = MapSettings->bActivateControlsInGame? MapSettings->NumberOfPlayers : LocalMultiplayerSubsystem->NumberOfPlayers;
-	
 	CreatePlayerStarts();
 }
 
@@ -29,6 +23,8 @@ void AFreeFallGameMode::Init()
 	CreateAndInitsPlayers();
 	ArenaActorInstance = NewObject<UArenaObject>(GetWorld());
 	TrackerActorInstance = GetWorld()->SpawnActor<ATrackerActor>();
+	GameDataSubsystem = GetGameInstance()->GetSubsystem<UGameDataInstanceSubsystem>();
+	
 
 	//Find Parachute Spawnlocation then destroy dummy parachute
 	AParachute* Parachute = Cast<AParachute>(UGameplayStatics::GetActorOfClass(GetWorld(), AParachute::StaticClass()));
@@ -49,12 +45,21 @@ void AFreeFallGameMode::Init()
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	PlayerController->ClientStartCameraShake(GetDefault<UMapSettings>()->CameraShake, 50);
 
-	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
-	ULocalMultiplayerSubsystem* LocalMultiplayerSubsystem = GetGameInstance()->GetSubsystem<ULocalMultiplayerSubsystem>();
-	LocalMultiplayerSubsystem->bCanCreateNewPlayer = MapSettings->bActivateControlsInGame;
-	
 	//TODO Find way to receive player made modifications
-	StartMatch();
+
+	if (GameDataSubsystem->CurrentRound == 0)
+	{
+		StartMatch();
+	}
+	else
+	{
+		OldPlayerScore.Empty();
+		for (int i = 0; i < GetDefault<UMapSettings>()->NumberOfPlayers; i++)
+		{
+			OldPlayerScore.Add(GameDataSubsystem->GetPlayerScoreFromID(0));
+		}
+		StartRound();
+	}
 }
 
 #pragma region CharacterSpawn
@@ -73,8 +78,9 @@ void AFreeFallGameMode::CreatePlayerStarts()
 {
 	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
 	if (MapSettings == nullptr) return;
-	
+
 	const TArray<TSoftObjectPtr<UWorld>>& WorldList = MapSettings->PlayerStartsLevels;
+	int NumberOfPlayers = MapSettings->NumberOfPlayers;
 	FVector SpawnLocation = MapSettings->PlayerStartSubLevelLocation;
 	
 	if(NumberOfPlayers <= 1)
@@ -180,7 +186,7 @@ void AFreeFallGameMode::SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints
 {
 	UFreeFallCharacterInputData* InputData = LoadInputDataFromConfig();
 	UInputMappingContext* InputMappingContext = LoadInputMappingContextFromConfig();
-	uint8 ID_Player = 1;
+	uint8 ID_Player = 0;
 	
 	for (APlayerStart* SpawnPoint : SpawnPoints)
 	{
@@ -260,14 +266,9 @@ void AFreeFallGameMode::StartMatch()
 {
 	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
 	if(!MapSettings) return;
-	
-	// Check Player data
-	if(!IsValid(PlayerMatchData))
-		PlayerMatchData = NewObject<UPlayerMatchData>();
-	PlayerMatchData->resetScoreValue();
 
 	// receive match data from GameDataInstanceSubsystem and check its validity to start the match
-	UGameDataInstanceSubsystem* GameDataSubsystem = GetGameInstance()->GetSubsystem<UGameDataInstanceSubsystem>();
+	GameDataSubsystem = GetGameInstance()->GetSubsystem<UGameDataInstanceSubsystem>();
 	if(GameDataSubsystem->IsValidLowLevel())
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Blue, TEXT("Subsystem valid, checking match data"));
@@ -292,23 +293,30 @@ void AFreeFallGameMode::StartMatch()
 		RoundCounterWidget->OnFinishCounter.AddDynamic(this, &AFreeFallGameMode::StartRound);
 	}
 
-	//Reset old player score
+	//Reset Player score
+	GameDataSubsystem->ResetPlayerScore();
 	OldPlayerScore.Empty();
-	for(int i = 0; i < 4; i++)
+	for (int i = 0; i < GetDefault<UMapSettings>()->NumberOfPlayers; ++i)
 	{
+		GameDataSubsystem->SetPlayerScoreFromID(i, 0);
 		OldPlayerScore.Add(0);
 	}
+	
 }
 
 void AFreeFallGameMode::StartRound()
 {
+	if (!GameDataSubsystem)
+	{
+		GameDataSubsystem = GetGameInstance()->GetSubsystem<UGameDataInstanceSubsystem>();
+	}
 	//Unbind Start round delegate
 	if(RoundCounterWidget)
 	{
 		RoundCounterWidget->OnFinishCounter.RemoveDynamic(this, &AFreeFallGameMode::StartRound);
 	}
 	
-	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple, FString::Printf(TEXT("Current Round: %i"), CurrentRound));
+	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple, FString::Printf(TEXT("Current Round: %i"), GameDataSubsystem->CurrentRound));
 
 	TArray<APlayerStart*> PlayerStartsPoints;
 	FindPlayerStartActorsInMap(PlayerStartsPoints);
@@ -332,7 +340,7 @@ void AFreeFallGameMode::StartRound()
 	SetupMatch(nullptr); //Possiblement à enlever, j'ai juste rerajouté pour pas tout péter :)
 	
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------ROUND START--------------------"));
-	CurrentRound++;
+	GameDataSubsystem->CurrentRound++;
 	if(CurrentParameters->getTimerEventDelay() > 0.f)
 		RoundEventTimer();
 	if(CurrentParameters->getRoundTimer() > 0.f)
@@ -425,14 +433,14 @@ void AFreeFallGameMode::FindNewOwnerForParachute(AFreeFallCharacter* PreviousOwn
 
 #pragma region PostRound
 
-void AFreeFallGameMode::AddPoints(TArray<int> ArrayPlayers)
+void AFreeFallGameMode::AddPoints(TArray<int> ArrayPlayersID)
 {
-	if(IsValid(PlayerMatchData))
+	if(IsValid(GameDataSubsystem))
 	{
 		// Assign points
-		const TArray<int> temp = CurrentParameters->getScoreValues();
-		for (int i  = 0; i< ArrayPlayers.Num(); i++)
-			PlayerMatchData->setScoreValue(ArrayPlayers[i], temp[i]);
+		const TArray<int> WinPoints = CurrentParameters->getScoreValues();
+		for (int i  = 0; i< ArrayPlayersID.Num(); i++)
+			GameDataSubsystem->AddPlayerScoreFromID(ArrayPlayersID[i], WinPoints[i]);
 	}
 	// Empty lossOrder
 	LossOrder.Empty();
@@ -458,9 +466,9 @@ void AFreeFallGameMode::EndRound()
 	
 	//Give next parachute to last player
 	int MinimumScoreID = 0;
-	for(int i = 0; i < PlayerMatchData->getScoreValues().Num(); i++)
+	for(int i = 0; i < GetDefault<UMapSettings>()->NumberOfPlayers; i++)
 	{
-		if(PlayerMatchData->getScoreValues()[i] < PlayerMatchData->getScoreValues()[MinimumScoreID])
+		if(GameDataSubsystem->GetPlayerScoreFromID(i) < GameDataSubsystem->GetPlayerScoreFromID(MinimumScoreID))
 			MinimumScoreID = i;
 	}
 	NextParachuteHolderID = MinimumScoreID + 1;
@@ -480,7 +488,7 @@ void AFreeFallGameMode::EndRound()
 
 		//Set player profile
 		int MaxNumberOfPoints = 8 * CurrentParameters->getMaxRounds();
-		for(int i = 0; i < NumberOfPlayers; i++)
+		for(int i = 0; i < MapSettings->NumberOfPlayers; i++)
 		{
 			RoundScorePanelWidget->SetPlayerProfile(i+1, OldPlayerScore[i], MaxNumberOfPoints);
 		}
@@ -492,9 +500,9 @@ void AFreeFallGameMode::EndRoundAddScore()
 	RoundScorePanelWidget->OnFinishShow.RemoveDynamic(this, &AFreeFallGameMode::EndRoundAddScore);
 	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
 
-	for(int i = 0; i < NumberOfPlayers; i++)
+	for(int i = 0; i < MapSettings->NumberOfPlayers; i++)
 	{
-		int NewScore = PlayerMatchData->getScoreValues()[i];
+		int NewScore = GameDataSubsystem->GetPlayerScoreFromID(i);
 		RoundScorePanelWidget->AddScoreToRound(i + 1, NewScore);
 		OldPlayerScore[i] = NewScore;
 	}
@@ -542,13 +550,16 @@ void AFreeFallGameMode::EndRoundHideScorePanel()
 		OnEndRound.Broadcast();
 	
 	// Check for end match
-	if(CurrentRound >= CurrentParameters->getMaxRounds())
+	if(GameDataSubsystem->CurrentRound >= CurrentParameters->getMaxRounds())
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------MATCH END--------------------"));
 		ShowResults();
 	} else
 	{
-		StartRound();
+		//StartRound();
+		UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
+		GEngine->AddOnScreenDebugMessage(-1,3.f,FColor::Silver, FString::FromInt(GameDataSubsystem->CurrentRound));
+		//ZIZICACA
 	}
 }
 
@@ -560,13 +571,13 @@ bool AFreeFallGameMode::EndRoundAddRewardPoints(ETrackingRewardCategory Category
 	TArray<int> ExtraPoints = TrackerActorInstance->GetTrackingWinners(Category);
 	for(int ExtraPointWinner : ExtraPoints)
 	{
-		PlayerMatchData->setScoreValue(ExtraPointWinner, 1);
+		GameDataSubsystem->AddPlayerScoreFromID(ExtraPointWinner, 1);
 	}
 	
 	//Display new score if gained points
 	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
-	for(int i = 0; i < NumberOfPlayers; i++){
-		int NewScore = PlayerMatchData->getScoreValues()[i];
+	for(int i = 0; i < MapSettings->NumberOfPlayers; i++){
+		int NewScore = GameDataSubsystem->GetPlayerScoreFromID(i);
 		
 		if (OldPlayerScore[i] != NewScore)
 		{
@@ -582,10 +593,7 @@ bool AFreeFallGameMode::EndRoundAddRewardPoints(ETrackingRewardCategory Category
 void AFreeFallGameMode::ShowResults()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "ShowResults");
-	CurrentRound = 0;
-	
-	//TODO Remove Debug
-	PlayerMatchData->DebugPrintScore();
+	GameDataSubsystem->CurrentRound = 0;
 	
 	if(OnResults.IsBound())
 	{

@@ -16,6 +16,29 @@ class FREEFALLINGCOUCHGAME_API UGameDataInstanceSubsystem : public UGameInstance
 	GENERATED_BODY()
 
 public:
+	UPROPERTY()
+	int CurrentRound = 0;
+
+#pragma region PlayerScore
+	
+protected:
+	UPROPERTY()
+	TMap<int, int> PlayerScoreFromID;
+	
+public:
+	//Get Player score from PlayerID, returns -1 if not found
+	int GetPlayerScoreFromID(int PlayerID);
+
+	//Set Player score from PlayerID, creates one if necessary
+	void SetPlayerScoreFromID(int PlayerID, int PlayerScore);
+
+	//Add to Current Player score from PlayerID, ignore if Current Player Score doesn't exist
+	void AddPlayerScoreFromID(int PlayerID, int PointsToAdd);
+
+	void ResetPlayerScore();
+
+#pragma endregion
+	
 	UFUNCTION()
 	UMatchParameters *GetMatchParameters() {return CurrentParameters;}
 	UFUNCTION()

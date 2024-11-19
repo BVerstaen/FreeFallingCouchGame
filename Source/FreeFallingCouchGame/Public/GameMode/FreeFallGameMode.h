@@ -9,6 +9,7 @@
 #include "FreeFallingCouchGame/Public/Match/MatchParameters.h"
 #include "Characters/PlayerMatchData.h"
 #include "GameFramework/GameModeBase.h"
+#include "Match/GameDataInstanceSubsystem.h"
 #include "UI/Widgets/RoundCounterWidget.h"
 #include "UI/Widgets/RoundScorePanelWidget.h"
 #include "FreeFallGameMode.generated.h"
@@ -31,7 +32,10 @@ public:
 	
 	UPROPERTY(EditAnywhere)
 	TArray<AFreeFallCharacter*> CharactersInsideArena;
-	
+
+	UPROPERTY()
+	UGameDataInstanceSubsystem* GameDataSubsystem;
+
 	UFUNCTION()
 	AParachute* GetParachuteInstance() const;
 
@@ -86,10 +90,6 @@ protected:
 	uint8 CurrentRound = 0;
 	FTimerHandle RoundTimerHandle;
 	FTimerHandle EventTimerHandle;
-	
-	//Ranking
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UPlayerMatchData> PlayerMatchData;
 	
 	//std::vector<uint8> LossOrder;
 	TArray<int> LossOrder;
@@ -179,7 +179,7 @@ private:
 	void StartEvent();
 	// Adding points to players
 	TArray<int> SetDeathOrder();
-	void AddPoints(TArray<int> ArrayPlayers);
+	void AddPoints(TArray<int> ArrayPlayersID);
 	UFUNCTION()
 	// Checks if end condition is reached
 	void CheckEndRoundDeath(AFreeFallCharacter* Character);
