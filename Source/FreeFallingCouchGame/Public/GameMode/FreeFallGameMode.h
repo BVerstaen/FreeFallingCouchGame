@@ -79,8 +79,8 @@ private:
 	
 #pragma region Rounds
 protected:
-
-
+	UPROPERTY()
+	int NumberOfPlayers;
 	
 	UPROPERTY(EditAnywhere)
 	float CurrentCounter;

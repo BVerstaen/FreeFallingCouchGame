@@ -114,6 +114,9 @@ public:
 	UPROPERTY()
 	FVector2D AccelerationAlpha;
 
+	UPROPERTY()
+	bool bShouldOrientToMovement;
+
 	UPROPERTY(EditAnywhere, Category = "Horizontal Movement")
 	float MaxAccelerationValue;
 

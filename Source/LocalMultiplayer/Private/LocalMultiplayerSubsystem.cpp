@@ -10,7 +10,9 @@ void ULocalMultiplayerSubsystem::CreateAndInitPlayers(ELocalMultiplayerInputMapp
 {
 	const ULocalMultiplayerSettings* LocalMultiplayerSettings = GetDefault<ULocalMultiplayerSettings>();
 	int NumberOfControllers = LocalMultiplayerSettings->GetNbKeyboardProfiles() + LocalMultiplayerSettings->NbMaxGamepad;
-	
+
+	CurrentMappingType = MappingType;
+
 	//Create PC keyboard & gamepad
 	for(int i=0; i < NumberOfControllers; i++)
 	{
@@ -60,7 +62,8 @@ void ULocalMultiplayerSubsystem::AssignKeyboardMapping(int PlayerIndex, int Keyb
 {
 	const ULocalMultiplayerSettings* LocalMultiplayerSettings = GetDefault<ULocalMultiplayerSettings>();
 
-	 APlayerController* LocalPlayer = UGameplayStatics::GetPlayerController(GetWorld(), PlayerIndex);
+	APlayerController* LocalPlayer = UGameplayStatics::GetPlayerController(GetWorld(), PlayerIndex);
+	if(LocalPlayer == nullptr) return;
 	UEnhancedInputLocalPlayerSubsystem* PlayerSubsystem = LocalPlayer->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
 	if(PlayerSubsystem == nullptr) return;
 	
