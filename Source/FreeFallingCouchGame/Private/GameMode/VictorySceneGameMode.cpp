@@ -3,14 +3,20 @@
 
 #include "GameMode/VictorySceneGameMode.h"
 
+#include "Match/GameDataInstanceSubsystem.h"
+
 void AVictorySceneGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
+	UGameDataInstanceSubsystem* GameDataInstanceSubsystem = GetGameInstance()->GetSubsystem<UGameDataInstanceSubsystem>();
 	//TODO Get scores data
 	ScoreList =
 	{
-		10,10,1,10
+		GameDataInstanceSubsystem->GetPlayerScoreFromID(0),
+		GameDataInstanceSubsystem->GetPlayerScoreFromID(1),
+		GameDataInstanceSubsystem->GetPlayerScoreFromID(2),
+		GameDataInstanceSubsystem->GetPlayerScoreFromID(3)
 	};
 	
 	TArray<int> WinnersList = GetWinners();

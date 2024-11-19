@@ -46,10 +46,15 @@ public:
 	//TEMPORAIRE !! A Remplacer par le nombre de mannette connecté dans Character Selection screen
 	UPROPERTY(Config, EditAnywhere, Category = "Map")
 	int NumberOfPlayers;
-	
+
+	UPROPERTY(Config, EditAnywhere, Category = "Map")
+	TSoftObjectPtr<UWorld> VictoryScreenLevel;
 	
 	UPROPERTY(Config, EditAnywhere, Category="Parachute")
 	TSubclassOf<AParachute> ParachuteSubclass;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Characters")
+	bool bActivateControlsInGame = true;
 	
 	UPROPERTY(Config, EditAnywhere, Category = "Characters")
 	TSubclassOf<AFreeFallCharacter> CharacterClassP0;
