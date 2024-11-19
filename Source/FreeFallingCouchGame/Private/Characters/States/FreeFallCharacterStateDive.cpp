@@ -29,6 +29,12 @@ void UFreeFallCharacterStateDive::StateEnter(EFreeFallCharacterStateID PreviousS
 {
 	Super::StateEnter(PreviousStateID);
 
+	if(Character->GetLockControls())
+	{
+		Character->GetStateMachine()->ChangeState(EFreeFallCharacterStateID::Idle);
+		return;
+	}
+	
 	UFreeFallCharacterStateMove* StateMove = Cast<UFreeFallCharacterStateMove>(StateMachine->GetState(EFreeFallCharacterStateID::Move));
 	AccelerationSpeed = StateMove == nullptr? 0 : StateMove->AccelerationSpeed;
 

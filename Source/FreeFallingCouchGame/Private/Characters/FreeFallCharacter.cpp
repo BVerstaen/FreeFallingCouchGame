@@ -222,6 +222,16 @@ TObjectPtr<UFreeFallCharacterStateMachine> AFreeFallCharacter::GetStateMachine()
 	return StateMachine;
 }
 
+void AFreeFallCharacter::SetLockControls(bool lockControls)
+{
+	bAreControlsBlocked = lockControls;
+}
+
+bool AFreeFallCharacter::GetLockControls() const
+{
+	return  bAreControlsBlocked;
+}
+
 void AFreeFallCharacter::SetupMappingContextIntoController() const
 {
 	APlayerController* PlayerController = Cast<APlayerController>(Controller);

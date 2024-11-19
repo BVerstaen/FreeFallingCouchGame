@@ -88,9 +88,16 @@ public:
 	UPROPERTY()
 	TObjectPtr<UInputMappingContext> InputMappingContext;
 
+	UFUNCTION()
+	void SetLockControls(bool lockControls);
+
+	UFUNCTION()
+	bool GetLockControls() const;
+	
 protected:
 	void SetupMappingContextIntoController() const;
 
+	bool bAreControlsBlocked = false;
 #pragma endregion
 
 #pragma region Input Move

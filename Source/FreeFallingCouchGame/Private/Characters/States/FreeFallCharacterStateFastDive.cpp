@@ -27,6 +27,12 @@ void UFreeFallCharacterStateFastDive::StateEnter(EFreeFallCharacterStateID Previ
 {
 	Super::StateEnter(PreviousStateID);
 
+	if(Character->GetLockControls())
+	{
+		Character->GetStateMachine()->ChangeState(EFreeFallCharacterStateID::Idle);
+		return;
+	}
+	
 	Character->bIsDiveForced = false;
 	OldInputDive = 0.0f;
 	
