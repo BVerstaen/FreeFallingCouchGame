@@ -60,7 +60,7 @@ private:
 
 	TSubclassOf<AFreeFallCharacter> GetFreeFallCharacterClassFromInputType(EAutoReceiveInput::Type InputType) const;
 
-	void SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints);
+	void SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints, bool bLockControls = false);
 
 	bool GetCharacterInvertDiveInput(int PlayerIndex);
 	
@@ -188,4 +188,12 @@ private:
 	void SetupMatch(UMatchParameters *UserParameters);
 	
 #pragma endregion
+
+#pragma region PreFirstRound
+
+public:
+	UFUNCTION()
+	void BeginFirstRound(AFreeFallCharacter* NewOwner);
+
+#pragma endregion 
 };

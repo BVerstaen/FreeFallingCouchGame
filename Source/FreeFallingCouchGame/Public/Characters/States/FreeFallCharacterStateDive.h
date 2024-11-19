@@ -91,7 +91,11 @@ protected:
 	float MeshMovementDampingSpeed;
 
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<UAnimSequence> DiveAnimation;
+	TObjectPtr<UAnimSequence> DiveDownwardsAnimation;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UAnimSequence> DiveUpwardsAnimation;
+	
 #pragma endregion
 	
 private:
@@ -110,6 +114,8 @@ private:
 	UPROPERTY()
 	float CrossLayerClock;
 
+	float OldInputDive;
+	
 private:
 	UFUNCTION()
 	void OnInputFastDive();
