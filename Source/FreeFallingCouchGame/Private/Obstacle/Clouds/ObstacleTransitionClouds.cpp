@@ -98,6 +98,7 @@ void AObstacleTransitionClouds::RandomizePlayersPositions()
 		Player->GrabbingState = EFreeFallCharacterGrabbingState::None;
 		Player->OtherCharacterGrabbedBy = nullptr;
 		Player->OtherCharacterGrabbing = nullptr;
+		Player->StopEffectDeGrab();
 
 		//Play scream sound
 		SoundSubsystem->PlaySound("VOC_PLR_scream_ST", this, true);
