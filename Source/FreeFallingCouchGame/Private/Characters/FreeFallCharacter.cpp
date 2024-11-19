@@ -340,13 +340,31 @@ void AFreeFallCharacter::ApplyMovementFromAcceleration(float DeltaTime)
 
 void AFreeFallCharacter::Decelerate(float DeltaTime)
 {
-	if (FMath::Abs(InputMove.X) < CharactersSettings->InputMoveThreshold && FMath::Abs(AccelerationAlpha.X) > CharactersSettings->AccelerationThreshold)
+	if (FMath::Abs(AccelerationAlpha.X) > CharactersSettings->AccelerationThreshold)
 	{
-		AccelerationAlpha.X -= DecelerationSpeed * FMath::Sign(AccelerationAlpha.X) * DeltaTime;
+		if ((InputMove.X > 0 || FMath::Abs(InputMove.X) < CharactersSettings->InputMoveThreshold) && AccelerationAlpha.X < 0)
+		{
+			AccelerationAlpha.X = FMath::Min(AccelerationAlpha.X + DecelerationSpeed * DeltaTime, 0);
+			GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Orange, TEXT("Decelerating"));
+		}
+		else if ((InputMove.X < 0 || FMath::Abs(InputMove.X) < CharactersSettings->InputMoveThreshold) && AccelerationAlpha.X > 0)
+		{
+			AccelerationAlpha.X = FMath::Max(AccelerationAlpha.X - DecelerationSpeed * DeltaTime, 0);
+			GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Orange, TEXT("Decelerating"));
+		}
 	}
-	if (FMath::Abs(InputMove.Y) < CharactersSettings->InputMoveThreshold && FMath::Abs(AccelerationAlpha.Y) > CharactersSettings->AccelerationThreshold)
+	if (FMath::Abs(AccelerationAlpha.Y) > CharactersSettings->AccelerationThreshold)
 	{
-		AccelerationAlpha.Y -= DecelerationSpeed * FMath::Sign(AccelerationAlpha.Y) * DeltaTime;
+		if ((InputMove.Y > 0 || FMath::Abs(InputMove.Y) < CharactersSettings->InputMoveThreshold) && AccelerationAlpha.Y < 0)
+		{
+			AccelerationAlpha.Y = FMath::Min(AccelerationAlpha.Y + DecelerationSpeed * DeltaTime, 0);
+			GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Orange, TEXT("Decelerating"));
+		}
+		else if ((InputMove.Y < 0 || FMath::Abs(InputMove.Y) < CharactersSettings->InputMoveThreshold) && AccelerationAlpha.Y > 0)
+		{
+			AccelerationAlpha.Y = FMath::Max(AccelerationAlpha.Y - DecelerationSpeed * DeltaTime, 0);
+			GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Orange, TEXT("Decelerating"));
+		}
 	}
 }
 #pragma endregion
