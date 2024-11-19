@@ -27,9 +27,9 @@ void UFreeFallCharacterStateFastDive::StateEnter(EFreeFallCharacterStateID Previ
 {
 	Super::StateEnter(PreviousStateID);
 
-	Character->GetMesh()->PlayAnimation(DiveAnimation, true);
 	Character->bIsDiveForced = false;
-
+	OldInputDive = 0.0f;
+	
 	//Not crash if DiveLevelsActor is not set in scene
 	if (DiveLevelsActor == nullptr)
 	{
@@ -77,6 +77,16 @@ void UFreeFallCharacterStateFastDive::StateTick(float DeltaTime)
 	//GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Purple, "CharZLoc : " + FString::SanitizeFloat(Character->GetActorLocation().Z));
 	//GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Purple, "ZTarget : " + FString::SanitizeFloat(TargetLayerZCenter));
 
+	//Change animation based on dive direction
+	if(OldInputDive != DirectionScaleValue)
+	{
+		OldInputDive = DirectionScaleValue;
+		if(DirectionScaleValue > 0)
+			Character->GetMesh()->PlayAnimation(DiveDownwardsAnimation, true);
+		else
+			Character->GetMesh()->PlayAnimation(DiveUpwardsAnimation, true);
+	}
+	
 
 	if (Character->GetActorLocation().Z > TargetLayerZCenter && DirectionScaleValue < 0)
 	{

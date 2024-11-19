@@ -39,10 +39,10 @@ void UFreeFallCharacterStateDive::StateEnter(EFreeFallCharacterStateID PreviousS
 		return;
 	}
 	
-	Character->GetMesh()->PlayAnimation(DiveAnimation, true);
 	Character->OnInputFastDiveEvent.AddDynamic(this, &UFreeFallCharacterStateDive::OnInputFastDive);
 	Character->bIsDiveForced = false;
-
+	OldInputDive = 0.0f;
+	
 	//Not crash if DiveLevelsActor is not set in scene
 	if (DiveLevelsActor == nullptr)
 	{
@@ -105,7 +105,16 @@ void UFreeFallCharacterStateDive::StateTick(float DeltaTime)
 	//Change Angle by rotation
 	Character->InterpMeshPlayer(FRotator(Character->GetPlayerDefaultRotation().Pitch, Character->GetMesh()->GetRelativeRotation().Yaw, InputDive * MeshMovementRotationAngle), DeltaTime, MeshMovementDampingSpeed);
 
-	
+	//Change animation based on dive direction
+	if(OldInputDive != InputDive)
+	{
+		OldInputDive = InputDive;
+		if(InputDive > 0)
+			Character->GetMesh()->PlayAnimation(DiveDownwardsAnimation, true);
+		else
+			Character->GetMesh()->PlayAnimation(DiveUpwardsAnimation, true);
+	}
+
 	if (FMath::Abs(InputDive) < CharactersSettings->InputMoveThreshold)
 	{
 		CurrentDivePhase = EDivePhase::DiveForcesApplying;

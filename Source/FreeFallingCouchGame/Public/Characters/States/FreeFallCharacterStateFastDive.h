@@ -49,7 +49,10 @@ private:
 	float CrossingLayerTime;
 
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<UAnimSequence> DiveAnimation;
+	TObjectPtr<UAnimSequence> DiveDownwardsAnimation;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UAnimSequence> DiveUpwardsAnimation;
 	
 	UPROPERTY()
 	float TargetLayerZCenter;
@@ -64,4 +67,6 @@ private:
 
 	UPROPERTY()
 	EDiveLayersID TargetLayer;
+
+	float OldInputDive;
 };
