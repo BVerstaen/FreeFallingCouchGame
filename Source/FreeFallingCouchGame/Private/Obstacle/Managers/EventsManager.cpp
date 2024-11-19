@@ -3,6 +3,8 @@
 
 #include "Obstacle/Managers/EventsManager.h"
 
+#include "GameMode/FreeFallGameMode.h"
+#include "Kismet/GameplayStatics.h"
 #include "Obstacle/ObstacleSpawner.h"
 #include "Obstacle/ObstacleSpawnerManager.h"
 #include "Obstacle/Events/EventActor.h"
@@ -26,6 +28,12 @@ void AEventsManager::BeginPlay()
 	{
 		AvailableEventsActors.Add(EventActor);
 	}
+
+	//Start Timer after round start
+	if(AFreeFallGameMode* GameMode = Cast<AFreeFallGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
+	{
+		GameMode->OnStartRound.AddDynamic(this, &AEventsManager::OnStartTick);
+	}
 }
 
 void AEventsManager::Destroyed()
@@ -36,6 +44,11 @@ void AEventsManager::Destroyed()
 	{
 		CurrentEventActor->OnEventEnded.RemoveDynamic(this, &AEventsManager::OnEventEnded);
 	}
+}
+
+void AEventsManager::OnStartTick()
+{
+	CanTickTimer = true;
 }
 
 // Called every frame
@@ -54,7 +67,7 @@ void AEventsManager::Tick(float DeltaTime)
 		return;
 	}
 
-	if (EventHappening) return;
+	if (EventHappening || !CanTickTimer) return;
 	
 	EventClock += DeltaTime;
 	if (EventClock > FMath::Max(TimeBetweenEvents - ObstacleStopDifferenceTime,0) && ObstacleSpawnerManager->IsTimerPlaying())
