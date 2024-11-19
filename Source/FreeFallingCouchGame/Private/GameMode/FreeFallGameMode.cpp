@@ -584,7 +584,7 @@ bool AFreeFallGameMode::EndRoundAddRewardPoints(ETrackingRewardCategory Category
 	}
 	
 	//Display new score if gained points
-	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
+	
 	for(int i = 0; i < NumberOfPlayers; i++){
 		int NewScore = GameDataSubsystem->GetPlayerScoreFromID(i);
 		if (OldPlayerScore[i] != NewScore)
@@ -607,8 +607,9 @@ void AFreeFallGameMode::ShowResults()
 	{
 		OnResults.Broadcast();
 	}
-	//TODO AwaitUserInput
-	StartMatch();
+	
+	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
+	UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), MapSettings->VictoryScreenLevel);
 }
 #pragma endregion
 
