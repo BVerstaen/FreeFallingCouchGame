@@ -3,6 +3,8 @@
 
 #include "Obstacle/Obstacle.h"
 
+#include "Audio/SoundSubsystem.h"
+
 
 // Sets default values
 AObstacle::AObstacle()
@@ -119,7 +121,7 @@ FVector AObstacle::GetVelocity()
 
 float AObstacle::GetMass()
 {
-	return Mesh->GetMass();
+	return ObjectMass;
 }
 
 EBounceParameters AObstacle::GetBounceParameterType()
@@ -130,11 +132,25 @@ EBounceParameters AObstacle::GetBounceParameterType()
 void AObstacle::AddBounceForce(FVector Velocity)
 {
 	Mesh->AddForce(Velocity);
+	
 }
 
 AFreeFallCharacter* AObstacle::CollidedWithPlayer()
 {
+	//Play collision sound
+	if(bCanPlayCollisionSound)
+	{
+		USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
+		SoundSubsystem->PlaySound(SoundsOnCollision, this, true);
+
+		bCanPlayCollisionSound = false;
+		GetWorldTimerManager().SetTimer(CollisionSoundCooldownTimerHandle, this, &AObstacle::ResetCollisionSoundCooldown,
+			CollisionSoundCooldownTime, false, CollisionSoundCooldownTime);
+	}
+	
 	return nullptr;
 }
+
+void AObstacle::ResetCollisionSoundCooldown() { bCanPlayCollisionSound = true; }
 
 #pragma endregion

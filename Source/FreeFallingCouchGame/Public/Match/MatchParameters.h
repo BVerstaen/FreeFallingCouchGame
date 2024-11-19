@@ -25,7 +25,7 @@ class FREEFALLINGCOUCHGAME_API UMatchParameters : public UObject
 public:
 	void Init(TSubclassOf<UMatchParameters> UserParameters);
 	// Getters
-	const int* getScoreValues() const;
+	const TArray<int> getScoreValues() const;
 	UFUNCTION(BlueprintCallable)
 	int getMaxRounds() const;
 	UFUNCTION(BlueprintCallable)
@@ -48,7 +48,8 @@ public:
 protected:
 	// Scores based on your ranking (IN ORDER)
 	UPROPERTY(EditAnywhere)
-	int ScoreValue[4] = {1000, 500, 300, 100};
+	TArray<int> ScoreValue;
+	
 	// Number of rounds per match
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Match Data")
 	int MaxRounds = 5;

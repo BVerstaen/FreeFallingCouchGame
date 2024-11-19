@@ -28,7 +28,7 @@ class FREEFALLINGCOUCHGAME_API UFreeFallCharacterStateDive : public UFreeFallCha
 	virtual EFreeFallCharacterStateID GetStateID() override;
 
 	virtual void StateInit(UFreeFallCharacterStateMachine* InStateMachine) override;
-
+	
 	virtual void StateEnter(EFreeFallCharacterStateID PreviousStateID) override;
 
 	virtual void StateExit(EFreeFallCharacterStateID NextStateID) override;
@@ -60,17 +60,11 @@ protected:
 #pragma region MoveInputs
 
 public:
-	void SetMoveStats(float Move_MaxMoveSpeed, float Move_StartMoveSpeed, float Move_ReachMaxSpeedTime, float Move_OrientationThreshold, float* Move_AccelerationAlpha);
+	void SetMoveStat(float Move_AccelerationSpeed);
 	
 protected:
 	UPROPERTY()
-	float MaxMoveSpeed;
-
-	UPROPERTY()
-	float StartMoveSpeed;
-
-	UPROPERTY()
-	float ReachMaxSpeedTime;
+	float AccelerationSpeed;
 
 	/*Le seuil à partir duquel le joueur ne bloque plus sa rotation et permet d'être influencé (uniquement si attrape joueur)*/
 	UPROPERTY()
@@ -93,7 +87,9 @@ protected:
 	/*Vitesse de rotation du joueur lorsqu'il se déplace*/
 	UPROPERTY(EditAnywhere, Category="Mesh movement")
 	float MeshMovementDampingSpeed;
-	
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UAnimSequence> DiveAnimation;
 #pragma endregion
 	
 private:
@@ -111,4 +107,8 @@ private:
 
 	UPROPERTY()
 	float CrossLayerClock;
+
+private:
+	UFUNCTION()
+	void OnInputFastDive();
 };

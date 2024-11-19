@@ -19,14 +19,23 @@ class FREEFALLINGCOUCHGAME_API UMapSettings : public UDeveloperSettings
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(Config, EditAnywhere, Category = "Round Counter")
-	TSubclassOf<UUserWidget> RoundCounterWidget;
+	UPROPERTY(Config, EditAnywhere, Category = "Round Score")
+	TSubclassOf<UUserWidget> RoundScorePanelWidget;
+	
+	//Temps de la transistion avant de donner les points rewards
+	UPROPERTY(Config, EditAnywhere, Category = "Round Score")
+	float TimeBeforeRewardPoints;
+
+	//Temps de la transistion avant de cacher le widget et reprendre la partie
+	UPROPERTY(Config, EditAnywhere, Category = "Round Score")
+	float TimeBeforeHideScorePanelWidget;
+
+	//Temps entre les distributions de rewards
+	UPROPERTY(Config, EditAnywhere, Category = "Round Score")
+	float TimeBetweenGivingRewards;
 	
 	UPROPERTY(Config, EditAnywhere, Category = "Round Counter")
-	float CurrentCounter;
-
-	UPROPERTY(Config, EditAnywhere, Category = "Round Counter")
-	int CounterNumberOfCount;
+	TSubclassOf<UUserWidget> RoundCounterWidget;
 	
 	UPROPERTY(Config, EditAnywhere, Category = "Map")
 	TArray<TSoftObjectPtr<UWorld>> PlayerStartsLevels;
@@ -37,10 +46,15 @@ public:
 	//TEMPORAIRE !! A Remplacer par le nombre de mannette connecté dans Character Selection screen
 	UPROPERTY(Config, EditAnywhere, Category = "Map")
 	int NumberOfPlayers;
-	
+
+	UPROPERTY(Config, EditAnywhere, Category = "Map")
+	TSoftObjectPtr<UWorld> VictoryScreenLevel;
 	
 	UPROPERTY(Config, EditAnywhere, Category="Parachute")
 	TSubclassOf<AParachute> ParachuteSubclass;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Characters")
+	bool bActivateControlsInGame = true;
 	
 	UPROPERTY(Config, EditAnywhere, Category = "Characters")
 	TSubclassOf<AFreeFallCharacter> CharacterClassP0;
@@ -65,4 +79,7 @@ public:
 	
 	UPROPERTY(Config, EditAnywhere, Category="Diving")
 	float DiveLayerThreshold;
+
+	UPROPERTY(Config, EditAnywhere, Category="Camera")
+	TSubclassOf<UCameraShakeBase> CameraShake;
 };

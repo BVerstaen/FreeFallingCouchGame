@@ -9,7 +9,9 @@
 #include "FreeFallingCouchGame/Public/Match/MatchParameters.h"
 #include "Characters/PlayerMatchData.h"
 #include "GameFramework/GameModeBase.h"
+#include "Match/GameDataInstanceSubsystem.h"
 #include "UI/Widgets/RoundCounterWidget.h"
+#include "UI/Widgets/RoundScorePanelWidget.h"
 #include "FreeFallGameMode.generated.h"
 
 
@@ -30,7 +32,10 @@ public:
 	
 	UPROPERTY(EditAnywhere)
 	TArray<AFreeFallCharacter*> CharactersInsideArena;
-	
+
+	UPROPERTY()
+	UGameDataInstanceSubsystem* GameDataSubsystem;
+
 	UFUNCTION()
 	AParachute* GetParachuteInstance() const;
 
@@ -62,12 +67,20 @@ private:
 	AParachute* RespawnParachute(FVector SpawnLocation);
 
 	FVector ParachuteSpawnLocation;
-	
-#pragma region Rounds
-protected:
+
+#pragma region Widgets
 	//Match counter widget
 	UPROPERTY()
 	TObjectPtr<URoundCounterWidget> RoundCounterWidget;
+
+	UPROPERTY()
+	TObjectPtr<URoundScorePanelWidget> RoundScorePanelWidget;
+#pragma endregion
+	
+#pragma region Rounds
+protected:
+	UPROPERTY()
+	int NumberOfPlayers;
 	
 	UPROPERTY(EditAnywhere)
 	float CurrentCounter;
@@ -77,10 +90,6 @@ protected:
 	uint8 CurrentRound = 0;
 	FTimerHandle RoundTimerHandle;
 	FTimerHandle EventTimerHandle;
-	
-	//Ranking
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UPlayerMatchData> PlayerMatchData;
 	
 	//std::vector<uint8> LossOrder;
 	TArray<int> LossOrder;
@@ -99,8 +108,10 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UMatchParameters> DefaultParameters = nullptr;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	UMatchParameters *CurrentParameters;
+
+public:
 	// Delegate declaration
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDStartRound);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDEndRound);
@@ -129,8 +140,37 @@ private:
 	void RoundEventTimer();
 	void RoundTimer();
 	void ClearTimers();
+
+	UPROPERTY()
+	int NextParachuteHolderID = -1;
+
+	UFUNCTION()
+	void FindNewOwnerForParachute(AFreeFallCharacter* PreviousOwner);
+	
+	/*
+	 *	End round functions
+	 */
+	UPROPERTY()
+	TArray<int> OldPlayerScore;
 	// When Round end condition is reached, unlinks and check if match is over
 	void EndRound();
+	//Timer Handle for timers
+	FTimerHandle EndRoundTimerHandle;
+	// Launch add score after round ended
+	UFUNCTION()
+	void EndRoundAddScore();
+	// Launch add score after round ended
+	UFUNCTION()
+	void EndRoundCycleAddRewardPoints();
+	int CurrentCategory;
+	
+	UFUNCTION()
+	void EndRoundWaitHide();
+	UFUNCTION()
+	void EndRoundHideScorePanel();
+	UFUNCTION()
+	bool EndRoundAddRewardPoints(ETrackingRewardCategory Category, float DelayOnScreen);
+	
 	void CheckEndRoundTimer();
 	// When Match is over, calls an event to show
 	// Results UI and buttons to go back to menu (/ restart)
@@ -139,12 +179,13 @@ private:
 	void StartEvent();
 	// Adding points to players
 	TArray<int> SetDeathOrder();
-	void AddPoints(TArray<int> ArrayPlayers);
+	void AddPoints(TArray<int> ArrayPlayersID);
 	UFUNCTION()
 	// Checks if end condition is reached
 	void CheckEndRoundDeath(AFreeFallCharacter* Character);
 	// Sets up the values for the match & rounds to follow
-	void SetupMatch(TSubclassOf<UMatchParameters> UserParameters);
+	//void SetupMatch(TSubclassOf<UMatchParameters> UserParameters);
+	void SetupMatch(UMatchParameters *UserParameters);
 	
 #pragma endregion
 };

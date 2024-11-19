@@ -27,6 +27,8 @@ protected:
 	float LaunchForce;
 	
 	FVector StartingLocation;
+
+	FVector OriginScale = FVector(1, 1, 0);
 	
 public:
 	// Called every frame
@@ -34,6 +36,9 @@ public:
 
 	virtual bool CanBeTaken() override;
 	virtual bool CanBeGrabbed() override;
+
+	UFUNCTION()
+	virtual void EquipToPlayer(AFreeFallCharacter* Character);
 	
 	UFUNCTION()
 	virtual void Use(AFreeFallCharacter* Character) override;

@@ -17,8 +17,11 @@ void UFreeFallCharacterStateIdle::StateEnter(EFreeFallCharacterStateID PreviousS
 {
 	Super::StateEnter(PreviousStateID);
 
+	Character->GetMesh()->PlayAnimation(IdleAnimation, true);
+	
 	Character->OnInputGrabEvent.AddDynamic(this, &UFreeFallCharacterStateIdle::OnInputGrab);
 	Character->OnInputUsePowerUpEvent.AddDynamic(this, &UFreeFallCharacterStateIdle::OnInputUsePowerUp);
+	Character->OnInputFastDiveEvent.AddDynamic(this, &UFreeFallCharacterStateIdle::OnInputFastDive);
 	
 	// GEngine->AddOnScreenDebugMessage(
 	// 	-1,
@@ -34,6 +37,7 @@ void UFreeFallCharacterStateIdle::StateExit(EFreeFallCharacterStateID NextStateI
 
 	Character->OnInputGrabEvent.RemoveDynamic(this, &UFreeFallCharacterStateIdle::OnInputGrab);
 	Character->OnInputUsePowerUpEvent.RemoveDynamic(this, &UFreeFallCharacterStateIdle::OnInputUsePowerUp);
+	Character->OnInputFastDiveEvent.RemoveDynamic(this, &UFreeFallCharacterStateIdle::OnInputFastDive);
 
 	// GEngine->AddOnScreenDebugMessage(
 	// 	-1,
@@ -61,6 +65,13 @@ void UFreeFallCharacterStateIdle::StateTick(float DeltaTime)
 
 	//Reset mesh rotation
 	Character->InterpMeshPlayer(Character->GetPlayerDefaultRotation(), DeltaTime, MeshMovementDampingSpeed);
+
+	GEngine->AddOnScreenDebugMessage(
+			-1,
+			DeltaTime,
+			FColor::Cyan,
+			"Player : " + Character->GetPlayerDefaultRotation().ToString()
+			);
 	
 	GEngine->AddOnScreenDebugMessage(
 		-1,
@@ -78,4 +89,9 @@ void UFreeFallCharacterStateIdle::OnInputGrab()
 void UFreeFallCharacterStateIdle::OnInputUsePowerUp()
 {
 	StateMachine->ChangeState(EFreeFallCharacterStateID::PowerUp);
+}
+
+void UFreeFallCharacterStateIdle::OnInputFastDive()
+{
+	StateMachine->ChangeState(EFreeFallCharacterStateID::FastDive);
 }

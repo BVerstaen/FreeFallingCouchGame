@@ -28,6 +28,10 @@ protected:
 	/*Vitesse de rotation du joueur lorsqu'il reset sa rotation*/
 	UPROPERTY(EditAnywhere, Category="Mesh movement")
 	float MeshMovementDampingSpeed;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UAnimSequence> IdleAnimation;
+#pragma endregion
 	
 #pragma region  Input Event
 	
@@ -37,6 +41,9 @@ private:
 
 	UFUNCTION()
 	void OnInputUsePowerUp();
+
+	UFUNCTION()
+	void OnInputFastDive();
 	
 #pragma endregion 
 };

@@ -34,6 +34,9 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category="InputMove")
 	float InputMoveThreshold;
 
+	UPROPERTY(Config, EditAnywhere, Category="InputMove")
+	float AccelerationThreshold;
+
 	UPROPERTY(Config, EditAnywhere, Category="InputDive")
 	float InputDiveThreshold;
 
