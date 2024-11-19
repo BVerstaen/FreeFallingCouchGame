@@ -54,6 +54,8 @@ private:
 	UPROPERTY()
 	float TargetLayerZCenter;
 
+	float OldFlySpeed;
+
 	//1 or -1, direction of movement;
 	UPROPERTY()
 	int DirectionScaleValue;

@@ -70,6 +70,8 @@ protected:
 	UPROPERTY()
 	float OrientationThreshold;
 
+	float OldFlySpeed;
+
 	FVector2D OldInputDirection;
 
 private:

@@ -27,6 +27,8 @@ void UFreeFallCharacterStateFastDive::StateEnter(EFreeFallCharacterStateID Previ
 {
 	Super::StateEnter(PreviousStateID);
 
+	OldFlySpeed = Character->GetCharacterMovement()->MaxFlySpeed;
+
 	Character->GetMesh()->PlayAnimation(DiveAnimation, true);
 	Character->bIsDiveForced = false;
 
@@ -60,6 +62,8 @@ void UFreeFallCharacterStateFastDive::StateExit(EFreeFallCharacterStateID NextSt
 	Super::StateExit(NextStateID);
 
 	Character->bIsDiveForced = true;
+
+	Character->GetCharacterMovement()->MaxFlySpeed = OldFlySpeed;
 }
 
 void UFreeFallCharacterStateFastDive::StateTick(float DeltaTime)

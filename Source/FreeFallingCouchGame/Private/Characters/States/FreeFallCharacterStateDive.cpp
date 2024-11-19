@@ -29,6 +29,8 @@ void UFreeFallCharacterStateDive::StateEnter(EFreeFallCharacterStateID PreviousS
 {
 	Super::StateEnter(PreviousStateID);
 
+	OldFlySpeed = Character->GetCharacterMovement()->MaxFlySpeed;
+
 	UFreeFallCharacterStateMove* StateMove = Cast<UFreeFallCharacterStateMove>(StateMachine->GetState(EFreeFallCharacterStateID::Move));
 	AccelerationSpeed = StateMove == nullptr? 0 : StateMove->AccelerationSpeed;
 
@@ -71,6 +73,8 @@ void UFreeFallCharacterStateDive::StateEnter(EFreeFallCharacterStateID PreviousS
 void UFreeFallCharacterStateDive::StateExit(EFreeFallCharacterStateID NextStateID)
 {
 	Super::StateExit(NextStateID);
+
+	Character->GetCharacterMovement()->MaxFlySpeed = OldFlySpeed;
 
 	Character->bIsDiveForced = true;
 
