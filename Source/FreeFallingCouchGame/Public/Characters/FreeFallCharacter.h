@@ -422,6 +422,9 @@ public:
 	FWasEliminated OnWasEliminated;
 	
 public:
+	UFUNCTION()
+	void BounceRoutine(AActor* OtherActor, TScriptInterface<IBounceableInterface> OtherBounceableInterface, float SelfRestitutionMultiplier, float OtherRestitutionMultiplier, float GlobalMultiplier, bool bShouldConsiderMass, bool bShouldKeepRemainVelocity);
+
 	UFUNCTION(BlueprintCallable)
 	void BounceCooldown();
 
@@ -431,7 +434,6 @@ public:
 protected:
 	UFUNCTION()
 	void OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
 	
 	UFUNCTION()
 	void ResetBounce();
@@ -447,12 +449,13 @@ public:
 	virtual void AddBounceForce(FVector Velocity) override;
 	virtual AFreeFallCharacter* CollidedWithPlayer() override;
 	
-	UFUNCTION()
-	void BounceRoutine(AActor* OtherActor, TScriptInterface<IBounceableInterface> OtherBounceableInterface, float SelfRestitutionMultiplier, float OtherRestitutionMultiplier, float GlobalMultiplier, bool bShouldConsiderMass, bool bShouldKeepRemainVelocity);
 
 protected:
 	UPROPERTY(EditAnywhere, Category="Bounce Collision")
 	TSoftObjectPtr<UNiagaraSystem> BounceEffect;
+
+	UPROPERTY(EditAnywhere, Category="Bounce Collision")
+	TObjectPtr<UAnimSequence> DamageAnimation;
 	
 #pragma endregion
 
@@ -499,6 +502,29 @@ private:
 	void BindInputUsePowerUpActions(UEnhancedInputComponent* EnhancedInputComponent);
 
 	void OnInputUsePowerUp(const FInputActionValue& Value);
+	
+#pragma endregion
+
+#pragma region Animation
+
+public:
+	UFUNCTION()
+	void PlayAnimation(UAnimSequence* Animation, bool Looping, bool BlockUntilEndOfAnim = false, float AnimationDuration = -1.0f);
+	
+	UFUNCTION()
+	void RestoreAnimation();
+	
+	UPROPERTY(EditAnywhere, Category="Animation")
+	TObjectPtr<UAnimSequence> DefaultAnimation;
+	
+	UPROPERTY()
+	TObjectPtr<UAnimSequence> QueuedAnimation;
+
+	bool QueuedAnimationLooping = false;
+
+	UPROPERTY()
+	FTimerHandle BlockUntilEndOfAnimTimerHandle;
+	bool bBlockNewAnimation = false;
 	
 #pragma endregion
 };

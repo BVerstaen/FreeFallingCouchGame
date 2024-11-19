@@ -82,9 +82,9 @@ void UFreeFallCharacterStateFastDive::StateTick(float DeltaTime)
 	{
 		OldInputDive = DirectionScaleValue;
 		if(DirectionScaleValue > 0)
-			Character->GetMesh()->PlayAnimation(DiveDownwardsAnimation, true);
+			Character->PlayAnimation(DiveDownwardsAnimation, true);
 		else
-			Character->GetMesh()->PlayAnimation(DiveUpwardsAnimation, true);
+			Character->PlayAnimation(DiveUpwardsAnimation, true);
 	}
 	
 

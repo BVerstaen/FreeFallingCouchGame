@@ -6,6 +6,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Animation/AnimInstanceProxy.h"
 #include "Audio/SoundSubsystem.h"
 #include "Camera/CameraActor.h"
 #include "Characters/FreeFallCharacterInputData.h"
@@ -820,14 +821,18 @@ void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBou
 	//Play bounce effect
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BounceEffect.LoadSynchronous(), GetActorLocation());
 	
-
+	//Play bounce anim
+	PlayAnimation(DamageAnimation, false, true);
 		
 	//Check if collided with players
 	if(AFreeFallCharacter* OtherFreeFallCharacter = OtherBounceableInterface->CollidedWithPlayer())
 	{
 		//Activate bounce cooldown & elimination timers
 		if (!OtherFreeFallCharacter->bAlreadyCollided)
+		{
 			OtherFreeFallCharacter->BounceCooldown();
+			OtherFreeFallCharacter->PlayAnimation(DamageAnimation, false, true);
+		}
 
 		//Play player bounce
 		SoundSubsystem->PlaySound("VOC_PLR_Hit", this, true);
@@ -923,6 +928,48 @@ void AFreeFallCharacter::OnInputUsePowerUp(const FInputActionValue& Value)
 {
 	bInputUsePowerUpPressed = Value.Get<bool>();
 	OnInputUsePowerUpEvent.Broadcast();
+}
+
+#pragma endregion
+
+#pragma region Animation
+
+void AFreeFallCharacter::PlayAnimation(UAnimSequence* Animation, bool Looping, bool BlockUntilEndOfAnim, float AnimationDuration)
+{
+	if(!Animation) return;
+	
+	//Leave to queued if animation's blocked
+	if(bBlockNewAnimation)
+	{
+		QueuedAnimation = Animation;
+		QueuedAnimationLooping = Looping;
+		return;
+	}
+
+	//Play animation
+	GetMesh()->PlayAnimation(Animation, Looping);
+
+	//Block new animation & wait until end of anim
+	if(BlockUntilEndOfAnim)
+	{
+		//if negative duration -> use Animation's duration
+		if(AnimationDuration <= -1.0f)
+			AnimationDuration = Animation->GetPlayLength();
+
+		bBlockNewAnimation = true;
+		GetWorldTimerManager().SetTimer(BlockUntilEndOfAnimTimerHandle, this, &AFreeFallCharacter::RestoreAnimation, AnimationDuration);
+	}
+
+}
+
+void AFreeFallCharacter::RestoreAnimation()
+{
+	bBlockNewAnimation = false;
+	if(!QueuedAnimation)
+	{
+		QueuedAnimation = DefaultAnimation;
+	}
+	PlayAnimation(QueuedAnimation, QueuedAnimationLooping);
 }
 
 #pragma endregion

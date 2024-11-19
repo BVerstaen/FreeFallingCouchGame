@@ -110,9 +110,9 @@ void UFreeFallCharacterStateDive::StateTick(float DeltaTime)
 	{
 		OldInputDive = InputDive;
 		if(InputDive > 0)
-			Character->GetMesh()->PlayAnimation(DiveDownwardsAnimation, true);
+			Character->PlayAnimation(DiveDownwardsAnimation, true);
 		else
-			Character->GetMesh()->PlayAnimation(DiveUpwardsAnimation, true);
+			Character->PlayAnimation(DiveUpwardsAnimation, true);
 	}
 
 	if (FMath::Abs(InputDive) < CharactersSettings->InputMoveThreshold)
