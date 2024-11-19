@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Characters/States/FreeFallCharacterStateDive.h"
@@ -35,6 +35,8 @@ void UFreeFallCharacterStateDive::StateEnter(EFreeFallCharacterStateID PreviousS
 		return;
 	}
 	
+	OldFlySpeed = Character->GetCharacterMovement()->MaxFlySpeed;
+
 	UFreeFallCharacterStateMove* StateMove = Cast<UFreeFallCharacterStateMove>(StateMachine->GetState(EFreeFallCharacterStateID::Move));
 	AccelerationSpeed = StateMove == nullptr? 0 : StateMove->AccelerationSpeed;
 
@@ -77,6 +79,8 @@ void UFreeFallCharacterStateDive::StateEnter(EFreeFallCharacterStateID PreviousS
 void UFreeFallCharacterStateDive::StateExit(EFreeFallCharacterStateID NextStateID)
 {
 	Super::StateExit(NextStateID);
+
+	Character->GetCharacterMovement()->MaxFlySpeed = OldFlySpeed;
 
 	Character->bIsDiveForced = true;
 

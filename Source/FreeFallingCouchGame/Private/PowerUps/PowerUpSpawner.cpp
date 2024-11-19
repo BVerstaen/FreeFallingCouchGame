@@ -53,6 +53,11 @@ void APowerUpSpawner::StopTimer()
 
 void APowerUpSpawner::ValidateSpawnPoint()
 {
+	if (!SpawnPointActor)
+	{
+		GEngine->AddOnScreenDebugMessage(-1,3,FColor::Red,"SpawnPointActor not set");
+		return;
+	}
 	SpawnPoints.Add(SpawnPointActor->GetActorLocation());
 }
 
