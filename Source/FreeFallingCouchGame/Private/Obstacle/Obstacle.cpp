@@ -3,7 +3,9 @@
 
 #include "Obstacle/Obstacle.h"
 
+#include "SceneRenderTargetParameters.h"
 #include "Audio/SoundSubsystem.h"
+#include "VFX/DepthAffectedObj.h"
 
 
 // Sets default values
@@ -27,7 +29,14 @@ AObstacle::AObstacle()
 void AObstacle::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	UDepthAffectedObj* DepthComponent = NewObject<UDepthAffectedObj>(this, TEXT("DepthComponent"));
+	if (IsValid(DepthComponent))
+	{
+		AddInstanceComponent(DepthComponent);
+		DepthComponent->RegisterComponent();
+	}
+
 	FVector refDirection = Direction;
 	Direction.Normalize();
 	FVector ImpulseVector = Direction * Speed;
