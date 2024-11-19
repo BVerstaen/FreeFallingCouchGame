@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "PowerUpSpawner.generated.h"
 
+class APowerUpSpawnPoint;
 class APowerUpCollectible;
 enum class EPowerUpsID : uint8;
 class UPowerUpObject;
@@ -27,6 +28,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void StartTimer();
+
 	void PauseTimer();
 
 	void ResumeTimer();
@@ -39,16 +42,16 @@ protected:
 
 	//Add SpawnPointActor's Location to Spawnpoints Lists
 	UFUNCTION(CallInEditor)
-	void ValidateSpawnPoint();
-
-	//SpawnPointActor to setup Spawnpoint List, Variable is only used to fill List using ValidateSpawnPoint function, Select Actor in Scene
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TObjectPtr<AActor> SpawnPointActor;
+	void FindPowerUpSpawnPoints();
 
 private:
 	float GetSpawnCooldown() const;
 	
 	void SpawnPowerUps();
+
+	bool HasValidSpawnLocation();
+
+	TObjectPtr<APowerUpSpawnPoint> GetValidSpawnLocation();
 
 	FTimerHandle PowerUpSpawnTimer;
 
@@ -58,9 +61,8 @@ private:
 	UPROPERTY(EditAnywhere)
 	float MaxSpawnCooldown;
 
-	//Can be set using Validate Spawnpoints
-	UPROPERTY(EditAnywhere)
-	TArray<FVector> SpawnPoints;
+	UPROPERTY()
+	TArray<TObjectPtr<APowerUpSpawnPoint>> SpawnPointActors;
 
 	//For Game Programming
 	UPROPERTY(EditAnywhere)
