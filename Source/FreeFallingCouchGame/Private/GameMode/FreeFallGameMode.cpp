@@ -585,9 +585,8 @@ bool AFreeFallGameMode::EndRoundAddRewardPoints(ETrackingRewardCategory Category
 	
 	//Display new score if gained points
 	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
+	for(int i = 0; i < NumberOfPlayers; i++){
 		int NewScore = GameDataSubsystem->GetPlayerScoreFromID(i);
-	for(int i = 0; i < MapSettings->NumberOfPlayers; i++){
-		
 		if (OldPlayerScore[i] != NewScore)
 		{
 			RoundScorePanelWidget->AddScoreReward(i+1, NewScore, Category, DelayOnScreen);
