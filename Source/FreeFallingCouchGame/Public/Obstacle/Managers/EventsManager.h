@@ -36,6 +36,9 @@ private:
 	UFUNCTION()
 	void OnEventEnded(AEventActor* TriggeringActor);
 
+	UFUNCTION()
+	void OnStartTick();
+	
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<AObstacleSpawnerManager> ObstacleSpawnerManager = nullptr;
 
@@ -53,6 +56,9 @@ private:
 	UPROPERTY()
 	bool EventHappening = false;
 
+	UPROPERTY()
+	bool CanTickTimer = false;
+	
 	UPROPERTY()
 	TObjectPtr<AEventActor> CurrentEventActor = nullptr;
 
