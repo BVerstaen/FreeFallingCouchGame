@@ -19,9 +19,6 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 {
 	ULocalMultiplayerSubsystem* LocalMultiplayerSubsystem = GameInstance->GetSubsystem<ULocalMultiplayerSubsystem>();
 	const ULocalMultiplayerSettings* LocalMultiplayerSettings = GetDefault<ULocalMultiplayerSettings>();
-
-	//Can't spawn player if is in game
-	if(!LocalMultiplayerSubsystem->bCanCreateNewPlayer) return Super::InputKey(EventArgs);
 	
 	bool IsGamepad = EventArgs.IsGamepad();
 	if(!IsGamepad)
@@ -31,7 +28,7 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 		{
 			//GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Red, "Keyboard Index :" + FString::FromInt(KeyboardProfile));
 			int PlayerIndex = LocalMultiplayerSubsystem->GetAssignedPlayerIndexFromKeyboardProfileIndex(KeyboardProfile);
-			if(PlayerIndex < 0)
+			if(PlayerIndex < 0 && LocalMultiplayerSubsystem->bCanCreateNewPlayer)
 			{
 				PlayerIndex = LocalMultiplayerSubsystem->AssignNewPlayerToKeyboardProfile(KeyboardProfile);
 				LocalMultiplayerSubsystem->AssignKeyboardMapping(PlayerIndex ,KeyboardProfile, LocalMultiplayerSubsystem->CurrentMappingType);

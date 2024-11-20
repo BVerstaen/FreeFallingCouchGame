@@ -191,7 +191,7 @@ void AFreeFallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 void AFreeFallCharacter::InterpMeshPlayer(FRotator Destination, float DeltaTime, float DampingSpeed)
 {
-	GetMesh()->SetRelativeRotation(FMath::RInterpTo(GetMesh()->GetRelativeRotation(), Destination, DeltaTime, DampingSpeed));
+	GetMesh()->SetRelativeRotation(FMath::RInterpTo(GetMesh()->GetRelativeRotation(), Destination, DeltaTime, FMath::Abs(DampingSpeed)));
 }
 
 FRotator AFreeFallCharacter::GetPlayerDefaultRotation()
