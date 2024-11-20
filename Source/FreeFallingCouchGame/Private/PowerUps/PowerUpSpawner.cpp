@@ -62,6 +62,7 @@ void APowerUpSpawner::StopTimer()
 
 void APowerUpSpawner::FindPowerUpSpawnPoints()
 {
+	SpawnPointActors.Empty();
 	TArray<TObjectPtr<AActor>> ActorsFound;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APowerUpSpawnPoint::StaticClass(), ActorsFound);
 	for (TObjectPtr<AActor> ActorFound : ActorsFound)

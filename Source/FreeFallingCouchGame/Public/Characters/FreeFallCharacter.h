@@ -526,7 +526,11 @@ public:
 	
 	UPROPERTY()
 	TObjectPtr<UAnimSequence> QueuedAnimation;
+	
+	UPROPERTY()
+	TObjectPtr<UAnimSequence> PlayingAnimation;
 
+	
 	bool QueuedAnimationLooping = false;
 
 	UPROPERTY()
