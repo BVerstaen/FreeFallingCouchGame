@@ -3,6 +3,7 @@
 
 #include "PowerUps/PowerUpSpawner.h"
 
+#include "GameMode/FreeFallGameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "PowerUps/PowerUpCollectible.h"
 #include "PowerUps/PowerUpSpawnPoint.h"
@@ -20,8 +21,11 @@ void APowerUpSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//TODO: Pass this on GameMode
-	StartTimer();
+	//Start Timer after round start
+	if(AFreeFallGameMode* GameMode = Cast<AFreeFallGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
+	{
+		GameMode->OnStartRound.AddDynamic(this, &APowerUpSpawner::StartTimer);
+	}
 }
 
 // Called every frame
