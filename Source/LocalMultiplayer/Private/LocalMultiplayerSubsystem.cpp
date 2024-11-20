@@ -37,6 +37,7 @@ void ULocalMultiplayerSubsystem::ErasePlayers()
 	PlayerIndexFromGamepadProfileIndex.Empty();
 	PlayerIndexFromKeyboardProfileIndex.Empty();
 	LastAssignedPlayerIndex = -1;
+	NumberOfPlayers = 0;
 }
 
 
