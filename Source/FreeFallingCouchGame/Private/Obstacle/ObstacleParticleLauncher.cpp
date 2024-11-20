@@ -22,7 +22,7 @@ void AObstacleParticleLauncher::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SpawnParticle();
+	GetWorldTimerManager().SetTimer(LaunchProjectileTimerHandle, this, &AObstacleParticleLauncher::SpawnParticle, LaunchProjectileTimer, false);
 }
 
 // Called every frame
