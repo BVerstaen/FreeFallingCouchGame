@@ -37,8 +37,11 @@ void AObstacleSpawner::BeginPlay()
 
 void AObstacleSpawner::StartTimer()
 {
-	float SpawnDelay = FMath::RandRange(ObstacleMinTimer, ObstacleMaxTimer);
-	GetWorldTimerManager().SetTimer(SpawnTimer, this, &AObstacleSpawner::SpawnObstacle, SpawnDelay, false, SpawnDelay);
+	if(bPlaySpawnTimer)
+	{
+		float SpawnDelay = FMath::RandRange(ObstacleMinTimer, ObstacleMaxTimer);
+		GetWorldTimerManager().SetTimer(SpawnTimer, this, &AObstacleSpawner::SpawnObstacle, SpawnDelay, false, SpawnDelay);
+	}
 }
 
 void AObstacleSpawner::Tick(float DeltaTime)
