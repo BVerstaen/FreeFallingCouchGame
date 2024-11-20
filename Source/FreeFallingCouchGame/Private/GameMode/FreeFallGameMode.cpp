@@ -258,6 +258,11 @@ AParachute* AFreeFallGameMode::RespawnParachute(FVector SpawnLocation)
 	return GetWorld()->SpawnActorDeferred<AParachute>(MapSettings->ParachuteSubclass, SpawnTransform);
 }
 
+void AFreeFallGameMode::CallArenaActorOnCharacterDestroyed(AFreeFallCharacter* Character)
+{
+	ArenaActorInstance->OnCharacterDestroyed.Broadcast(Character);
+}
+
 AParachute* AFreeFallGameMode::GetParachuteInstance() const
 {
 	return ParachuteInstance;
@@ -403,7 +408,7 @@ void AFreeFallGameMode::SetupParameters(UMatchParameters *UserParameters)
 		CurrentParameters = NewObject<UMatchParameters>(UserParameters);
 
 	} else
-	{
+	{ 	
 		CurrentParameters = NewObject<UMatchParameters>(DefaultParameters);
 		CurrentParameters->Init(DefaultParameters);
 	}

@@ -20,12 +20,19 @@ void ABaseWarningActor::BeginPlay()
 	if(!DataHit.bBlockingHit /*|| !RootArrow->IsValidLowLevel()*/)
 		Destroy();
 	APlayerCameraManager *temp = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
+	if((DirectionObject.Z != 0))
+	{
+		WarningType = EWarningType::Vertical;
+		OverwriteWidgets();
+	}
+	/*
 	if((DirectionObject.Z > 0.5 || DirectionObject.Z < -0.5)
 		&& (DirectionObject.X == 0.0f && DirectionObject.Y == 0) )
 	{
 		WarningType = EWarningType::Vertical;
 		OverwriteWidgets();
 	}
+	 */
 	if(temp->IsValidLowLevel())
 	{
 		CameraManagerRef = temp;

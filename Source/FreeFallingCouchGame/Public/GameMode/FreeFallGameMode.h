@@ -98,6 +98,7 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UArenaObject> ArenaActorInstance;
 
+	
 	UPROPERTY()
 	TObjectPtr<ATrackerActor> TrackerActorInstance;
 
@@ -134,6 +135,10 @@ public:
 	//After Initiation, launches the timer and links events
 	UFUNCTION()
 	void StartRound();
+	
+	//DANS LE CODE, TERRIBLE CODE, L'ARCHITECTURE EST MORT CE SOIIIIIIR
+	UFUNCTION()
+	void CallArenaActorOnCharacterDestroyed(AFreeFallCharacter* Character);
 	
 private:
 	// Timers

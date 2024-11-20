@@ -46,11 +46,17 @@ void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousS
 		{
 			case EFreeFallCharacterGrabbingState::GrabPlayer:
 				ReleasePlayerGrab(PreviousStateID);
+
+				//Play end grab animation
+				Character->PlayAnimation(EndGrabAnimation, false, true);
 				break;
 			
 			case EFreeFallCharacterGrabbingState::GrabObject:
 			case EFreeFallCharacterGrabbingState::GrabHeavierObject:
 				ReleaseObjectGrab(PreviousStateID);
+
+				//Play end grab animation
+				Character->PlayAnimation(EndGrabAnimation, false, true);
 				break;
 			
 			case EFreeFallCharacterGrabbingState::None:
@@ -65,9 +71,31 @@ void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousS
 	
 	//Check if caught character
 	if(Character->GrabbingState == EFreeFallCharacterGrabbingState::None)
-		PlayerGrab();
+	{
+		if(PlayerGrab())
+		{
+			//play normal successful grab effect
+
+			//Play grab sound
+			USoundSubsystem* SoundSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USoundSubsystem>();
+			SoundSubsystem->PlaySound("SFX_PLR_Grab_ST", Character, true);
+
+			//Play start grab animation
+			Character->PlayAnimation(StartGrabAnimation, false, true);
+		}
+	}
 	if(Character->GrabbingState == EFreeFallCharacterGrabbingState::None)
-		ObjectGrab();
+	{
+		if(ObjectGrab())
+		{
+			//Play grab sound
+			USoundSubsystem* SoundSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USoundSubsystem>();
+			SoundSubsystem->PlaySound("SFX_PLR_Grab_ST", Character, true);
+
+			//Play start grab animation
+			Character->PlayAnimation(StartGrabAnimation, false, true);
+		}
+	}
 	ExitStateConditions();
 }
 
@@ -184,7 +212,7 @@ void UFreeFallCharacterStateGrab::ReleasePlayerGrab(EFreeFallCharacterStateID Pr
 
 		//Play push sound
 		USoundSubsystem* SoundSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USoundSubsystem>();
-		SoundSubsystem->PlaySound("VOC_PLR_Push_ST", Character, true);
+		SoundSubsystem->PlaySound("SFX_PLR_Collision_ST", Character, true);
 		
 		//Remove references
 		Character->OtherCharacterGrabbing->StopEffectDeGrab();
@@ -226,20 +254,25 @@ void UFreeFallCharacterStateGrab::ReleaseObjectGrab(EFreeFallCharacterStateID Pr
 	Character->GrabbingState = EFreeFallCharacterGrabbingState::None;
 }
 
-void UFreeFallCharacterStateGrab::PlayerGrab() const
+bool UFreeFallCharacterStateGrab::PlayerGrab() const
 {
 	//Find player to grab
  	AFreeFallCharacter* FoundCharacter = FindPlayerToGrab();
-	if(!FoundCharacter) return;
+	if(!FoundCharacter) return false;
+	
+	//If found player has slurp
 	if (!FoundCharacter->bIsGrabbable)
 	{
 		USoundSubsystem* SoundSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USoundSubsystem>();
 		SoundSubsystem->PlaySound("SFX_PLR_SlurpGrab_ST", Character, true);
-		return;
+
+		//Play start grab animation
+		Character->PlayAnimation(StartGrabAnimation, false, true);
+		return false;
 	}
 	
 	//Can't grab the one I'm grabbing
-	if(FoundCharacter == Character->OtherCharacterGrabbedBy) return;
+	if(FoundCharacter == Character->OtherCharacterGrabbedBy) return false;
 
 	//Steal Parachute if has one
 	if(FoundCharacter->Parachute)
@@ -278,30 +311,28 @@ void UFreeFallCharacterStateGrab::PlayerGrab() const
 	//Set Degrab counter
 	FoundCharacter->ActivateDeGrab();
 	
-	//Play grab sound
-	USoundSubsystem* SoundSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USoundSubsystem>();
-	SoundSubsystem->PlaySound("VOC_PLR_Death_ST", Character, true);
+	return true;
 }
 
-void UFreeFallCharacterStateGrab::ObjectGrab() const
+bool UFreeFallCharacterStateGrab::ObjectGrab() const
 {
 	//Find actor to grab
 	AActor* FoundActor = FindActorToGrab();
-	if(!FoundActor) return;
+	if(!FoundActor) return false;
 
 	//If so, check if has grabbable interface
 	IGrabbableInterface* IGrabbableActor = Cast<IGrabbableInterface>(FoundActor);
-	if(!IGrabbableActor) return;
+	if(!IGrabbableActor) return false;
 
 	//If so, check if can be taken
 	if(IGrabbableActor->CanBeTaken())
 	{
 		IGrabbableActor->Use(Character);
-		return;
+		return false;
 	}
 	
 	//Else check if can be grabbed
-	if(!IGrabbableActor->CanBeGrabbed()) return;
+	if(!IGrabbableActor->CanBeGrabbed()) return false;
 	Character->OtherObject = FoundActor;
 		
 	//If is an obstacle
@@ -328,4 +359,6 @@ void UFreeFallCharacterStateGrab::ObjectGrab() const
 			Character->OtherObject->DetachFromActor(DetachmentRules);
 		}
 	}
+	
+	return true;
 }

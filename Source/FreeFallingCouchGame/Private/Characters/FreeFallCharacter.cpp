@@ -104,12 +104,16 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 	switch (GrabbingState)
 	{
 	case EFreeFallCharacterGrabbingState::None:
+		break;
 	case EFreeFallCharacterGrabbingState::GrabPlayer:
+		PlayAnimation(MidGrabAnimation, true, false);
 		break;
 	case EFreeFallCharacterGrabbingState::GrabHeavierObject:
+		PlayAnimation(MidGrabAnimation, true, false);
 		UpdateHeavyObjectPosition(DeltaTime);
 		break;
 	case EFreeFallCharacterGrabbingState::GrabObject:
+		PlayAnimation(MidGrabAnimation, true, false);
 		UpdateObjectPosition(DeltaTime);
 		break;
 	}
@@ -191,7 +195,7 @@ void AFreeFallCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 void AFreeFallCharacter::InterpMeshPlayer(FRotator Destination, float DeltaTime, float DampingSpeed)
 {
-	GetMesh()->SetRelativeRotation(FMath::RInterpTo(GetMesh()->GetRelativeRotation(), Destination, DeltaTime, DampingSpeed));
+	GetMesh()->SetRelativeRotation(FMath::RInterpTo(GetMesh()->GetRelativeRotation(), Destination, DeltaTime, FMath::Abs(DampingSpeed)));
 }
 
 FRotator AFreeFallCharacter::GetPlayerDefaultRotation()
@@ -380,12 +384,14 @@ float AFreeFallCharacter::GetInputDive()
 
 void AFreeFallCharacter::SetDiveMaterialColor()
 {
+	/*
 	if (DiveMaterialInstance == nullptr || DiveLevelsActor == nullptr) return;
 	EDiveLayersID DiveLayer = DiveLevelsActor->GetDiveLayersFromCoord(GetActorLocation().Z);
 	if (DiveLevelsColors.Contains(DiveLayer))
 	{
 		DiveMaterialInstance->SetVectorParameterValue("MaterialColor", DiveLevelsColors[DiveLayer]);
 	}
+	*/
 }
 
 ADiveLevels* AFreeFallCharacter::GetDiveLevelsActor() const
@@ -859,7 +865,6 @@ void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBou
 		if (!OtherFreeFallCharacter->bAlreadyCollided)
 		{
 			OtherFreeFallCharacter->BounceCooldown();
-			OtherFreeFallCharacter->PlayAnimation(DamageAnimation, false, true);
 		}
 
 		//Play player bounce
@@ -965,6 +970,7 @@ void AFreeFallCharacter::OnInputUsePowerUp(const FInputActionValue& Value)
 void AFreeFallCharacter::PlayAnimation(UAnimSequence* Animation, bool Looping, bool BlockUntilEndOfAnim, float AnimationDuration)
 {
 	if(!Animation) return;
+	if(PlayingAnimation == Animation) return;
 	
 	//Leave to queued if animation's blocked
 	if(bBlockNewAnimation)
@@ -976,6 +982,7 @@ void AFreeFallCharacter::PlayAnimation(UAnimSequence* Animation, bool Looping, b
 
 	//Play animation
 	GetMesh()->PlayAnimation(Animation, Looping);
+	PlayingAnimation = Animation;
 
 	//Block new animation & wait until end of anim
 	if(BlockUntilEndOfAnim)
@@ -985,6 +992,7 @@ void AFreeFallCharacter::PlayAnimation(UAnimSequence* Animation, bool Looping, b
 			AnimationDuration = Animation->GetPlayLength();
 
 		bBlockNewAnimation = true;
+		QueuedAnimation = nullptr;
 		GetWorldTimerManager().SetTimer(BlockUntilEndOfAnimTimerHandle, this, &AFreeFallCharacter::RestoreAnimation, AnimationDuration);
 	}
 

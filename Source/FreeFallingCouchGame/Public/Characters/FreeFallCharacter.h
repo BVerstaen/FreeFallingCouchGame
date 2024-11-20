@@ -43,7 +43,8 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 #pragma endregion
-
+protected:
+	
 public:
 	void DestroyPlayer();
 
@@ -308,6 +309,9 @@ public:
 
 	UPROPERTY()	
 	bool bIsGrabbable = true;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UAnimSequence> MidGrabAnimation;
 	
 	FVector GrabHeavyObjectRelativeLocationPoint;
 	
@@ -526,7 +530,11 @@ public:
 	
 	UPROPERTY()
 	TObjectPtr<UAnimSequence> QueuedAnimation;
+	
+	UPROPERTY()
+	TObjectPtr<UAnimSequence> PlayingAnimation;
 
+	
 	bool QueuedAnimationLooping = false;
 
 	UPROPERTY()

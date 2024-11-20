@@ -92,6 +92,8 @@ public:
 	UFUNCTION()
 	void SetupWarning(FVector ImpulseVector, FVector InDirection);
 
+	UFUNCTION()
+	void DebugRayTrace(TArray<FHitResult> RV_Hits, FVector const& EndLocation);
 #pragma region Bounceable
 public:
 	
