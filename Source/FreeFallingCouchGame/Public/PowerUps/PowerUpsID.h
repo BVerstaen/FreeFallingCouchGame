@@ -14,5 +14,6 @@ enum class EPowerUpsID : uint8
 	Smaller = 1,
 	Duplicate = 2,
 	Angry = 3,
-	Soap = 4
+	Soap = 4,
+	Dash = 5
 };
