@@ -18,6 +18,7 @@
 #include "Other/DiveLevels.h"
 #include "Other/Parachute.h"
 #include "PowerUps/PowerUpObject.h"
+#include "PowerUps/PowerUpsID.h"
 #include "Settings/CharactersSettings.h"
 
 
@@ -384,12 +385,14 @@ float AFreeFallCharacter::GetInputDive()
 
 void AFreeFallCharacter::SetDiveMaterialColor()
 {
+	/*
 	if (DiveMaterialInstance == nullptr || DiveLevelsActor == nullptr) return;
 	EDiveLayersID DiveLayer = DiveLevelsActor->GetDiveLayersFromCoord(GetActorLocation().Z);
 	if (DiveLevelsColors.Contains(DiveLayer))
 	{
 		DiveMaterialInstance->SetVectorParameterValue("MaterialColor", DiveLevelsColors[DiveLayer]);
 	}
+	*/
 }
 
 ADiveLevels* AFreeFallCharacter::GetDiveLevelsActor() const
@@ -931,6 +934,7 @@ void AFreeFallCharacter::SetPowerUp(UPowerUpObject* PowerUpObject)
 	if (CurrentPowerUp != nullptr) CurrentPowerUp->PrepareForDestruction();
 	CurrentPowerUp = PowerUpObject;
 	OnTakePowerUp.Broadcast(this);
+	UpdatePowerUpUI(CurrentPowerUp? CurrentPowerUp->GetPowerUpID() : EPowerUpsID::None);
 }
 
 void AFreeFallCharacter::BindInputUsePowerUpActions(UEnhancedInputComponent* EnhancedInputComponent)

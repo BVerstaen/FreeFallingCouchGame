@@ -33,10 +33,17 @@ public:
 	/*la durée de vie de la particule (Détruira l'objet à la fin du timer)*/
 	UPROPERTY(EditAnywhere)
 	float LifeTime = -1.0f;
+
+	/*la durée avant de lancer les projectiles*/
+	UPROPERTY(EditAnywhere)
+	float LaunchProjectileTimer = 1.0f;
 	
 	UPROPERTY()
 	FTimerHandle LifeTimerHandle;
 
+	UPROPERTY()
+	FTimerHandle LaunchProjectileTimerHandle;
+	
 protected:
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<UNiagaraComponent> EffectInstance; 

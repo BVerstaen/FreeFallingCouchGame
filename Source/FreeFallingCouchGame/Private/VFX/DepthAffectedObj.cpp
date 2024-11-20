@@ -23,7 +23,6 @@ void UDepthAffectedObj::BeginPlay()
     		MeshToChg = Owner->FindComponentByClass<UMeshComponent>();
     		if(MeshToChg->IsValidLowLevel())
     		{
-    		    //TODO Enable RenderDepthPass MeshToChg
     			MeshToChg->SetRenderInDepthPass(true);
     		} else {
     			PrimaryComponentTick.bCanEverTick = false;
