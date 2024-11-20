@@ -407,7 +407,7 @@ void AFreeFallGameMode::SetupParameters(UMatchParameters *UserParameters)
 		CurrentParameters = NewObject<UMatchParameters>(UserParameters);
 
 	} else
-	{
+	{ 	
 		CurrentParameters = NewObject<UMatchParameters>(DefaultParameters);
 		CurrentParameters->Init(DefaultParameters);
 	}

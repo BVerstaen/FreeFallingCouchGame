@@ -43,7 +43,8 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 #pragma endregion
-
+protected:
+	
 public:
 	void DestroyPlayer();
 
