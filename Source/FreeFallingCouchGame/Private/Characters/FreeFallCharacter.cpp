@@ -104,12 +104,16 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 	switch (GrabbingState)
 	{
 	case EFreeFallCharacterGrabbingState::None:
+		break;
 	case EFreeFallCharacterGrabbingState::GrabPlayer:
+		PlayAnimation(MidGrabAnimation, true, false);
 		break;
 	case EFreeFallCharacterGrabbingState::GrabHeavierObject:
+		PlayAnimation(MidGrabAnimation, true, false);
 		UpdateHeavyObjectPosition(DeltaTime);
 		break;
 	case EFreeFallCharacterGrabbingState::GrabObject:
+		PlayAnimation(MidGrabAnimation, true, false);
 		UpdateObjectPosition(DeltaTime);
 		break;
 	}

@@ -308,6 +308,9 @@ public:
 
 	UPROPERTY()	
 	bool bIsGrabbable = true;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UAnimSequence> MidGrabAnimation;
 	
 	FVector GrabHeavyObjectRelativeLocationPoint;
 	
