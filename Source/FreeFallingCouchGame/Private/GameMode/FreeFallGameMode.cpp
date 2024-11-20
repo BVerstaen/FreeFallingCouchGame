@@ -258,6 +258,11 @@ AParachute* AFreeFallGameMode::RespawnParachute(FVector SpawnLocation)
 	return GetWorld()->SpawnActorDeferred<AParachute>(MapSettings->ParachuteSubclass, SpawnTransform);
 }
 
+void AFreeFallGameMode::CallArenaActorOnCharacterDestroyed(AFreeFallCharacter* Character)
+{
+	ArenaActorInstance->OnCharacterDestroyed.Broadcast(Character);
+}
+
 AParachute* AFreeFallGameMode::GetParachuteInstance() const
 {
 	return ParachuteInstance;

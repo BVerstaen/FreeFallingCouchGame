@@ -5,6 +5,8 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Characters/FreeFallCharacter.h"
+#include "GameMode/FreeFallGameMode.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 
@@ -70,7 +72,11 @@ void AObstacleParticleLauncher::ReceiveParticleData_Implementation(const TArray<
 		AFreeFallCharacter* FoundCharacter = GetHitPlayer(Particle.Position, Particle.Velocity);
 		if(!FoundCharacter) return;
 
-		FoundCharacter->DestroyPlayer();
+		if(AFreeFallGameMode* GameMode = Cast<AFreeFallGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
+		{
+			GameMode->CallArenaActorOnCharacterDestroyed(FoundCharacter);
+			FoundCharacter->DestroyPlayer();
+		}
 	}
 }
 
