@@ -54,6 +54,25 @@ void AFreeFallGameMode::Init()
 	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
 	ULocalMultiplayerSubsystem* LocalMultiplayerSubsystem = GetGameInstance()->GetSubsystem<ULocalMultiplayerSubsystem>();
 	LocalMultiplayerSubsystem->bCanCreateNewPlayer = MapSettings->bActivateControlsInGame;
+
+	// receive match data from GameDataInstanceSubsystem and check its validity to start the match, Setup CurrentParameters Object
+	GameDataSubsystem = GetGameInstance()->GetSubsystem<UGameDataInstanceSubsystem>();
+	if(GameDataSubsystem->IsValidLowLevel())
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Blue, TEXT("Subsystem valid, checking match data"));
+		UMatchParameters* refParameters = GameDataSubsystem->GetMatchParameters();
+		if(refParameters->IsValidLowLevel())
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Blue, TEXT("Data received valid, starting with Subsystem parameters"));
+			SetupParameters(refParameters);
+		} else {
+			GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("Data not received, starting with default parameters"));
+			SetupParameters(nullptr);
+		}
+	} else {
+		GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("Subsystem invalid, starting with default parameters"));
+		SetupParameters(nullptr);
+	}
 	
 	//TODO Find way to receive player made modifications
 
@@ -276,25 +295,6 @@ void AFreeFallGameMode::StartMatch()
 {
 	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
 	if(!MapSettings) return;
-
-	// receive match data from GameDataInstanceSubsystem and check its validity to start the match
-	GameDataSubsystem = GetGameInstance()->GetSubsystem<UGameDataInstanceSubsystem>();
-	if(GameDataSubsystem->IsValidLowLevel())
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Blue, TEXT("Subsystem valid, checking match data"));
-		UMatchParameters* refParameters = GameDataSubsystem->GetMatchParameters();
-		if(refParameters->IsValidLowLevel())
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Blue, TEXT("Data received valid, starting with Subsystem parameters"));
-			SetupMatch(refParameters);
-		} else {
-			GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("Data not received, starting with default parameters"));
-			SetupMatch(nullptr);
-		}
-	} else {
-		GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("Subsystem invalid, starting with default parameters"));
-		SetupMatch(nullptr);
-	}
 	
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------MATCH START--------------------"));
 
@@ -393,7 +393,7 @@ void AFreeFallGameMode::StartRound()
 	}
 }
 //void AFreeFallGameMode::SetupMatch(TSubclassOf<UMatchParameters> UserParameters)
-void AFreeFallGameMode::SetupMatch(UMatchParameters *UserParameters)
+void AFreeFallGameMode::SetupParameters(UMatchParameters *UserParameters)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "SetupMatch");
 	// Get Values passed in selection screen

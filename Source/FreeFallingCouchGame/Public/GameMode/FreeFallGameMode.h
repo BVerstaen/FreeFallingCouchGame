@@ -185,7 +185,7 @@ private:
 	void CheckEndRoundDeath(AFreeFallCharacter* Character);
 	// Sets up the values for the match & rounds to follow
 	//void SetupMatch(TSubclassOf<UMatchParameters> UserParameters);
-	void SetupMatch(UMatchParameters *UserParameters);
+	void SetupParameters(UMatchParameters *UserParameters);
 	
 #pragma endregion
 
