@@ -48,6 +48,20 @@ void AObstacle::BeginPlay()
 	}
 }
 
+void AObstacle::DebugRayTrace(TArray<FHitResult> RV_Hits, FVector const& EndLocation)
+{
+	if (RV_Hits.GetData()[0].IsValidBlockingHit())
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Hit detected"));
+		DrawDebugLine(GetWorld(), GetActorLocation(), EndLocation, FColor::Green, false, 5.0f, 0, 5.0f);
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No hit detected"));
+		DrawDebugLine(GetWorld(), GetActorLocation(), EndLocation, FColor::Red, false, 5.0f, 0, 5.0f);
+	}
+}
+
 void AObstacle::SetupWarning(FVector ImpulseVector, FVector InDirection)
 {
 	//Setup parameters
@@ -66,7 +80,7 @@ void AObstacle::SetupWarning(FVector ImpulseVector, FVector InDirection)
 		ECC_GameTraceChannel2,
 		RV_TraceParams
 		);
-	DrawDebugLine(GetWorld(), GetActorLocation(), EndLocation, FColor::Red, false, 2.0f);
+	//DrawDebugLine(GetWorld(), GetActorLocation(), EndLocation, FColor::Red, false, 2.0f);
 	if(!RV_Hits.IsEmpty())
 	{
 		for (const FHitResult& Hit : RV_Hits)
@@ -74,16 +88,7 @@ void AObstacle::SetupWarning(FVector ImpulseVector, FVector InDirection)
 			UE_LOG(LogTemp, Warning, TEXT("Hit Actor: %s, Channel: %d"), *Hit.GetActor()->GetName(), (int32)Hit.GetComponent()->GetCollisionObjectType());
 		}
 		
-		if (RV_Hits.GetData()[0].IsValidBlockingHit())
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Hit detected"));
-			DrawDebugLine(GetWorld(), GetActorLocation(), EndLocation, FColor::Green, false, 5.0f, 0, 5.0f);
-		}
-		else
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No hit detected"));
-			DrawDebugLine(GetWorld(), GetActorLocation(), EndLocation, FColor::Red, false, 5.0f, 0, 5.0f);
-		}
+		//DebugRayTrace(RV_Hits, EndLocation);
 		// Initiate Warning actor
 		TSubclassOf<ABaseWarningActor> ThingToSpawn = ABaseWarningActor::StaticClass();
 		
@@ -94,8 +99,8 @@ void AObstacle::SetupWarning(FVector ImpulseVector, FVector InDirection)
 			ThingToSpawn,
 			SpawnTransform
 			);
-		GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Cyan, FString::Printf(
-		TEXT("Vector of X:%f Y:%f Z:%f value "),InDirection.X,InDirection.Y,InDirection.Z));
+		//GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Cyan, FString::Printf(
+		//TEXT("Vector of X:%f Y:%f Z:%f value "),InDirection.X,InDirection.Y,InDirection.Z));
 		LinkedWarningActor->SetDirection(InDirection);
 		LinkedWarningActor->SetHitResult(RV_Hits.GetData()[0]);
 		LinkedWarningActor->SetLinkedObstacle(this);
