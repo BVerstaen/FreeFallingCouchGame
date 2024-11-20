@@ -195,5 +195,9 @@ public:
 	UFUNCTION()
 	void BeginFirstRound(AFreeFallCharacter* NewOwner);
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "InGameUI")
+	void ShowInGameUI();
+
+
 #pragma endregion 
 };

@@ -391,6 +391,7 @@ void AFreeFallGameMode::StartRound()
 	{
 		OnStartRound.Broadcast();
 	}
+	ShowInGameUI();
 }
 //void AFreeFallGameMode::SetupMatch(TSubclassOf<UMatchParameters> UserParameters)
 void AFreeFallGameMode::SetupParameters(UMatchParameters *UserParameters)
