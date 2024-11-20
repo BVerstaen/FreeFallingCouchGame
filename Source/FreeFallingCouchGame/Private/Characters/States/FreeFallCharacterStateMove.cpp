@@ -19,6 +19,11 @@ void UFreeFallCharacterStateMove::StateEnter(EFreeFallCharacterStateID PreviousS
 {
 	Super::StateEnter(PreviousStateID);
 
+	if(Character->GetLockControls())
+	{
+		Character->GetStateMachine()->ChangeState(EFreeFallCharacterStateID::Idle);
+		return;
+	}
 	
 	//Character->GetCharacterMovement()->MaxFlySpeed = StartMoveSpeed;
 	Character->OnInputGrabEvent.AddDynamic(this, &UFreeFallCharacterStateMove::OnInputGrab);

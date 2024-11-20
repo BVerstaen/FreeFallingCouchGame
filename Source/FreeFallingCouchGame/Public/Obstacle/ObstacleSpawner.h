@@ -78,6 +78,9 @@ private:
 	FVector GetRandomLocationSpawnVector() const;
 	
 public:
+	UFUNCTION()
+	void StartTimer();
+	
 	UFUNCTION(BlueprintCallable)
 	void SpawnObstacle();
 	UFUNCTION(BlueprintCallable, CallInEditor)

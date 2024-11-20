@@ -29,6 +29,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void GivePowerToCharacter(AFreeFallCharacter* Character);
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDestruction);
+	FOnDestruction OnDestructionEvent;
 	
 	UFUNCTION(BlueprintCallable)
 	void RemoveCharacterFromOverlappingCharacters(AFreeFallCharacter* Character);

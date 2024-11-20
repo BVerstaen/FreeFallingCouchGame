@@ -50,6 +50,9 @@ public:
 
 	UPROPERTY()
 	TEnumAsByte<ELocalMultiplayerInputMappingType> CurrentMappingType;
+
+	UFUNCTION(BlueprintCallable)
+	void SetCanCreateNewPlayer(bool canCreate);
 	
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNewPlayerCreated, int, NewPlayerID);
 	UPROPERTY(BlueprintAssignable)

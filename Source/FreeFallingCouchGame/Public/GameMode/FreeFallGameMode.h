@@ -60,7 +60,7 @@ private:
 
 	TSubclassOf<AFreeFallCharacter> GetFreeFallCharacterClassFromInputType(EAutoReceiveInput::Type InputType) const;
 
-	void SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints);
+	void SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints, bool bLockControls = false);
 
 	bool GetCharacterInvertDiveInput(int PlayerIndex);
 	
@@ -185,7 +185,15 @@ private:
 	void CheckEndRoundDeath(AFreeFallCharacter* Character);
 	// Sets up the values for the match & rounds to follow
 	//void SetupMatch(TSubclassOf<UMatchParameters> UserParameters);
-	void SetupMatch(UMatchParameters *UserParameters);
+	void SetupParameters(UMatchParameters *UserParameters);
 	
 #pragma endregion
+
+#pragma region PreFirstRound
+
+public:
+	UFUNCTION()
+	void BeginFirstRound(AFreeFallCharacter* NewOwner);
+
+#pragma endregion 
 };

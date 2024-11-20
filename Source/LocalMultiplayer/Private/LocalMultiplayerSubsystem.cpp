@@ -112,3 +112,8 @@ void ULocalMultiplayerSubsystem::AssignGamepadInputMapping(int PlayerIndex, ELoc
 	FModify.bForceImmediately = true;
 	PlayerSubsystem->AddMappingContext(IMC, 1, FModify);
 }
+
+void ULocalMultiplayerSubsystem::SetCanCreateNewPlayer(bool canCreate)
+{
+	bCanCreateNewPlayer = canCreate;
+}

@@ -4,6 +4,8 @@
 #include "Obstacle/ObstacleSpawner.h"
 
 #include "Audio/SoundSubsystem.h"
+#include "GameMode/FreeFallGameMode.h"
+#include "Kismet/GameplayStatics.h"
 
 AObstacleSpawner::AObstacleSpawner()
 {
@@ -25,9 +27,18 @@ void AObstacleSpawner::BeginPlay()
 	//Set spawner timer
 	if(bPlaySpawnTimer)
 	{
-		float SpawnDelay = FMath::RandRange(ObstacleMinTimer, ObstacleMaxTimer);
-		GetWorldTimerManager().SetTimer(SpawnTimer, this, &AObstacleSpawner::SpawnObstacle, SpawnDelay, false, SpawnDelay);
+		//Start Timer after round start
+		if(AFreeFallGameMode* GameMode = Cast<AFreeFallGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
+		{
+			GameMode->OnStartRound.AddDynamic(this, &AObstacleSpawner::StartTimer);
+		}
 	}
+}
+
+void AObstacleSpawner::StartTimer()
+{
+	float SpawnDelay = FMath::RandRange(ObstacleMinTimer, ObstacleMaxTimer);
+	GetWorldTimerManager().SetTimer(SpawnTimer, this, &AObstacleSpawner::SpawnObstacle, SpawnDelay, false, SpawnDelay);
 }
 
 void AObstacleSpawner::Tick(float DeltaTime)
@@ -45,6 +56,7 @@ FVector AObstacleSpawner::GetRandomLocationSpawnVector() const
 		);
 	return GetTransform().GetLocation() + LocalRandomPosition; 
 }
+
 
 void AObstacleSpawner::SpawnObstacle()
 {
