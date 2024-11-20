@@ -5,10 +5,12 @@
 #include "CoreMinimal.h"
 #include "NiagaraSystem.h"
 #include "Obstacle.h"
+#include "NiagaraComponent.h"
+#include "NiagaraDataInterfaceExport.h"
 #include "ObstacleParticleLauncher.generated.h"
 
 UCLASS()
-class FREEFALLINGCOUCHGAME_API AObstacleParticleLauncher : public AObstacle
+class FREEFALLINGCOUCHGAME_API AObstacleParticleLauncher : public AObstacle, public INiagaraParticleCallbackHandler
 {
 	GENERATED_BODY()
 
@@ -42,13 +44,19 @@ protected:
 public:
 	UFUNCTION()
 	void SpawnParticle();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void InitParticleBlueprint();
 	
 	UFUNCTION()
 	void HitPlayer(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 	
 	UFUNCTION()
 	void LifeTimeEnd();
+
+	UFUNCTION()
+	virtual void ReceiveParticleData_Implementation(const TArray<FBasicParticleData>& Data, UNiagaraSystem* NiagaraSystem, const FVector& SimulationPositionOffset) override;
+
+	UFUNCTION()
+	AFreeFallCharacter* GetHitPlayer(FVector StartPosition, FVector Velocity);
+
+	UPROPERTY(EditAnywhere)
+	float CheckForwardDistance;
 };

@@ -5,6 +5,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Characters/FreeFallCharacter.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 
 // Sets default values
@@ -36,7 +37,7 @@ void AObstacleParticleLauncher::SpawnParticle()
 	{
 		EffectInstance->Activate();
 		EffectInstance->OnComponentHit.AddDynamic(this, &AObstacleParticleLauncher::HitPlayer);
-		InitParticleBlueprint();
+		EffectInstance->SetVariableObject("BPCallBackHandler", this);
 	}
 	
 	//Play lifetime timer
@@ -57,5 +58,49 @@ void AObstacleParticleLauncher::LifeTimeEnd()
 	if(EffectInstance)
 		EffectInstance->DestroyInstance();
 	Destroy();
+}
+
+void AObstacleParticleLauncher::ReceiveParticleData_Implementation(const TArray<FBasicParticleData>& Data,
+	UNiagaraSystem* NiagaraSystem, const FVector& SimulationPositionOffset)
+{
+	INiagaraParticleCallbackHandler::ReceiveParticleData_Implementation(Data, NiagaraSystem, SimulationPositionOffset);
+
+	for(FBasicParticleData Particle : Data)
+	{
+		AFreeFallCharacter* FoundCharacter = GetHitPlayer(Particle.Position, Particle.Velocity);
+		if(!FoundCharacter) return;
+
+		FoundCharacter->DestroyPlayer();
+	}
+}
+
+AFreeFallCharacter* AObstacleParticleLauncher::GetHitPlayer(FVector StartPosition, FVector Velocity)
+{
+	
+	FVector EndPosition = StartPosition - Velocity.GetSafeNormal() * CheckForwardDistance;
+	TArray<TEnumAsByte<EObjectTypeQuery>> traceObjectTypes;
+	traceObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
+	TArray<AActor*> ignoreActors;
+	FHitResult HitResult;
+	
+	bool bHasHit = UKismetSystemLibrary::LineTraceSingleForObjects(
+														GetWorld(),
+														StartPosition,
+														EndPosition,
+														traceObjectTypes,
+														false,
+														ignoreActors,
+														EDrawDebugTrace::Persistent,
+														HitResult,
+														true);
+	
+	if (bHasHit)
+	{
+		if(AFreeFallCharacter* OtherActor =  Cast<AFreeFallCharacter>(HitResult.GetActor()))
+		{
+			return OtherActor;
+		}
+	}
+	return nullptr;
 }
 
