@@ -86,3 +86,14 @@ void APowerUpCollectible::RemoveCharacterFromOverlappingCharacters(AFreeFallChar
 	}
 }
 
+EPowerUpsID APowerUpCollectible::GetPowerUpID()
+{
+	return PowerUpID;
+}
+
+void APowerUpCollectible::SetPowerUp(EPowerUpsID ID, TSubclassOf<UPowerUpObject> Object)
+{
+	PowerUpObject = Object;
+	PowerUpID = ID;
+}
+

@@ -47,10 +47,12 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 	{
 		int GamepadID = EventArgs.InputDevice.GetId();
 		int PlayerIndex = LocalMultiplayerSubsystem->GetAssignedPlayerIndexFromGamepadDeviceID(GamepadID);
-		if(PlayerIndex < 0)
+		if(PlayerIndex < 0 && LocalMultiplayerSubsystem->bCanCreateNewPlayer)
 		{
 			PlayerIndex = LocalMultiplayerSubsystem->AssignNewPlayerToGamepadDeviceID(GamepadID);
 			LocalMultiplayerSubsystem->AssignGamepadInputMapping(PlayerIndex, LocalMultiplayerSubsystem->CurrentMappingType);
+
+			GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Red, "GamePad Player Index :" + FString::FromInt(PlayerIndex));
 
 			LocalMultiplayerSubsystem->NumberOfPlayers++;
 			LocalMultiplayerSubsystem->OnNewPlayerCreated.Broadcast(PlayerIndex);
