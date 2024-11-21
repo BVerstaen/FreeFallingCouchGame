@@ -29,11 +29,11 @@ public:
 
 	int AssignNewPlayerToGamepadDeviceID(int DeviceID);
 
-	void AssignGamepadInputMapping(int PlayerIndex, ELocalMultiplayerInputMappingType MappingType) const;
+	void AssignGamepadInputMapping(int PlayerIndex, int DeviceID, ELocalMultiplayerInputMappingType MappingType) const;
 
 protected:
 	UPROPERTY()
-	uint8 LastAssignedPlayerIndex = -1;
+	int LastAssignedPlayerIndex = -1;
 
 	UPROPERTY()
 	TMap<int, int> PlayerIndexFromKeyboardProfileIndex;
@@ -57,4 +57,7 @@ public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNewPlayerCreated, int, NewPlayerID);
 	UPROPERTY(BlueprintAssignable)
 	FOnNewPlayerCreated OnNewPlayerCreated;
+
+	UFUNCTION()
+	bool IsPlayerLimitReached();
 };
