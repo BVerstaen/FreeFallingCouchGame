@@ -68,6 +68,8 @@ void ULocalMultiplayerSubsystem::AssignKeyboardMapping(int PlayerIndex, int Keyb
 	if(LocalPlayer == nullptr) return;
 	UEnhancedInputLocalPlayerSubsystem* PlayerSubsystem = LocalPlayer->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
 	if(PlayerSubsystem == nullptr) return;
+
+	if(KeyboardProfileIndex > LocalMultiplayerSettings->KeyboardProfilesData.Num() || KeyboardProfileIndex < 0) return;
 	
 	UInputMappingContext* IMC = LocalMultiplayerSettings->KeyboardProfilesData[KeyboardProfileIndex].GetIMCFromType(MappingType);
 	if(IMC == nullptr) return;
