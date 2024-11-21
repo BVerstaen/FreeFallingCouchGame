@@ -77,10 +77,15 @@ bool ULocalMultiplayerGameViewportClient::InputAxis(FViewport* InViewport, FInpu
 	{
 		int GamepadID = InputDevice.GetId();
 		int PlayerIndex = LocalMultiplayerSubsystem->GetAssignedPlayerIndexFromGamepadDeviceID(GamepadID);
-		if(PlayerIndex < 0)
+		if(PlayerIndex < 0 && LocalMultiplayerSubsystem->bCanCreateNewPlayer)
 		{
 			PlayerIndex = LocalMultiplayerSubsystem->AssignNewPlayerToGamepadDeviceID(GamepadID);
 			LocalMultiplayerSubsystem->AssignGamepadInputMapping(PlayerIndex, InGame);
+			
+			GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Red, "GamePad Player Index :" + FString::FromInt(PlayerIndex));
+			
+			LocalMultiplayerSubsystem->NumberOfPlayers++;
+			LocalMultiplayerSubsystem->OnNewPlayerCreated.Broadcast(PlayerIndex);
 		}
 		
 		return UGameplayStatics::GetPlayerController(GetGameInstance()->GetWorld(), PlayerIndex)->InputAxis(
