@@ -48,11 +48,12 @@ int ULocalMultiplayerSubsystem::GetAssignedPlayerIndexFromKeyboardProfileIndex(i
 		return PlayerIndexFromKeyboardProfileIndex[keyboardProfileIndex];
 	}
 	return -1;
-}
+}	
 
 int ULocalMultiplayerSubsystem::AssignNewPlayerToKeyboardProfile(int KeyboardProfileIndex)
 {
 	LastAssignedPlayerIndex++;
+	GEngine->AddOnScreenDebugMessage(-1,15.0f,FColor::Yellow, FString::FromInt(LastAssignedPlayerIndex));
 	PlayerIndexFromKeyboardProfileIndex.Add(KeyboardProfileIndex, LastAssignedPlayerIndex);
 
 	//GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Red, "LAPI :" + FString::FromInt(LastAssignedPlayerIndex));
