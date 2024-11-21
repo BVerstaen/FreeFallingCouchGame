@@ -301,7 +301,7 @@ void AFreeFallGameMode::StartMatch()
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------MATCH START--------------------"));
 
 	//Reset next parachute holder ID
-	NextParachuteHolderID = -1;
+	GameDataSubsystem->NextParachuteHolderID = -1;
 	
 	//Spawn Characters for pre match
 	TArray<APlayerStart*> PlayerStartsPoints;
@@ -319,7 +319,7 @@ void AFreeFallGameMode::BeginFirstRound(AFreeFallCharacter* NewOwner)
 	if(!MapSettings) return;
 
 	//Get first parachute holder
-	NextParachuteHolderID = NewOwner->getIDPlayerLinked();
+	GameDataSubsystem->NextParachuteHolderID = NewOwner->getIDPlayerLinked();
 	
 	//Reset Player score
 	GameDataSubsystem->ResetPlayerScore();
@@ -373,7 +373,7 @@ void AFreeFallGameMode::StartRound()
 	ParachuteInstance->OnParachuteDropped.AddDynamic(this, &AFreeFallGameMode::FindNewOwnerForParachute);
 	for(AFreeFallCharacter* Character : CharactersInsideArena)
 	{
-		if(Character->getIDPlayerLinked() == NextParachuteHolderID)
+		if(Character->getIDPlayerLinked() == GameDataSubsystem->NextParachuteHolderID)
 		{
 			ParachuteInstance->EquipToPlayer(Character);
 			break;
@@ -515,12 +515,13 @@ void AFreeFallGameMode::EndRound()
 	
 	//Give next parachute to last player
 	int MinimumScoreID = 0;
+	//TODO: Fix this (NumberOfPlayers = 4 when two players playing)
 	for(int i = 0; i < GetDefault<UMapSettings>()->NumberOfPlayers; i++)
 	{
-		if(GameDataSubsystem->GetPlayerScoreFromID(i) < GameDataSubsystem->GetPlayerScoreFromID(MinimumScoreID))
+		if(GameDataSubsystem->GetPlayerScoreFromID(i) < GameDataSubsystem->GetPlayerScoreFromID(MinimumScoreID) && GameDataSubsystem->GetPlayerScoreFromID(i)!=-1)
 			MinimumScoreID = i;
 	}
-	NextParachuteHolderID = MinimumScoreID + 1;
+	GameDataSubsystem->NextParachuteHolderID = MinimumScoreID;
 
 	//Destroy parachute if already exists
 	if(ParachuteInstance)

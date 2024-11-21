@@ -19,6 +19,8 @@ public:
 	UPROPERTY()
 	int CurrentRound = 0;
 
+	int NextParachuteHolderID = -1;
+
 #pragma region PlayerScore
 	
 protected:
