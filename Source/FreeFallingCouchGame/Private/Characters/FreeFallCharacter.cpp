@@ -303,6 +303,7 @@ void AFreeFallCharacter::ApplyMovementFromAcceleration(float DeltaTime)
 {
 	Decelerate(DeltaTime);
 	GEngine->AddOnScreenDebugMessage(-1,DeltaTime,FColor::Orange, TEXT("AccelerationAlpha : " + AccelerationAlpha.ToString()));
+	GEngine->AddOnScreenDebugMessage(-1,DeltaTime,FColor::Orange, TEXT("MaxFlySpeed : " + FString::SanitizeFloat(GetCharacterMovement()->MaxFlySpeed)));
 	const float ScaleValue = MovementSpeed / GetCharacterMovement()->MaxFlySpeed;
 	AddMovementInput(FVector(
 		FMath::Abs(AccelerationAlpha.X) < CharactersSettings->AccelerationThreshold ? 0 : AccelerationAlpha.X,
