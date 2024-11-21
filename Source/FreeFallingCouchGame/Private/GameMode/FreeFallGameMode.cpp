@@ -43,9 +43,6 @@ void AFreeFallGameMode::Init()
 	{
 		ParachuteSpawnLocation = FVector(0, 0, 0);
 	}
-
-	//Reset next parachute holder ID
-	NextParachuteHolderID = -1;
 	
 	//Add wobble to camera
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
@@ -303,6 +300,9 @@ void AFreeFallGameMode::StartMatch()
 	
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------MATCH START--------------------"));
 
+	//Reset next parachute holder ID
+	NextParachuteHolderID = -1;
+	
 	//Spawn Characters for pre match
 	TArray<APlayerStart*> PlayerStartsPoints;
 	FindPlayerStartActorsInMap(PlayerStartsPoints);

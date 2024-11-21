@@ -48,11 +48,12 @@ int ULocalMultiplayerSubsystem::GetAssignedPlayerIndexFromKeyboardProfileIndex(i
 		return PlayerIndexFromKeyboardProfileIndex[keyboardProfileIndex];
 	}
 	return -1;
-}
+}	
 
 int ULocalMultiplayerSubsystem::AssignNewPlayerToKeyboardProfile(int KeyboardProfileIndex)
 {
 	LastAssignedPlayerIndex++;
+	GEngine->AddOnScreenDebugMessage(-1,15.0f,FColor::Yellow, FString::FromInt(LastAssignedPlayerIndex));
 	PlayerIndexFromKeyboardProfileIndex.Add(KeyboardProfileIndex, LastAssignedPlayerIndex);
 
 	//GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Red, "LAPI :" + FString::FromInt(LastAssignedPlayerIndex));
@@ -67,6 +68,8 @@ void ULocalMultiplayerSubsystem::AssignKeyboardMapping(int PlayerIndex, int Keyb
 	if(LocalPlayer == nullptr) return;
 	UEnhancedInputLocalPlayerSubsystem* PlayerSubsystem = LocalPlayer->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
 	if(PlayerSubsystem == nullptr) return;
+
+	if(KeyboardProfileIndex > LocalMultiplayerSettings->KeyboardProfilesData.Num() || KeyboardProfileIndex < 0) return;
 	
 	UInputMappingContext* IMC = LocalMultiplayerSettings->KeyboardProfilesData[KeyboardProfileIndex].GetIMCFromType(MappingType);
 	if(IMC == nullptr) return;
