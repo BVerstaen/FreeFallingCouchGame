@@ -11,6 +11,7 @@
 #include "NiagaraSystem.h"
 #include "FreeFallCharacter.generated.h"
 
+enum class EPowerUpsID : uint8;
 class UCharactersSettings;
 class UPowerUpObject;
 class AParachute;
@@ -489,6 +490,10 @@ public:
 #pragma region PowerUp
 
 public:
+	//Called when change about PowerUps, set to None if Character has no PowerUp;
+	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
+	void UpdatePowerUpUI(EPowerUpsID PowerUpID);
+	
 	UPROPERTY()
 	TObjectPtr<UPowerUpObject> CurrentPowerUp;
 

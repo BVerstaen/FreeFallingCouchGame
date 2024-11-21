@@ -18,6 +18,7 @@
 #include "Other/DiveLevels.h"
 #include "Other/Parachute.h"
 #include "PowerUps/PowerUpObject.h"
+#include "PowerUps/PowerUpsID.h"
 #include "Settings/CharactersSettings.h"
 
 
@@ -933,6 +934,7 @@ void AFreeFallCharacter::SetPowerUp(UPowerUpObject* PowerUpObject)
 	if (CurrentPowerUp != nullptr) CurrentPowerUp->PrepareForDestruction();
 	CurrentPowerUp = PowerUpObject;
 	OnTakePowerUp.Broadcast(this);
+	UpdatePowerUpUI(CurrentPowerUp? CurrentPowerUp->GetPowerUpID() : EPowerUpsID::None);
 }
 
 void AFreeFallCharacter::BindInputUsePowerUpActions(UEnhancedInputComponent* EnhancedInputComponent)
