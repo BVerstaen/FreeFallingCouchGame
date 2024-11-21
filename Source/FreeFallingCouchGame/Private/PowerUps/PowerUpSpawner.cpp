@@ -89,7 +89,8 @@ void APowerUpSpawner::SpawnPowerUps()
 		APowerUpCollectible* PowerUpCollectible = GetWorld()->SpawnActorDeferred<APowerUpCollectible>(PowerUpCollectibleClass,SpawnTransform);
 		
 		EPowerUpsID PowerUpId = AvailablePowerUpsIds[FMath::RandRange(0,AvailablePowerUpsIds.Num() - 1)];
-		PowerUpCollectible->PowerUpObject = PowerUpComponentClasses[PowerUpId];
+		PowerUpCollectible->SetPowerUp(PowerUpId, PowerUpComponentClasses[PowerUpId]);
+		
 		
 		UGameplayStatics::FinishSpawningActor(PowerUpCollectible, SpawnTransform);
 		SpawnPoint->SetSpawnedPowerUp(PowerUpCollectible);
