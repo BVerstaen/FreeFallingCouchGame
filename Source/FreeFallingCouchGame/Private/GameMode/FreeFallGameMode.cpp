@@ -80,7 +80,7 @@ void AFreeFallGameMode::Init()
 	else
 	{
 		OldPlayerScore.Empty();
-		for (int i = 0; i < GetDefault<UMapSettings>()->NumberOfPlayers; i++)
+		for (int i = 0; i < NumberOfPlayers; i++)
 		{
 			OldPlayerScore.Add(GameDataSubsystem->GetPlayerScoreFromID(i));
 		}
@@ -324,7 +324,7 @@ void AFreeFallGameMode::BeginFirstRound(AFreeFallCharacter* NewOwner)
 	//Reset Player score
 	GameDataSubsystem->ResetPlayerScore();
 	OldPlayerScore.Empty();
-	for (int i = 0; i < GetDefault<UMapSettings>()->NumberOfPlayers; ++i)
+	for (int i = 0; i < NumberOfPlayers; ++i)
 	{
 		GameDataSubsystem->SetPlayerScoreFromID(i, 0);
 		OldPlayerScore.Add(0);
@@ -515,8 +515,7 @@ void AFreeFallGameMode::EndRound()
 	
 	//Give next parachute to last player
 	int MinimumScoreID = 0;
-	//TODO: Fix this (NumberOfPlayers = 4 when two players playing)
-	for(int i = 0; i < GetDefault<UMapSettings>()->NumberOfPlayers; i++)
+	for(int i = 0; i < NumberOfPlayers; i++)
 	{
 		if(GameDataSubsystem->GetPlayerScoreFromID(i) < GameDataSubsystem->GetPlayerScoreFromID(MinimumScoreID) && GameDataSubsystem->GetPlayerScoreFromID(i)!=-1)
 			MinimumScoreID = i;
