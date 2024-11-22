@@ -488,6 +488,12 @@ public:
 	UFUNCTION()
 	USceneComponent* GetParachuteAttachPoint(); 
 	
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnParachuteGet(AParachute* NewParachute);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnParachuteLoss(AParachute* PreviousParachute);
+	
 #pragma endregion
 
 #pragma region PowerUp

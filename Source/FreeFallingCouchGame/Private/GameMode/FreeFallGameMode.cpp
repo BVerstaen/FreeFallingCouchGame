@@ -252,7 +252,12 @@ AParachute* AFreeFallGameMode::RespawnParachute(FVector SpawnLocation)
 	SpawnTransform.SetLocation(SpawnLocation);
 
 	//Spawn parachute
-	return GetWorld()->SpawnActorDeferred<AParachute>(MapSettings->ParachuteSubclass, SpawnTransform);
+	AParachute* NewParachuteInstance = GetWorld()->SpawnActorDeferred<AParachute>(MapSettings->ParachuteSubclass, SpawnTransform);
+	FTransform ParachuteTransform = FTransform::Identity;
+	ParachuteTransform.SetLocation(ParachuteSpawnLocation);
+	NewParachuteInstance->FinishSpawning(ParachuteTransform);
+	
+	return NewParachuteInstance;
 }
 
 void AFreeFallGameMode::CallArenaActorOnCharacterDestroyed(AFreeFallCharacter* Character)

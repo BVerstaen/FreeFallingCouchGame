@@ -67,7 +67,9 @@ void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousS
 		ExitStateConditions();
 		return;
 	}
-
+	
+	//Play start grab animation
+	Character->PlayAnimation(StartGrabAnimation, false, true);
 	
 	//Check if caught character
 	if(Character->GrabbingState == EFreeFallCharacterGrabbingState::None)
@@ -79,9 +81,6 @@ void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousS
 			//Play grab sound
 			USoundSubsystem* SoundSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USoundSubsystem>();
 			SoundSubsystem->PlaySound("SFX_PLR_Grab_ST", Character, true);
-
-			//Play start grab animation
-			Character->PlayAnimation(StartGrabAnimation, false, true);
 		}
 	}
 	if(Character->GrabbingState == EFreeFallCharacterGrabbingState::None)
@@ -91,9 +90,6 @@ void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousS
 			//Play grab sound
 			USoundSubsystem* SoundSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USoundSubsystem>();
 			SoundSubsystem->PlaySound("SFX_PLR_Grab_ST", Character, true);
-
-			//Play start grab animation
-			Character->PlayAnimation(StartGrabAnimation, false, true);
 		}
 	}
 	ExitStateConditions();
