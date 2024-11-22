@@ -168,6 +168,9 @@ void AFreeFallCharacter::DestroyPlayer()
 		OtherCharacterGrabbedBy = nullptr;
 	}
 
+	//Play bounce effect
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DeathEffect.LoadSynchronous(), GetActorLocation());
+	
 	//Play death sound
 	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
 	SoundSubsystem->PlaySound("VOC_PLR_Death_ST", this, false);

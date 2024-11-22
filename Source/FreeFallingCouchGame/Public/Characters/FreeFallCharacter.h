@@ -47,6 +47,9 @@ public:
 protected:
 	
 public:
+	UPROPERTY(EditAnywhere, Category="Death")
+	TSoftObjectPtr<UNiagaraSystem> DeathEffect;
+	
 	void DestroyPlayer();
 
 #pragma region Mesh Rotation
