@@ -895,6 +895,13 @@ void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBou
 	}
 }
 
+void AFreeFallCharacter::BounceRoutineFromBounceData(AActor* OtherActor,
+	TScriptInterface<IBounceableInterface> OtherBounceableInterface, FBounceData BounceData)
+{
+	BounceRoutine(OtherActor, OtherBounceableInterface, BounceData.SelfRestitutionMultiplier, BounceData.OtherRestitutionMultiplier,
+		BounceData.BounceMultiplier, BounceData.bShouldConsiderMass, BounceData.bShouldKeepRemainingVelocity);
+}
+
 
 void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
                                                UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
@@ -904,19 +911,10 @@ void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent
 	//Check if have bouncable interface
 	if(!OtherActor->Implements<UBounceableInterface>()) return;
 	TScriptInterface<IBounceableInterface> OtherBounceableInterface = TScriptInterface<IBounceableInterface>(OtherActor);
-	
-	switch (OtherBounceableInterface->GetBounceParameterType())
-	{
-	case Obstacle:
-		BounceRoutine(OtherActor, OtherBounceableInterface, BouncePlayerRestitutionMultiplier,
-			BounceObstacleRestitutionMultiplier, BounceObstacleMultiplier, bShouldConsiderMassObject, bShouldKeepRemainingVelocity);
-		break;
-	case Player:
-		BounceRoutine(OtherActor, OtherBounceableInterface, BouncePlayerRestitutionMultiplier,
-	BouncePlayerRestitutionMultiplier, BouncePlayerMultiplier, true, bShouldKeepRemainingVelocity);
-		break;
-	}
-	
+
+	//Find Bounce parameter data from parameter type
+	FBounceData* BounceData = BounceParameterData.Find(OtherBounceableInterface->GetBounceParameterType());
+	BounceRoutineFromBounceData(OtherActor, OtherBounceableInterface, *BounceData);
 }
 
 
