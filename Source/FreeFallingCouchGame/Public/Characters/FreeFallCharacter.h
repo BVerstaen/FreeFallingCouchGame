@@ -381,37 +381,13 @@ protected:
 	/*Cooldown entre 2 rebonds*/
 	UPROPERTY(EditAnywhere, Category="Bounce Collision")
 	float BounceCooldownDelay = .1f;
-	
-	/*Combien JE donne à l'autre joueur / l'autre obstacle (je garde 1 - X)*/
+
 	UPROPERTY(EditAnywhere, Category="Bounce Collision")
-	float BouncePlayerRestitutionMultiplier = 1.f;
-
-	/*Dois-je garder ma vélocité restante ou non ?*/
-	UPROPERTY(EditAnywhere, Category="Bounce Collision")
-	bool bShouldKeepRemainingVelocity = false;
+	TMap<TEnumAsByte<EBounceParameters>, FBounceData> BounceParameterData;
 	
-	/*Multiplicateur de rebondissement entre les joueurs*/
-	UPROPERTY(EditAnywhere, Category="Bounce Collision - Between players")
-	float BouncePlayerMultiplier = 1.f;
-
-	/*Multiplicateur de rebondissement entre joueur / objets*/
-	UPROPERTY(EditAnywhere, Category="Bounce Collision - Player / Object")
-	float BounceObstacleMultiplier = 1.f;
-
-	/*Combien L'obstacle avec qui je collisionne donne à mon joueur (il garde 1 - X)*/
-	UPROPERTY(EditAnywhere, Category="Bounce Collision - Player / Object")
-	float BounceObstacleRestitutionMultiplier = 1.f;
-
-	/*Dois-je considerer la masse de l'objet dans les calcules de rebond ?
-	 * Coté joueur -> ObstacleMass / PlayerMass
-	 * Coté objet -> PlayerMass / ObstacleMass 
-	 */
-	UPROPERTY(EditAnywhere, Category="Bounce Collision - Player / Object")
-	bool bShouldConsiderMassObject = false;
-
 public:
-	/*La masse du joueur (sert pour les collisions entre objets)*/
-	UPROPERTY(EditAnywhere, Category="Bounce Collision - Player / Object")
+	/*La masse du joueur*/
+	UPROPERTY(EditAnywhere, Category="Bounce Collision")
 	float PlayerMass;
 
 protected:
@@ -440,6 +416,9 @@ public:
 	UFUNCTION()
 	void BounceRoutine(AActor* OtherActor, TScriptInterface<IBounceableInterface> OtherBounceableInterface, float SelfRestitutionMultiplier, float OtherRestitutionMultiplier, float GlobalMultiplier, bool bShouldConsiderMass, bool bShouldKeepRemainVelocity);
 
+	UFUNCTION()
+	void BounceRoutineFromBounceData(AActor* OtherActor, TScriptInterface<IBounceableInterface> OtherBounceableInterface, FBounceData BounceData);
+	
 	UFUNCTION(BlueprintCallable)
 	void BounceCooldown();
 
