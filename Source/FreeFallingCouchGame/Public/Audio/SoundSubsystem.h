@@ -17,7 +17,7 @@ class FREEFALLINGCOUCHGAME_API USoundSubsystem : public UGameInstanceSubsystem
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Sound")
-	void PlaySound(FName SoundName, const AActor* ParentActor, bool bAttachToActor = true, float VolumeMultiplier = 1.0f, float PitchMultiplier = 1.0f, float StartTime = 0.0f);
+	UAudioComponent* PlaySound(FName SoundName, const AActor* ParentActor, bool bAttachToActor = true, float VolumeMultiplier = 1.0f, float PitchMultiplier = 1.0f, float StartTime = 0.0f);
 
 	UFUNCTION(BlueprintCallable, Category = "Sound")
 	void Play2DSound(FName SoundName);
