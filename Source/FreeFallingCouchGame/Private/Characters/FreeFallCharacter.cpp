@@ -771,6 +771,7 @@ void AFreeFallCharacter::ActivateDeGrab()
 #pragma endregion
 
 #pragma region Bounce Fucntions
+
 void AFreeFallCharacter::BounceCooldown()
 {
 	bAlreadyCollided = true;
@@ -876,7 +877,7 @@ void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBou
 		SoundSubsystem->PlaySound("VOC_PLR_Hit", this, true);
 		SoundSubsystem->PlaySound("VOC_PLR_Shock_ST", OtherFreeFallCharacter, true);
 
-		//Play random "onomatopé"
+		//Play random "onomatopée"
 		TArray<FName> ExpressionHit = {
 			"VOC_PLR_Angry_ST",
 			"VOC_PLR_Joy_ST",
@@ -891,8 +892,9 @@ void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBou
 		SetWasRecentlyBouncedTimer(OtherFreeFallCharacter);
 		OtherFreeFallCharacter->SetWasRecentlyBouncedTimer(this);
 
-		BounceCooldown();
 	}
+
+	BounceCooldown();
 }
 
 void AFreeFallCharacter::BounceRoutineFromBounceData(AActor* OtherActor,
