@@ -59,7 +59,8 @@ public:
 #pragma endregion
 
 #pragma region Sounds
-	
+
+public:
 	UPROPERTY(EditAnywhere)
 	TArray<FName> SoundsOnSpawn;
 

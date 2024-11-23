@@ -5,7 +5,7 @@
 
 #include "Kismet/GameplayStatics.h"
 
-void USoundSubsystem::PlaySound(FName SoundName, const AActor* ParentActor, bool bAttachToActor, float VolumeMultiplier,
+UAudioComponent* USoundSubsystem::PlaySound(FName SoundName, const AActor* ParentActor, bool bAttachToActor, float VolumeMultiplier,
                                 float PitchMultiplier, float StartTime)
 {
 	//Get Sound Data
@@ -14,13 +14,13 @@ void USoundSubsystem::PlaySound(FName SoundName, const AActor* ParentActor, bool
 	if(!SoundData)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Sound can't be found ! Be sure the sound exist in Sound Settings !");
-		return;
+		return nullptr;
 	}
 
 	if(SoundData->Sounds.Num() <= 0)
 	{
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Sound List Empty !");
-		return;
+		return nullptr;
 	}
 	
 	//Load Sound Cue
@@ -30,20 +30,18 @@ void USoundSubsystem::PlaySound(FName SoundName, const AActor* ParentActor, bool
 	if(!Cue)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Cue can't be found !");
-		return;
+		return nullptr;
 	}
 
 	if(bAttachToActor)
 	{
-		UGameplayStatics::SpawnSoundAttached(Cue, ParentActor->GetRootComponent(), FName("NAME_None"), FVector(ForceInit),
+		return UGameplayStatics::SpawnSoundAttached(Cue, ParentActor->GetRootComponent(), FName("NAME_None"), FVector(ForceInit),
 			FRotator::ZeroRotator, EAttachLocation::Type::KeepRelativeOffset, false,
 			VolumeMultiplier, PitchMultiplier, StartTime);
 	}
-	else
-	{
-		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), Cue, ParentActor->GetActorLocation(), FRotator::ZeroRotator,
-			VolumeMultiplier, PitchMultiplier, StartTime);
-	}
+	
+	return UGameplayStatics::SpawnSoundAtLocation(GetWorld(), Cue, ParentActor->GetActorLocation(), FRotator::ZeroRotator,
+		VolumeMultiplier, PitchMultiplier, StartTime);
 }
 
 void USoundSubsystem::Play2DSound(FName SoundName)
