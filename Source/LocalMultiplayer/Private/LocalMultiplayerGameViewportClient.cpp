@@ -19,6 +19,8 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 {
 	ULocalMultiplayerSubsystem* LocalMultiplayerSubsystem = GameInstance->GetSubsystem<ULocalMultiplayerSubsystem>();
 	const ULocalMultiplayerSettings* LocalMultiplayerSettings = GetDefault<ULocalMultiplayerSettings>();
+
+	GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Red, "Key Pressed :" + EventArgs.Key.ToString());
 	
 	bool IsGamepad = EventArgs.IsGamepad();
 	if(!IsGamepad)
@@ -26,7 +28,7 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 		int KeyboardProfile = LocalMultiplayerSettings->FindKeyboardProfileIndexFromKey(EventArgs.Key, ELocalMultiplayerInputMappingType::InGame);
 		if(KeyboardProfile >= 0)
 		{
-			//GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Red, "Keyboard Index :" + FString::FromInt(KeyboardProfile));
+			GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Red, "Keyboard Index :" + FString::FromInt(KeyboardProfile));
 			int PlayerIndex = LocalMultiplayerSubsystem->GetAssignedPlayerIndexFromKeyboardProfileIndex(KeyboardProfile);
 			if(PlayerIndex < 0 && LocalMultiplayerSubsystem->bCanCreateNewPlayer && !LocalMultiplayerSubsystem->IsPlayerLimitReached())
 			{
@@ -44,7 +46,6 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 				return UGameplayStatics::GetPlayerController(GetGameInstance()->GetWorld(), PlayerIndex)->InputKey(Params);
 			} 
 		}
-
 	}
 	else
 	{
@@ -61,9 +62,11 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 			LocalMultiplayerSubsystem->OnNewPlayerCreated.Broadcast(PlayerIndex);
 			
 		}
-		FInputKeyParams Params(EventArgs.Key, EventArgs.Event, static_cast<double>(EventArgs.AmountDepressed), EventArgs.IsGamepad());
-		return UGameplayStatics::GetPlayerController(GetGameInstance()->GetWorld(), PlayerIndex)->InputKey(Params);
-		
+		if(PlayerIndex > 0)
+		{
+			FInputKeyParams Params(EventArgs.Key, EventArgs.Event, static_cast<double>(EventArgs.AmountDepressed), EventArgs.IsGamepad());
+			return UGameplayStatics::GetPlayerController(GetGameInstance()->GetWorld(), PlayerIndex)->InputKey(Params);
+		} 
 	}
 	return Super::InputKey(EventArgs);
 }
@@ -91,9 +94,11 @@ bool ULocalMultiplayerGameViewportClient::InputAxis(FViewport* InViewport, FInpu
 			LocalMultiplayerSubsystem->NumberOfPlayers++;
 			LocalMultiplayerSubsystem->OnNewPlayerCreated.Broadcast(PlayerIndex);
 		}
-		
-		return UGameplayStatics::GetPlayerController(GetGameInstance()->GetWorld(), PlayerIndex)->InputAxis(
-				Key, Delta, DeltaTime, NumSamples, bGamepad);
+		if(PlayerIndex > 0)
+		{
+			return UGameplayStatics::GetPlayerController(GetGameInstance()->GetWorld(), PlayerIndex)->InputAxis(
+					Key, Delta, DeltaTime, NumSamples, bGamepad);
+		}
 	}
 
 	
