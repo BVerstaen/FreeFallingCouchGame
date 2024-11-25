@@ -5,7 +5,7 @@
 
 #include "Kismet/GameplayStatics.h"
 
-UAudioComponent* USoundSubsystem::PlaySound(FName SoundName, const AActor* ParentActor, bool bAttachToActor, float VolumeMultiplier,
+UAudioComponent* USoundSubsystem::PlaySound(FName SoundName, const AActor* ParentActor, bool bAttachToActor,
                                 float PitchMultiplier, float StartTime)
 {
 	//Get Sound Data
@@ -37,11 +37,11 @@ UAudioComponent* USoundSubsystem::PlaySound(FName SoundName, const AActor* Paren
 	{
 		return UGameplayStatics::SpawnSoundAttached(Cue, ParentActor->GetRootComponent(), FName("NAME_None"), FVector(ForceInit),
 			FRotator::ZeroRotator, EAttachLocation::Type::KeepRelativeOffset, false,
-			VolumeMultiplier, PitchMultiplier, StartTime);
+			SoundVolume, PitchMultiplier, StartTime);
 	}
 	
 	return UGameplayStatics::SpawnSoundAtLocation(GetWorld(), Cue, ParentActor->GetActorLocation(), FRotator::ZeroRotator,
-		VolumeMultiplier, PitchMultiplier, StartTime);
+		SoundVolume, PitchMultiplier, StartTime);
 }
 
 void USoundSubsystem::Play2DSound(FName SoundName)
@@ -69,7 +69,7 @@ void USoundSubsystem::Play2DSound(FName SoundName)
 	}
 }
 
-void USoundSubsystem::PlayMusic(FName MusicName, bool bLoop, float VolumeMultiplier, float PitchMultiplier,
+void USoundSubsystem::PlayMusic(FName MusicName, bool bLoop, float PitchMultiplier,
 	float StartTime)
 {
 	const USoundSettings* SoundSettings = GetDefault<USoundSettings>();
