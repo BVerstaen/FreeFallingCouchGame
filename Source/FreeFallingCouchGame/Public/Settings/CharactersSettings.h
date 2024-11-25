@@ -5,6 +5,7 @@
 #include "FreeFallingCouchGame/Public/Characters/FreeFallCharacterInputData.h"
 #include "CoreMinimal.h"
 #include "Engine/DeveloperSettings.h"
+#include "Haptic/HapticsHandler.h"
 #include "CharactersSettings.generated.h"
 class UInputMappingContext;
 //class UFreeFallCharacterInputData;
@@ -45,4 +46,7 @@ public:
 
 	UPROPERTY(Config, EditAnywhere, Category="Inputs")
 	TSoftObjectPtr<UInputMappingContext> InputMappingContext;
+	
+	UPROPERTY(Config, EditAnywhere, Category="Inputs")
+	TSubclassOf<UHapticsHandler> RumbleSystem;
 };
