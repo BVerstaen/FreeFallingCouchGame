@@ -13,6 +13,7 @@ enum EBounceParameters
 {
 	None = 0,
 	Obstacle,
+	HeavyObstacle,
 	Player
 };
 
@@ -40,7 +41,7 @@ public:
 	*/
 	UPROPERTY(EditAnywhere)
 	bool bShouldConsiderMass = false;
-
+	
 	/*Dois-je garder ma vélocité restante ou non ?*/
 	UPROPERTY(EditAnywhere)
 	bool bShouldKeepRemainingVelocity = false;

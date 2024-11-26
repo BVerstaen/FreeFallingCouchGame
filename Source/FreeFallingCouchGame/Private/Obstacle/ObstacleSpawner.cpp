@@ -115,7 +115,11 @@ AObstacle* AObstacleSpawner::SpawnObstacle()
 	return SpawningObstacle;
 }
 
-void AObstacleSpawner::SpawnObstacleEvent() { SpawnObstacle(); }
+void AObstacleSpawner::SpawnObstacleEvent()
+{
+	GEngine->AddOnScreenDebugMessage(-1,10.0f, FColor::Blue, "Spawn");
+	SpawnObstacle();
+}
 
 void AObstacleSpawner::PauseSpawner()
 {

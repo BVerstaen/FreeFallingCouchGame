@@ -28,8 +28,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	virtual EBounceParameters GetBounceParameterType();
+	
 #pragma endregion
-
 
 #pragma region Properties
 

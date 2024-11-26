@@ -26,6 +26,11 @@ void AWindMillEvent::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+EBounceParameters AWindMillEvent::GetBounceParameterType()
+{
+	return EBounceParameters::HeavyObstacle;
+}
+
 void AWindMillEvent::TriggerEvent()
 {
 	Super::TriggerEvent();
@@ -61,7 +66,7 @@ void AWindMillEvent::StopEvent(AActor* DestroyedActor)
 	{
 		Manager->ResumeTimer();
 	}
-	
+	 
 	OnEventEnded.Broadcast(this);
 }
 

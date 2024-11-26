@@ -20,7 +20,7 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 	ULocalMultiplayerSubsystem* LocalMultiplayerSubsystem = GameInstance->GetSubsystem<ULocalMultiplayerSubsystem>();
 	const ULocalMultiplayerSettings* LocalMultiplayerSettings = GetDefault<ULocalMultiplayerSettings>();
 
-	GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Red, "Key Pressed :" + EventArgs.Key.ToString());
+	//GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Red, "Key Pressed :" + EventArgs.Key.ToString());
 	
 	bool IsGamepad = EventArgs.IsGamepad();
 	if(!IsGamepad)
@@ -28,7 +28,7 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 		int KeyboardProfile = LocalMultiplayerSettings->FindKeyboardProfileIndexFromKey(EventArgs.Key, ELocalMultiplayerInputMappingType::InGame);
 		if(KeyboardProfile >= 0)
 		{
-			GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Red, "Keyboard Index :" + FString::FromInt(KeyboardProfile));
+			//GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Red, "Keyboard Index :" + FString::FromInt(KeyboardProfile));
 			int PlayerIndex = LocalMultiplayerSubsystem->GetAssignedPlayerIndexFromKeyboardProfileIndex(KeyboardProfile);
 			if(PlayerIndex < 0 && LocalMultiplayerSubsystem->bCanCreateNewPlayer && !LocalMultiplayerSubsystem->IsPlayerLimitReached())
 			{
@@ -36,7 +36,7 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 				LocalMultiplayerSubsystem->AssignKeyboardMapping(PlayerIndex ,KeyboardProfile, LocalMultiplayerSubsystem->CurrentMappingType);
 
 				//Add new player & call event
-				GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Red, "Player Index :" + FString::FromInt(PlayerIndex));
+				//GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Red, "Player Index :" + FString::FromInt(PlayerIndex));
 				LocalMultiplayerSubsystem->NumberOfPlayers++;
 				LocalMultiplayerSubsystem->OnNewPlayerCreated.Broadcast(PlayerIndex);
 			}
@@ -56,7 +56,7 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 			PlayerIndex = LocalMultiplayerSubsystem->AssignNewPlayerToGamepadDeviceID(GamepadID);
 			LocalMultiplayerSubsystem->AssignGamepadInputMapping(PlayerIndex, GamepadID, LocalMultiplayerSubsystem->CurrentMappingType);
 
-			GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Red, "GamePad Player Index :" + FString::FromInt(PlayerIndex));
+			//GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Red, "GamePad Player Index :" + FString::FromInt(PlayerIndex));
 
 			LocalMultiplayerSubsystem->NumberOfPlayers++;
 			LocalMultiplayerSubsystem->OnNewPlayerCreated.Broadcast(PlayerIndex);
@@ -89,7 +89,7 @@ bool ULocalMultiplayerGameViewportClient::InputAxis(FViewport* InViewport, FInpu
 			PlayerIndex = LocalMultiplayerSubsystem->AssignNewPlayerToGamepadDeviceID(GamepadID);
 			LocalMultiplayerSubsystem->AssignGamepadInputMapping(PlayerIndex, GamepadID, LocalMultiplayerSubsystem->CurrentMappingType);
 			
-			GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Red, "GamePad Player Index :" + FString::FromInt(PlayerIndex));
+			//GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Red, "GamePad Player Index :" + FString::FromInt(PlayerIndex));
 			
 			LocalMultiplayerSubsystem->NumberOfPlayers++;
 			LocalMultiplayerSubsystem->OnNewPlayerCreated.Broadcast(PlayerIndex);

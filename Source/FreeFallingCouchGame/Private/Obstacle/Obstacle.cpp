@@ -140,7 +140,7 @@ float AObstacle::GetMass()
 
 EBounceParameters AObstacle::GetBounceParameterType()
 {
-	return Obstacle;
+	return BounceType;
 }
 
 void AObstacle::AddBounceForce(FVector Velocity)

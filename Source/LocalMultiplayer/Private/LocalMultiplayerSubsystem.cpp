@@ -22,14 +22,14 @@ void ULocalMultiplayerSubsystem::CreateAndInitPlayers(ELocalMultiplayerInputMapp
 	//Connect existing assigned gamepad players
 	for (const TPair<int, int> ConnectedGamePad : PlayerIndexFromGamepadProfileIndex)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Emerald, "Keyboard : " + FString::FromInt(ConnectedGamePad.Key) + " , " + FString::FromInt(ConnectedGamePad.Value));
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Emerald, "Keyboard : " + FString::FromInt(ConnectedGamePad.Key) + " , " + FString::FromInt(ConnectedGamePad.Value));
 		AssignGamepadInputMapping(ConnectedGamePad.Value, ConnectedGamePad.Key, MappingType);
 	}
 	
 	//Connect existing assigned keyboard players
 	for (const TPair<int, int> ConnectedKeyboard : PlayerIndexFromKeyboardProfileIndex)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Emerald, "Keyboard : " + FString::FromInt(ConnectedKeyboard.Key) + " , " + FString::FromInt(ConnectedKeyboard.Value));
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Emerald, "Keyboard : " + FString::FromInt(ConnectedKeyboard.Key) + " , " + FString::FromInt(ConnectedKeyboard.Value));
 		AssignKeyboardMapping(ConnectedKeyboard.Key, ConnectedKeyboard.Value, MappingType);
 	}
 

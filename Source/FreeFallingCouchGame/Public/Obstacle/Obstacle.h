@@ -107,6 +107,9 @@ public:
 	virtual void AddBounceForce(FVector Velocity) override;
 	
 	virtual AFreeFallCharacter* CollidedWithPlayer() override;
-	
+
+protected:
+	UPROPERTY(EditAnywhere)
+	TEnumAsByte<EBounceParameters> BounceType = EBounceParameters::Obstacle;
 #pragma endregion 
 };

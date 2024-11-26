@@ -73,12 +73,12 @@ void UFreeFallCharacterStateIdle::StateTick(float DeltaTime)
 			"Player : " + Character->GetPlayerDefaultRotation().ToString()
 			);
 	
-	GEngine->AddOnScreenDebugMessage(
-		-1,
-		DeltaTime,
-		FColor::Cyan,
-		TEXT("Tick State Idle")
-		);
+	// GEngine->AddOnScreenDebugMessage(
+	// 	-1,
+	// 	DeltaTime,
+	// 	FColor::Cyan,
+	// 	TEXT("Tick State Idle")
+	// 	);
 }
 
 void UFreeFallCharacterStateIdle::OnInputGrab()
