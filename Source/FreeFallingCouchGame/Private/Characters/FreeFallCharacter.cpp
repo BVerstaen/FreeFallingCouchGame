@@ -862,7 +862,6 @@ void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBou
 	// Call for rumble
 	//UHapticsStatics::CallHapticsCollision(this, Cast<APlayerController>(GetController()));
 	UHapticsStatics::CallHapticsCollision(this, Cast<APlayerController>(this->Controller));
-	
 	//Play bounce effect
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BounceEffect.LoadSynchronous(), GetActorLocation());
 	

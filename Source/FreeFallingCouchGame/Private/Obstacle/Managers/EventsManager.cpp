@@ -4,6 +4,7 @@
 #include "Obstacle/Managers/EventsManager.h"
 
 #include "GameMode/FreeFallGameMode.h"
+#include "Haptic/HapticsStatics.h"
 #include "Kismet/GameplayStatics.h"
 #include "Obstacle/ObstacleSpawner.h"
 #include "Obstacle/ObstacleSpawnerManager.h"
@@ -82,6 +83,7 @@ void AEventsManager::Tick(float DeltaTime)
 		EventActor->OnEventEnded.AddDynamic(this, &AEventsManager::OnEventEnded);
 		EventActor->TriggerEvent();
 		CurrentEventActor = EventActor;
+		UHapticsStatics::CallHapticsAll(this);
 		EventHappening = true;
 		if (ObstacleSpawnerManager->IsTimerPlaying()) ObstacleSpawnerManager->PauseTimer();
 		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red,"Trigger Event");
