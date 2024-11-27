@@ -13,6 +13,7 @@
 #include "Characters/FreeFallCharacterStateMachine.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Haptic/HapticsStatics.h"
 #include "Kismet/GameplayStatics.h"
 #include "Obstacle/Obstacle.h"
 #include "Other/DiveLevels.h"
@@ -858,6 +859,10 @@ void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBou
 	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
 	SoundSubsystem->PlaySound("SFX_PLR_Collision_ST", this, false);
 
+	// Call for rumble
+	//UHapticsStatics::CallHapticsCollision(this, Cast<APlayerController>(GetController()));
+	UHapticsStatics::CallHapticsCollision(this, Cast<APlayerController>(this->Controller));
+	
 	//Play bounce effect
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BounceEffect.LoadSynchronous(), GetActorLocation());
 	

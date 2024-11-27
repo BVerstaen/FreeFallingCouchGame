@@ -2,3 +2,13 @@
 
 
 #include "Haptic/HapticsHandler.h"
+
+void UHapticsHandler::CallHapticsSingle(APlayerController *Player)
+{
+	ReceiveCallHapticsCollision(Player);
+}
+
+void UHapticsHandler::CallHapticsMulti()
+{
+	ReceiveCallHapticsAll();
+}

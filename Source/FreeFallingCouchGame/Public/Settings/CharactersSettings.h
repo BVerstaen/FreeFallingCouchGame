@@ -48,5 +48,7 @@ public:
 	TSoftObjectPtr<UInputMappingContext> InputMappingContext;
 	
 	UPROPERTY(Config, EditAnywhere, Category="Inputs")
+	//TSoftObjectPtr<TSubclassOf<UHapticsHandler>> RumbleSystem;
 	TSubclassOf<UHapticsHandler> RumbleSystem;
+	//TSoftObjectPtr<UHapticsHandler> RumbleSystem3;
 };

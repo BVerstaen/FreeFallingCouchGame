@@ -7,6 +7,7 @@
 #include "Characters/FreeFallCharacter.h"
 #include "Engine/LevelStreamingDynamic.h"
 #include "GameFramework/PlayerStart.h"
+#include "Haptic/HapticsSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Match/GameDataInstanceSubsystem.h"
 #include "Settings/CharactersSettings.h"
@@ -136,6 +137,7 @@ UFreeFallCharacterInputData* AFreeFallGameMode::LoadInputDataFromConfig()
 		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, TEXT("CharactersSettings est nullptr"));
 		return nullptr;
 	}
+	GetGameInstance()->GetSubsystem<UHapticsSubsystem>()->InitHaptics(CharacterSettings->RumbleSystem);
 	return CharacterSettings->InputData.LoadSynchronous();
 }
 
