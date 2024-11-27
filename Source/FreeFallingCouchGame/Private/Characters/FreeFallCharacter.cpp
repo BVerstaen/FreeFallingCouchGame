@@ -846,14 +846,18 @@ void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBou
 	NewVelocity.Z = 0;
 	AddBounceForce(NewVelocity);
 
-	//Bounce other character
-	NewVelocity = (ImpactDirection * OldVelocity.Size() * SelfRestitutionMultiplier
-			* (bShouldConsiderMass ? GetMass() / OtherBounceableInterface->GetMass() : 1)
-			+ (bShouldKeepRemainVelocity ? OtherBounceableInterface->GetVelocity() * (1 - OtherRestitutionMultiplier) : FVector::Zero())) 
-			* GlobalMultiplier;
-	//Neutralize Z bounce velocity
-	NewVelocity.Z = 0;
-	OtherBounceableInterface->AddBounceForce(NewVelocity);
+	//Bounce other object
+	if(SelfRestitutionMultiplier != 0.0f)
+	{
+		NewVelocity = (ImpactDirection * OldVelocity.Size() * SelfRestitutionMultiplier
+		* (bShouldConsiderMass ? GetMass() / OtherBounceableInterface->GetMass() : 1)
+		+ (bShouldKeepRemainVelocity ? OtherBounceableInterface->GetVelocity() * (1 - OtherRestitutionMultiplier) : FVector::Zero())) 
+		* GlobalMultiplier;
+		//Neutralize Z bounce velocity
+		NewVelocity.Z = 0;
+		OtherBounceableInterface->AddBounceForce(NewVelocity);
+	}
+
 
 	//Play Bounce Sound
 	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
