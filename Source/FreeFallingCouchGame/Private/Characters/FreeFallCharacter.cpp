@@ -173,6 +173,7 @@ void AFreeFallCharacter::DestroyPlayer()
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DeathEffect.LoadSynchronous(), GetActorLocation());
 	
 	//Play death sound
+	UHapticsStatics::CallHapticsCollision(this, Cast<APlayerController>(this->Controller));
 	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
 	SoundSubsystem->PlaySound("VOC_PLR_Death_ST", this, false);
 	
