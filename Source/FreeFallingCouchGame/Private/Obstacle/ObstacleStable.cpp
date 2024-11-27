@@ -30,7 +30,25 @@ void AObstacleStable::Tick(float DeltaTime)
 			bHasBeenStable = true;
 			Mesh->SetPhysicsLinearVelocity(FVector(0, 0, 0), false);
 			EventBecommingStable();
-			GetWorldTimerManager().SetTimer(StableTimerHandle, this,  &AObstacle::ResetLaunch, StableTime);
+			GetWorldTimerManager().SetTimer(StableTimerHandle, this,  &AObstacleStable::StopStable, StableTime);
 		}
 	}
+}
+
+void AObstacleStable::StopStable()
+{
+	EventEndStable();
+	ResetLaunch();
+}
+
+bool AObstacleStable::CanBeGrabbed()
+{
+	//Deactivate stable timer if can be grabbed
+	if(IsGrabbable)
+	{
+		bHasBeenStable = true;
+		StableTimerHandle.Invalidate();
+	}
+	
+	return Super::CanBeGrabbed();
 }

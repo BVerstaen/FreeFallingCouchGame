@@ -39,10 +39,20 @@ public:
 	
 	UPROPERTY()
 	FTimerHandle StableTimerHandle;
-	
+
+	UPROPERTY(BlueprintReadOnly)
 	bool bHasBeenStable = false;
 
+	UFUNCTION()
+	void StopStable();
+	
 protected:
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintImplementableEvent, meta=(DisplayName="BecommingStable"))
 	void EventBecommingStable();
+
+	UFUNCTION(BlueprintImplementableEvent, meta=(DisplayName="EndedStable"))
+	void EventEndStable();
+
+	
+	virtual bool CanBeGrabbed() override;
 };
