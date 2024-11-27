@@ -51,6 +51,19 @@ void AEventsManager::OnStartTick()
 	CanTickTimer = true;
 }
 
+bool AEventsManager::AtLeastOneObstacleSpawnerManagerPlaysTimer()
+{
+	bool isPlayingTimer = false;
+	for(AObstacleSpawnerManager* Manager : ObstacleSpawnerManagerList)
+	{
+		isPlayingTimer = Manager->IsTimerPlaying();
+
+		if(isPlayingTimer)
+			break;
+	}
+	return isPlayingTimer;
+}
+
 // Called every frame
 void AEventsManager::Tick(float DeltaTime)
 {
@@ -61,7 +74,7 @@ void AEventsManager::Tick(float DeltaTime)
 		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red,"No Events Set");
 		return;
 	}
-	if (ObstacleSpawnerManager==nullptr)
+	if (ObstacleSpawnerManagerList.Num() <= 0)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red,"EventManager missing reference to ObstacleSpawnerManager");
 		return;
@@ -70,9 +83,12 @@ void AEventsManager::Tick(float DeltaTime)
 	if (EventHappening || !CanTickTimer) return;
 	
 	EventClock += DeltaTime;
-	if (EventClock > FMath::Max(TimeBetweenEvents - ObstacleStopDifferenceTime,0) && ObstacleSpawnerManager->IsTimerPlaying())
+	if (EventClock > FMath::Max(TimeBetweenEvents - ObstacleStopDifferenceTime,0) && AtLeastOneObstacleSpawnerManagerPlaysTimer())
 	{
-		ObstacleSpawnerManager->PauseTimer();
+		for(AObstacleSpawnerManager* Manager : ObstacleSpawnerManagerList)
+		{
+			Manager->PauseTimer();
+		}
 	}
 	if (EventClock > TimeBetweenEvents)
 	{
@@ -83,7 +99,13 @@ void AEventsManager::Tick(float DeltaTime)
 		EventActor->TriggerEvent();
 		CurrentEventActor = EventActor;
 		EventHappening = true;
-		if (ObstacleSpawnerManager->IsTimerPlaying()) ObstacleSpawnerManager->PauseTimer();
+		if (AtLeastOneObstacleSpawnerManagerPlaysTimer())
+		{
+			for(AObstacleSpawnerManager* Manager : ObstacleSpawnerManagerList)
+			{
+				Manager->PauseTimer();
+			}
+		}
 		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red,"Trigger Event");
 	}
 }
@@ -94,7 +116,11 @@ void AEventsManager::OnEventEnded(AEventActor* TriggeringActor)
 	CurrentEventActor = nullptr;
 	EventHappening = false;
 	EventClock = 0.f;
-	ObstacleSpawnerManager->ResumeTimer();
+	
+	for(AObstacleSpawnerManager* Manager : ObstacleSpawnerManagerList)
+	{
+		Manager->ResumeTimer();
+	}
 }
 
 AEventActor* AEventsManager::GetRandomEvent()

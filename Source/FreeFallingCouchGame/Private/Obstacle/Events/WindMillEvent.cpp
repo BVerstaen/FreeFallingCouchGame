@@ -34,12 +34,6 @@ EBounceParameters AWindMillEvent::GetBounceParameterType()
 void AWindMillEvent::TriggerEvent()
 {
 	Super::TriggerEvent();
-
-	//Deactivate every obstacle manager
-	for(AObstacleSpawnerManager* Manager : ObstaclesToDisable)
-	{
-		Manager->PauseTimer();
-	}
 	
 	WindMillSpawner->bPlaySpawnTimer = false;
 	AObstacle* SpawnedWindMill = WindMillSpawner->SpawnObstacle();
@@ -60,13 +54,6 @@ void AWindMillEvent::StopEvent(AActor* DestroyedActor)
 			DestroyedActor->OnDestroyed.RemoveDynamic(this, &AWindMillEvent::StopEvent);
 		}
 	}
-	
-	//Reactivate every obstacle manager
-	for(AObstacleSpawnerManager* Manager : ObstaclesToDisable)
-	{
-		Manager->ResumeTimer();
-	}
-	 
 	OnEventEnded.Broadcast(this);
 }
 
