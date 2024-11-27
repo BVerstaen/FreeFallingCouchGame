@@ -161,6 +161,8 @@ AFreeFallCharacter* AObstacle::CollidedWithPlayer()
 		GetWorldTimerManager().SetTimer(CollisionSoundCooldownTimerHandle, this, &AObstacle::ResetCollisionSoundCooldown,
 			CollisionSoundCooldownTime, false, CollisionSoundCooldownTime);
 	}
+
+	BounceSpecificBehaviour();
 	
 	return nullptr;
 }
