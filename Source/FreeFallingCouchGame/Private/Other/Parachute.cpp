@@ -60,7 +60,8 @@ void AParachute::EquipToPlayer(AFreeFallCharacter* Character)
 
 	if(!Character->OnWasEliminated.IsAlreadyBound(this, &AParachute::GiveToMurderer))
 		Character->OnWasEliminated.AddDynamic(this, &AParachute::GiveToMurderer);
-	
+
+	StopFallDownAnimation();
 	OnParachuteGrabbed.Broadcast(Character);
 
 	SetActorRelativeScale3D(OriginScale);
