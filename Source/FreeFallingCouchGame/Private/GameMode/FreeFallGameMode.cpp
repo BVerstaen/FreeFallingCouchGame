@@ -318,6 +318,7 @@ void AFreeFallGameMode::StartMatch()
 	//Create parachute & equip to next player
 	ParachuteInstance = RespawnParachute(ParachuteSpawnLocation);
 	ParachuteInstance->OnParachuteGrabbed.AddDynamic(this, &AFreeFallGameMode::BeginFirstRound);
+	ParachuteInstance->PlayFallDownAnimation(ParachuteSpawnLocation);
 }
 
 void AFreeFallGameMode::BeginFirstRound(AFreeFallCharacter* NewOwner)

@@ -37,9 +37,6 @@ public:
 public:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<AObstacleSpawner> WindMillSpawner;
-
-	UPROPERTY(EditAnywhere)
-	TArray<TObjectPtr<AObstacleSpawnerManager>> ObstaclesToDisable;
 	
 #pragma endregion 
 	
