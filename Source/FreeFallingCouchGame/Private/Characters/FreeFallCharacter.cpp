@@ -171,16 +171,18 @@ void AFreeFallCharacter::DestroyPlayer(ETypeDeath DeathType)
 	}
 
 	UNiagaraComponent* test = nullptr;
-	FVector particleVelocity;
+	FVector particleVelocity = GetVelocity();
 	switch (DeathType)
 	{
 	case ETypeDeath::Side:
 		UE_LOG(LogTemp, Warning, TEXT("Side Death"));
 		 test = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DeathEffectSide.LoadSynchronous(), GetActorLocation());
-		particleVelocity = GetVelocity();
-		particleVelocity.Normalize();
-		particleVelocity *= IntensityParticles; 
-		test->SetVectorParameter("DirectionParticles", -particleVelocity);
+		if(test->IsValidLowLevel())
+		{
+			particleVelocity.Normalize();
+			particleVelocity *= IntensityParticles; 
+			test->SetVectorParameter("DirectionParticles", -particleVelocity);
+		}
 		break;
 	default:
 		//Play bounce effect
