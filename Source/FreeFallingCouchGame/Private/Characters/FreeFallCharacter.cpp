@@ -5,6 +5,7 @@
 
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Animation/AnimInstanceProxy.h"
 #include "Audio/SoundSubsystem.h"
@@ -137,7 +138,7 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 	PowerUpsToRemove.Empty();
 }
 
-void AFreeFallCharacter::DestroyPlayer()
+void AFreeFallCharacter::DestroyPlayer(ETypeDeath DeathType)
 {
 	//If was recently bounced -> then send elimination delegate
 	if(bWasRecentlyBounced)
@@ -169,9 +170,26 @@ void AFreeFallCharacter::DestroyPlayer()
 		OtherCharacterGrabbedBy = nullptr;
 	}
 
-	//Play bounce effect
-	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DeathEffect.LoadSynchronous(), GetActorLocation());
+	UNiagaraComponent* test = nullptr;
+	FVector particleVelocity;
+	switch (DeathType)
+	{
+	case ETypeDeath::Side:
+		UE_LOG(LogTemp, Warning, TEXT("Side Death"));
+		 test = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DeathEffectSide.LoadSynchronous(), GetActorLocation());
+		particleVelocity = GetVelocity();
+		particleVelocity.Normalize();
+		particleVelocity *= 3000.0f; 
+		test->SetVectorParameter("DirectionParticles", -particleVelocity);
+		break;
+	default:
+		//Play bounce effect
+        UE_LOG(LogTemp, Warning, TEXT("Default Death"));
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DeathEffect.LoadSynchronous(), GetActorLocation());
+		break;
+	}
 	
+	UHapticsStatics::CallHapticsCollision(this, Cast<APlayerController>(this->Controller));
 	//Play death sound
 	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
 	SoundSubsystem->PlaySound("VOC_PLR_Death_ST", this, false);
