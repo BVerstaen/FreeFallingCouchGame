@@ -4,6 +4,7 @@
 #include "GameMode/FreeFallGameMode.h"
 
 #include "LocalMultiplayerSubsystem.h"
+#include "Audio/SoundSubsystem.h"
 #include "Characters/FreeFallCharacter.h"
 #include "Engine/LevelStreamingDynamic.h"
 #include "GameFramework/PlayerStart.h"
@@ -314,6 +315,10 @@ void AFreeFallGameMode::StartMatch()
 	TArray<APlayerStart*> PlayerStartsPoints;
 	FindPlayerStartActorsInMap(PlayerStartsPoints);
 	SpawnCharacters(PlayerStartsPoints, true);
+
+	//Play gameplay music
+	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
+	SoundSubsystem->PlayMusic("MUS_GameplayTimer_ST");
 	
 	//Create parachute & equip to next player
 	ParachuteInstance = RespawnParachute(ParachuteSpawnLocation);

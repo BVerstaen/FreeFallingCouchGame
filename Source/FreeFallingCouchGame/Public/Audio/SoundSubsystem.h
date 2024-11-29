@@ -22,13 +22,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sound")
 	void Play2DSound(FName SoundName);
 
-	UFUNCTION(BlueprintCallable, Category = "Sound")
-	void PlayMusic(FName MusicName, bool bLoop = true, float PitchMultiplier = 1.0f, float StartTime = 0.0f);
+	UFUNCTION(BlueprintCallable, Category = "Music")
+	void PlayMusic(FName MusicName, float PitchMultiplier = 1.0f, float StartTime = 0.0f);
 
+	UFUNCTION(BlueprintCallable, Category = "Music")
+	void StopMusic();
+
+	UFUNCTION(BlueprintPure, Category = "Music")
+	UAudioComponent* GetAudioComponent();
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Sound")
 	float SoundVolume = 1.0f;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Sound")
 	float MusicVolume = 1.0f;
+
+	UPROPERTY()
+	UAudioComponent* MusicComponent;
 };
