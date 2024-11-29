@@ -5,6 +5,7 @@
 
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Animation/AnimInstanceProxy.h"
 #include "Audio/SoundSubsystem.h"
@@ -13,6 +14,7 @@
 #include "Characters/FreeFallCharacterStateMachine.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Haptic/HapticsStatics.h"
 #include "Kismet/GameplayStatics.h"
 #include "Obstacle/Obstacle.h"
 #include "Other/DiveLevels.h"
@@ -136,7 +138,7 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 	PowerUpsToRemove.Empty();
 }
 
-void AFreeFallCharacter::DestroyPlayer()
+void AFreeFallCharacter::DestroyPlayer(ETypeDeath DeathType)
 {
 	//If was recently bounced -> then send elimination delegate
 	if(bWasRecentlyBounced)
@@ -168,9 +170,26 @@ void AFreeFallCharacter::DestroyPlayer()
 		OtherCharacterGrabbedBy = nullptr;
 	}
 
-	//Play bounce effect
-	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DeathEffect.LoadSynchronous(), GetActorLocation());
+	UNiagaraComponent* test = nullptr;
+	FVector particleVelocity;
+	switch (DeathType)
+	{
+	case ETypeDeath::Side:
+		UE_LOG(LogTemp, Warning, TEXT("Side Death"));
+		 test = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DeathEffectSide.LoadSynchronous(), GetActorLocation());
+		particleVelocity = GetVelocity();
+		particleVelocity.Normalize();
+		particleVelocity *= 3000.0f; 
+		test->SetVectorParameter("DirectionParticles", -particleVelocity);
+		break;
+	default:
+		//Play bounce effect
+        UE_LOG(LogTemp, Warning, TEXT("Default Death"));
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DeathEffect.LoadSynchronous(), GetActorLocation());
+		break;
+	}
 	
+	UHapticsStatics::CallHapticsCollision(this, Cast<APlayerController>(this->Controller));
 	//Play death sound
 	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
 	SoundSubsystem->PlaySound("VOC_PLR_Death_ST", this, false);
@@ -845,19 +864,26 @@ void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBou
 	NewVelocity.Z = 0;
 	AddBounceForce(NewVelocity);
 
-	//Bounce other character
-	NewVelocity = (ImpactDirection * OldVelocity.Size() * SelfRestitutionMultiplier
-			* (bShouldConsiderMass ? GetMass() / OtherBounceableInterface->GetMass() : 1)
-			+ (bShouldKeepRemainVelocity ? OtherBounceableInterface->GetVelocity() * (1 - OtherRestitutionMultiplier) : FVector::Zero())) 
-			* GlobalMultiplier;
-	//Neutralize Z bounce velocity
-	NewVelocity.Z = 0;
-	OtherBounceableInterface->AddBounceForce(NewVelocity);
+	//Bounce other object
+	if(SelfRestitutionMultiplier != 0.0f)
+	{
+		NewVelocity = (ImpactDirection * OldVelocity.Size() * SelfRestitutionMultiplier
+		* (bShouldConsiderMass ? GetMass() / OtherBounceableInterface->GetMass() : 1)
+		+ (bShouldKeepRemainVelocity ? OtherBounceableInterface->GetVelocity() * (1 - OtherRestitutionMultiplier) : FVector::Zero())) 
+		* GlobalMultiplier;
+		//Neutralize Z bounce velocity
+		NewVelocity.Z = 0;
+		OtherBounceableInterface->AddBounceForce(NewVelocity);
+	}
+
 
 	//Play Bounce Sound
 	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
 	SoundSubsystem->PlaySound("SFX_PLR_Collision_ST", this, false);
 
+	// Call for rumble
+	//UHapticsStatics::CallHapticsCollision(this, Cast<APlayerController>(GetController()));
+	UHapticsStatics::CallHapticsCollision(this, Cast<APlayerController>(this->Controller));
 	//Play bounce effect
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BounceEffect.LoadSynchronous(), GetActorLocation());
 	

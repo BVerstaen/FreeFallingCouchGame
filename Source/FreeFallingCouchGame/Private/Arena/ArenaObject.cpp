@@ -142,7 +142,7 @@ void UArenaObject::CheckAndRemoveOutOfBoundPlayers()
 	for (AFreeFallCharacter* Character : CharactersToRemove)
 	{
 		CharactersInsideArena.Remove(Character);
-		Character->DestroyPlayer();
+		Character->DestroyPlayer(ETypeDeath::Side);
 	}
 	CharactersToRemove.Empty();
 }

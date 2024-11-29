@@ -38,9 +38,12 @@ private:
 
 	UFUNCTION()
 	void OnStartTick();
+
+	UFUNCTION()
+	bool AtLeastOneObstacleSpawnerManagerPlaysTimer();
 	
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<AObstacleSpawnerManager> ObstacleSpawnerManager = nullptr;
+	TArray<TObjectPtr<AObstacleSpawnerManager>> ObstacleSpawnerManagerList;
 
 	//Temps entre chaque Events;
 	UPROPERTY(EditAnywhere)

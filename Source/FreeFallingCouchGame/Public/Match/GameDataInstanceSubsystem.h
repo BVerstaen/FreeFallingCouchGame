@@ -21,6 +21,9 @@ public:
 
 	int NextParachuteHolderID = -1;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int CurrentColorVisionDeficiency;
+	
 #pragma region PlayerScore
 	
 protected:

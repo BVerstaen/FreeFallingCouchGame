@@ -140,12 +140,12 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 			"Move : " +Character->GetActorRotation().ToString()
 			);
 	}
-	GEngine->AddOnScreenDebugMessage(
-		-1,
-		DeltaTime,
-		FColor::Cyan,
-		TEXT("Tick State Move")
-		);
+	// GEngine->AddOnScreenDebugMessage(
+	// 	-1,
+	// 	DeltaTime,
+	// 	FColor::Cyan,
+	// 	TEXT("Tick State Move")
+	// 	);
 }
 
 void UFreeFallCharacterStateMove::OnInputGrab()
