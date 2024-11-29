@@ -75,7 +75,7 @@ void AObstacleParticleLauncher::ReceiveParticleData_Implementation(const TArray<
 		if(AFreeFallGameMode* GameMode = Cast<AFreeFallGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 		{
 			GameMode->CallArenaActorOnCharacterDestroyed(FoundCharacter);
-			FoundCharacter->DestroyPlayer();
+			FoundCharacter->DestroyPlayer(ETypeDeath::Classic);
 		}
 	}
 }

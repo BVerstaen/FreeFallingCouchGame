@@ -24,6 +24,13 @@ class UFreeFallCharacterState;
 enum class EFreeFallCharacterStateID : uint8;
 class UFreeFallCharacterStateMachine;
 
+UENUM()
+enum class ETypeDeath : uint8
+{
+	Classic,
+	Side,
+};
+
 UCLASS()
 class FREEFALLINGCOUCHGAME_API AFreeFallCharacter : public ACharacter, public IDiveLayersSensible, public IBounceableInterface
 {
@@ -49,8 +56,13 @@ protected:
 public:
 	UPROPERTY(EditAnywhere, Category="Death")
 	TSoftObjectPtr<UNiagaraSystem> DeathEffect;
+	UPROPERTY(EditAnywhere, Category="Death")
+	TSoftObjectPtr<UNiagaraSystem> DeathEffectSide;
 	
-	void DestroyPlayer();
+	UPROPERTY(EditAnywhere, Category="Death")
+	float IntensityParticles = 2000.0f;
+	
+	void DestroyPlayer(ETypeDeath DeathType);
 
 #pragma region Mesh Rotation
 	
