@@ -35,11 +35,12 @@ void ACameraMoverActor::Tick(float DeltaTime)
 void ACameraMoverActor::TriggerEvent()
 {
 	Super::TriggerEvent();
+	ReceiveTriggerEvent();
 }
 
 void ACameraMoverActor::StartCameraMovements()
 {
-	RecieveStartCameraMovements();
+	ReceiveStartCameraMovements();
 }
 
 void ACameraMoverActor::CallOnEventEnded()

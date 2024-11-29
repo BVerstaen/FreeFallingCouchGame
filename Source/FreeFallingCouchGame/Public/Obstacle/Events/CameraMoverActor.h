@@ -32,5 +32,9 @@ public:
 	void CallOnEventEnded();
 
 	UFUNCTION(BlueprintImplementableEvent, meta=(DisplayName = "StartCameraMovement"))
-	void RecieveStartCameraMovements();
+	void ReceiveStartCameraMovements();
+
+	UFUNCTION(BlueprintImplementableEvent, meta=(DisplayName = "StartTopCamEvent"))
+	void ReceiveTriggerEvent();
+
 };
