@@ -58,9 +58,10 @@ public:
 	TSoftObjectPtr<UNiagaraSystem> DeathEffect;
 	UPROPERTY(EditAnywhere, Category="Death")
 	TSoftObjectPtr<UNiagaraSystem> DeathEffectSide;
-	
+
+	// The strength the particles are shot at 
 	UPROPERTY(EditAnywhere, Category="Death")
-	float IntensityParticles = 2000.0f;
+	float IntensityParticles = 3000.0f;
 	
 	void DestroyPlayer(ETypeDeath DeathType);
 

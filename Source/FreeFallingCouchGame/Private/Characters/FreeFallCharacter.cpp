@@ -179,7 +179,7 @@ void AFreeFallCharacter::DestroyPlayer(ETypeDeath DeathType)
 		 test = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DeathEffectSide.LoadSynchronous(), GetActorLocation());
 		particleVelocity = GetVelocity();
 		particleVelocity.Normalize();
-		particleVelocity *= 3000.0f; 
+		particleVelocity *= IntensityParticles; 
 		test->SetVectorParameter("DirectionParticles", -particleVelocity);
 		break;
 	default:
