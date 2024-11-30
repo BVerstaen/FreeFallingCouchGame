@@ -848,28 +848,39 @@ AFreeFallCharacter* AFreeFallCharacter::CollidedWithPlayer()
 void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBounceableInterface> OtherBounceableInterface, float SelfRestitutionMultiplier, float OtherRestitutionMultiplier, float GlobalMultiplier,
                                        bool bShouldConsiderMass, bool bShouldKeepRemainVelocity)
 {
+	//Get impact direction
+	FVector ImpactDirection = (OtherActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+	
 	//Get old velocity
 	FVector OldVelocity = GetVelocity();
+	FVector OtherVelocity = OtherBounceableInterface->GetVelocity();
 	
-	//Get impact direction
-	FVector ImpactDirection = (OtherActor->GetActorLocation() - GetActorLocation()).GetSafeNormal(); 
-
+	//If both velocities == 0 -> give a default velocity based on direction
+	if(OldVelocity.Size() == 0 && OtherBounceableInterface->GetVelocity().Size() == 0)
+	{
+		OldVelocity = ImpactDirection * 1000.0f;
+		OtherVelocity = -ImpactDirection * 1000.0f;
+	}
+	
+	FVector aled = -ImpactDirection * OtherVelocity.Size() * OtherRestitutionMultiplier;
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, FString::SanitizeFloat(aled.Size()));
+	
 	//Bounce self
 	//Player bounce
-	FVector NewVelocity = (-ImpactDirection * OtherBounceableInterface->GetVelocity().Size() * OtherRestitutionMultiplier
+	FVector NewVelocity = (-ImpactDirection * OtherVelocity.Size() * OtherRestitutionMultiplier
 		* (bShouldConsiderMass ? OtherBounceableInterface->GetMass() / GetMass() : 1)
 		+ (bShouldKeepRemainVelocity ? OldVelocity * (1 - SelfRestitutionMultiplier) : FVector::Zero())) 
 		* GlobalMultiplier;
 	//Neutralize Z bounce velocity
 	NewVelocity.Z = 0;
 	AddBounceForce(NewVelocity);
-
+	 
 	//Bounce other object
 	if(SelfRestitutionMultiplier != 0.0f)
 	{
 		NewVelocity = (ImpactDirection * OldVelocity.Size() * SelfRestitutionMultiplier
 		* (bShouldConsiderMass ? GetMass() / OtherBounceableInterface->GetMass() : 1)
-		+ (bShouldKeepRemainVelocity ? OtherBounceableInterface->GetVelocity() * (1 - OtherRestitutionMultiplier) : FVector::Zero())) 
+		+ (bShouldKeepRemainVelocity ? OtherVelocity * (1 - OtherRestitutionMultiplier) : FVector::Zero())) 
 		* GlobalMultiplier;
 		//Neutralize Z bounce velocity
 		NewVelocity.Z = 0;
