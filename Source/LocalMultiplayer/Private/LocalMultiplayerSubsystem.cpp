@@ -129,6 +129,11 @@ void ULocalMultiplayerSubsystem::SetCanCreateNewPlayer(bool canCreate)
 	bCanCreateNewPlayer = canCreate;
 }
 
+int ULocalMultiplayerSubsystem::GetNumberOfPlayers()
+{
+	return NumberOfPlayers;
+}
+
 bool ULocalMultiplayerSubsystem::IsPlayerLimitReached()
 {
 	const ULocalMultiplayerSettings* LocalMultiplayerSettings = GetDefault<ULocalMultiplayerSettings>();
