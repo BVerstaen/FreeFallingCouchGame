@@ -24,7 +24,6 @@ void UPowerUpObjectSoap::Use()
 	Super::Use();
 
 	USoundSubsystem* SoundSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USoundSubsystem>();
-	SoundSubsystem->PlaySound("SFX_PLR_Potiondrink_ST", OwnerCharacter, false);
 	SoundSubsystem->PlaySound("SFX_GPE_Savon_ST", OwnerCharacter, false);
 	
 	OwnerCharacter->bIsGrabbable = false;

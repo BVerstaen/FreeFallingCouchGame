@@ -681,7 +681,7 @@ void AFreeFallCharacter::UpdateEveryMovementInfluence(float DeltaTime)
 	if(OtherCharacterGrabbing)
 	{
 		UpdateMovementInfluence(DeltaTime, OtherCharacterGrabbing, bIsInCircularGrab);
-		GEngine->AddOnScreenDebugMessage(-1,15, FColor::Red, OtherCharacterGrabbing->GetName());
+		//GEngine->AddOnScreenDebugMessage(-1,15, FColor::Red, OtherCharacterGrabbing->GetName());
 	}
 }
 
@@ -731,13 +731,15 @@ bool AFreeFallCharacter::IsLookingToCloseToGrabber(float AngleLimit)
 {
 	if(!OtherCharacterGrabbedBy || !OtherCharacterGrabbing) return false;
 
-	float SelfYRotation = GetActorRotation().Yaw;
-	float OtherYRotation = OtherCharacterGrabbedBy->GetActorRotation().Yaw;
-	float LookDiffAngle = FMath::Abs(OtherYRotation - SelfYRotation);
+	FVector SelfForwardVector = GetActorForwardVector();
+	FVector OtherForwardVector = OtherCharacterGrabbedBy->GetActorForwardVector();
+	float DotProduct = FVector::DotProduct(SelfForwardVector, OtherForwardVector);
+	float AngleInRadians = FMath::Acos(DotProduct);
+	float AngleInDegrees = FMath::RadiansToDegrees(AngleInRadians);
 
-	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, GetName() + " - " + (LookDiffAngle > 180.f - AngleLimit && LookDiffAngle < 180 + AngleLimit ? "Yes" : "No"));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::SanitizeFloat(AngleInDegrees));
 	
-	return LookDiffAngle > 180.f - AngleLimit && LookDiffAngle < 180 + AngleLimit;
+	return AngleInDegrees > 180.f - AngleLimit && AngleInDegrees < 180 + AngleLimit;
 }
 
 TObjectPtr<USceneComponent> AFreeFallCharacter::GetObjectGrabPoint() const
@@ -766,7 +768,7 @@ void AFreeFallCharacter::BindInputDeGrabActions(UEnhancedInputComponent* Enhance
 
 void AFreeFallCharacter::OnInputDeGrab(const FInputActionValue& Value)
 {
-	GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Emerald, "Degrab Input");
+	//GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Emerald, "Degrab Input");
 	if(!OtherCharacterGrabbedBy) return;
 
 	CurrentNumberOfDeGrabInput--;
