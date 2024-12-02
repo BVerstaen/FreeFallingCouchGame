@@ -3,6 +3,7 @@
 
 #include "GameMode/VictorySceneGameMode.h"
 
+#include "Audio/SoundSubsystem.h"
 #include "Match/GameDataInstanceSubsystem.h"
 
 void AVictorySceneGameMode::BeginPlay()
@@ -21,6 +22,17 @@ void AVictorySceneGameMode::BeginPlay()
 	
 	TArray<int> WinnersList = GetWinners();
 	OnGotWinner.Broadcast(WinnersList);
+
+	//Play win music
+	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
+	if(WinnersList.Num() > 0)
+	{
+		SoundSubsystem->PlayMusic("MUS_Victory_ST_Loop");
+	}
+	else
+	{
+		SoundSubsystem->PlayMusic("MUS_Lose_ST_Loop");
+	}
 }
 
 TArray<int> AVictorySceneGameMode::GetWinners()
