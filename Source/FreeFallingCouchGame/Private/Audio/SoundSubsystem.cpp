@@ -3,6 +3,7 @@
 
 #include "Audio/SoundSubsystem.h"
 
+#include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 UAudioComponent* USoundSubsystem::PlaySound(FName SoundName, const AActor* ParentActor, bool bAttachToActor,
@@ -69,11 +70,16 @@ void USoundSubsystem::Play2DSound(FName SoundName)
 	}
 }
 
-void USoundSubsystem::PlayMusic(FName MusicName, bool bLoop, float PitchMultiplier,
+void USoundSubsystem::PlayMusic(FName MusicName, float PitchMultiplier,
 	float StartTime)
 {
+	StopMusic();
+	
 	const USoundSettings* SoundSettings = GetDefault<USoundSettings>();
-	USoundCue* Cue = SoundSettings->MusicLists.Find(MusicName)->LoadSynchronous();
+
+	const TSoftObjectPtr<USoundCue>* SoftCue = SoundSettings->MusicLists.Find(MusicName);
+	if(!SoftCue) return;
+	USoundCue* Cue = SoftCue->LoadSynchronous();
 
 	//Play music cue
 	if(!Cue)
@@ -81,6 +87,21 @@ void USoundSubsystem::PlayMusic(FName MusicName, bool bLoop, float PitchMultipli
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Cue can't be found !");
 		return;
 	}
+	
+	MusicComponent = UGameplayStatics::CreateSound2D(GetWorld(), Cue, 1.0f, PitchMultiplier, 0.0f, nullptr, true, true);
+	MusicComponent->Play(StartTime);
+}
 
-	UGameplayStatics::PlaySound2D(GetWorld(), Cue);
+void USoundSubsystem::StopMusic()
+{
+	if(MusicComponent)
+	{
+		MusicComponent->Stop();
+		MusicComponent = nullptr;
+	}
+}
+
+UAudioComponent* USoundSubsystem::GetAudioComponent()
+{
+	return MusicComponent;
 }
