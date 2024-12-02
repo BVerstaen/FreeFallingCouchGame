@@ -16,6 +16,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Haptic/HapticsStatics.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Obstacle/Obstacle.h"
 #include "Other/DiveLevels.h"
 #include "Other/Parachute.h"
@@ -86,7 +87,11 @@ void AFreeFallCharacter::BeginPlay()
 	{
 		CapsuleCollision->OnComponentHit.AddDynamic(this, &AFreeFallCharacter::OnCapsuleCollisionHit);
 	}
-	
+
+
+	//Init dive size paramters
+	DiveMaximumSize = GetActorScale3D().X;
+	DiveMinimumSize = GetActorScale3D().X * DiveMinimumSizeFactor;	
 }
 
 // Called every frame
@@ -136,6 +141,8 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 		UsedPowerUps.Remove(PowerUpObject);
 	}
 	PowerUpsToRemove.Empty();
+
+	UpdateSizeBasedOnDive();
 }
 
 void AFreeFallCharacter::DestroyPlayer(ETypeDeath DeathType)
@@ -421,6 +428,17 @@ void AFreeFallCharacter::SetDiveMaterialColor()
 ADiveLevels* AFreeFallCharacter::GetDiveLevelsActor() const
 {
 	return DiveLevelsActor;
+}
+
+void AFreeFallCharacter::UpdateSizeBasedOnDive()
+{
+	float DiveProgrssion = UKismetMathLibrary::NormalizeToRange(GetActorLocation().Z,
+		DiveLevelsActor->GetDiveBoundZCoord(EDiveLayersID::Bottom, EDiveLayerBoundsID::Down),
+		DiveLevelsActor->GetDiveBoundZCoord(EDiveLayersID::Middle, EDiveLayerBoundsID::Middle));
+	
+	float NewScale = FMath::Lerp(DiveMinimumSize, DiveMaximumSize, DiveProgrssion);
+	FVector NewScaleVcetor = FVector(NewScale, NewScale, NewScale);
+	SetActorScale3D(NewScaleVcetor * DiveScaleFactor);
 }
 
 ACameraActor* AFreeFallCharacter::GetCameraActor() const

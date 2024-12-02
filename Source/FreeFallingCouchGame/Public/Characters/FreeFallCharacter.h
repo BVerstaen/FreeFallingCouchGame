@@ -218,6 +218,21 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<ACameraActor> CameraActor;
+
+
+protected:
+	//Le facteur de taille minimum qd dive 
+	UPROPERTY(EditAnywhere, Category="Dive level")
+	float DiveMinimumSizeFactor = .5f;
+	
+	float DiveMaximumSize;
+	float DiveMinimumSize;
+	
+	UFUNCTION()
+	void UpdateSizeBasedOnDive();
+
+public:
+	float DiveScaleFactor = 1.0f;
 	
 private:
 	void BindInputDiveAxisAndActions(UEnhancedInputComponent* EnhancedInputComponent);
