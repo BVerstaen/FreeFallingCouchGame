@@ -36,17 +36,26 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RemoveCharacterFromOverlappingCharacters(AFreeFallCharacter* Character);
 
-	//For Game Programming
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<UPowerUpObject> PowerUpObject;
+	UFUNCTION(BlueprintCallable)
+	EPowerUpsID GetPowerUpID();
+
 
 	//Lifetime of PowerUps Collectibles
 	UPROPERTY(EditAnywhere)
 	float LifeTime = 10.0f;
+	
 
 	UPROPERTY()
 	TObjectPtr<AFreeFallCharacter> OverlappingCharacter;
 
+	//For Game Programming
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UPowerUpObject> PowerUpObject;
+	
+	void SetPowerUp(EPowerUpsID ID, TSubclassOf<UPowerUpObject> Object);
+
 	private:
 	float LifeClock = 0.f;
+
+	EPowerUpsID PowerUpID;
 };

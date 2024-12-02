@@ -26,6 +26,8 @@ void UFreeFallCharacterStateFastDive::StateInit(UFreeFallCharacterStateMachine* 
 void UFreeFallCharacterStateFastDive::StateEnter(EFreeFallCharacterStateID PreviousStateID)
 {
 	Super::StateEnter(PreviousStateID);
+	
+	OldFlySpeed = Character->GetCharacterMovement()->MaxFlySpeed;
 
 	if(Character->GetLockControls())
 	{
@@ -33,7 +35,6 @@ void UFreeFallCharacterStateFastDive::StateEnter(EFreeFallCharacterStateID Previ
 		return;
 	}
 	
-	OldFlySpeed = Character->GetCharacterMovement()->MaxFlySpeed;
 
 	Character->bIsDiveForced = false;
 	OldInputDive = 0.0f;
