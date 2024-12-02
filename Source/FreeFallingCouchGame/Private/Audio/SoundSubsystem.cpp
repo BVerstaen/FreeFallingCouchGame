@@ -3,9 +3,10 @@
 
 #include "Audio/SoundSubsystem.h"
 
+#include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
 
-void USoundSubsystem::PlaySound(FName SoundName, const AActor* ParentActor, bool bAttachToActor, float VolumeMultiplier,
+UAudioComponent* USoundSubsystem::PlaySound(FName SoundName, const AActor* ParentActor, bool bAttachToActor,
                                 float PitchMultiplier, float StartTime)
 {
 	//Get Sound Data
@@ -14,13 +15,13 @@ void USoundSubsystem::PlaySound(FName SoundName, const AActor* ParentActor, bool
 	if(!SoundData)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Sound can't be found ! Be sure the sound exist in Sound Settings !");
-		return;
+		return nullptr;
 	}
 
 	if(SoundData->Sounds.Num() <= 0)
 	{
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Sound List Empty !");
-		return;
+		return nullptr;
 	}
 	
 	//Load Sound Cue
@@ -30,20 +31,18 @@ void USoundSubsystem::PlaySound(FName SoundName, const AActor* ParentActor, bool
 	if(!Cue)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Cue can't be found !");
-		return;
+		return nullptr;
 	}
 
 	if(bAttachToActor)
 	{
-		UGameplayStatics::SpawnSoundAttached(Cue, ParentActor->GetRootComponent(), FName("NAME_None"), FVector(ForceInit),
+		return UGameplayStatics::SpawnSoundAttached(Cue, ParentActor->GetRootComponent(), FName("NAME_None"), FVector(ForceInit),
 			FRotator::ZeroRotator, EAttachLocation::Type::KeepRelativeOffset, false,
-			VolumeMultiplier, PitchMultiplier, StartTime);
+			SoundVolume, PitchMultiplier, StartTime);
 	}
-	else
-	{
-		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), Cue, ParentActor->GetActorLocation(), FRotator::ZeroRotator,
-			VolumeMultiplier, PitchMultiplier, StartTime);
-	}
+	
+	return UGameplayStatics::SpawnSoundAtLocation(GetWorld(), Cue, ParentActor->GetActorLocation(), FRotator::ZeroRotator,
+		SoundVolume, PitchMultiplier, StartTime);
 }
 
 void USoundSubsystem::Play2DSound(FName SoundName)
@@ -71,11 +70,16 @@ void USoundSubsystem::Play2DSound(FName SoundName)
 	}
 }
 
-void USoundSubsystem::PlayMusic(FName MusicName, bool bLoop, float VolumeMultiplier, float PitchMultiplier,
+void USoundSubsystem::PlayMusic(FName MusicName, float PitchMultiplier,
 	float StartTime)
 {
+	StopMusic();
+	
 	const USoundSettings* SoundSettings = GetDefault<USoundSettings>();
-	USoundCue* Cue = SoundSettings->MusicLists.Find(MusicName)->LoadSynchronous();
+
+	const TSoftObjectPtr<USoundCue>* SoftCue = SoundSettings->MusicLists.Find(MusicName);
+	if(!SoftCue) return;
+	USoundCue* Cue = SoftCue->LoadSynchronous();
 
 	//Play music cue
 	if(!Cue)
@@ -83,6 +87,21 @@ void USoundSubsystem::PlayMusic(FName MusicName, bool bLoop, float VolumeMultipl
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Cue can't be found !");
 		return;
 	}
+	
+	MusicComponent = UGameplayStatics::CreateSound2D(GetWorld(), Cue, 1.0f, PitchMultiplier, 0.0f, nullptr, true, true);
+	MusicComponent->Play(StartTime);
+}
 
-	UGameplayStatics::PlaySound2D(GetWorld(), Cue);
+void USoundSubsystem::StopMusic()
+{
+	if(MusicComponent)
+	{
+		MusicComponent->Stop();
+		MusicComponent = nullptr;
+	}
+}
+
+UAudioComponent* USoundSubsystem::GetAudioComponent()
+{
+	return MusicComponent;
 }

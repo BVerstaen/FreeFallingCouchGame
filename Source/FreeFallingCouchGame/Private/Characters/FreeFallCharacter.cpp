@@ -5,6 +5,7 @@
 
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Animation/AnimInstanceProxy.h"
 #include "Audio/SoundSubsystem.h"
@@ -13,6 +14,7 @@
 #include "Characters/FreeFallCharacterStateMachine.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Haptic/HapticsStatics.h"
 #include "Kismet/GameplayStatics.h"
 #include "Obstacle/Obstacle.h"
 #include "Other/DiveLevels.h"
@@ -136,7 +138,7 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 	PowerUpsToRemove.Empty();
 }
 
-void AFreeFallCharacter::DestroyPlayer()
+void AFreeFallCharacter::DestroyPlayer(ETypeDeath DeathType)
 {
 	//If was recently bounced -> then send elimination delegate
 	if(bWasRecentlyBounced)
@@ -168,6 +170,28 @@ void AFreeFallCharacter::DestroyPlayer()
 		OtherCharacterGrabbedBy = nullptr;
 	}
 
+	UNiagaraComponent* test = nullptr;
+	FVector particleVelocity = GetVelocity();
+	switch (DeathType)
+	{
+	case ETypeDeath::Side:
+		UE_LOG(LogTemp, Warning, TEXT("Side Death"));
+		 test = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DeathEffectSide.LoadSynchronous(), GetActorLocation());
+		if(test->IsValidLowLevel())
+		{
+			particleVelocity.Normalize();
+			particleVelocity *= IntensityParticles; 
+			test->SetVectorParameter("DirectionParticles", -particleVelocity);
+		}
+		break;
+	default:
+		//Play bounce effect
+        UE_LOG(LogTemp, Warning, TEXT("Default Death"));
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DeathEffect.LoadSynchronous(), GetActorLocation());
+		break;
+	}
+	
+	UHapticsStatics::CallHapticsCollision(this, Cast<APlayerController>(this->Controller));
 	//Play death sound
 	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
 	SoundSubsystem->PlaySound("VOC_PLR_Death_ST", this, false);
@@ -303,6 +327,7 @@ void AFreeFallCharacter::ApplyMovementFromAcceleration(float DeltaTime)
 {
 	Decelerate(DeltaTime);
 	GEngine->AddOnScreenDebugMessage(-1,DeltaTime,FColor::Orange, TEXT("AccelerationAlpha : " + AccelerationAlpha.ToString()));
+	GEngine->AddOnScreenDebugMessage(-1,DeltaTime,FColor::Orange, TEXT("MaxFlySpeed : " + FString::SanitizeFloat(GetCharacterMovement()->MaxFlySpeed)));
 	const float ScaleValue = MovementSpeed / GetCharacterMovement()->MaxFlySpeed;
 	AddMovementInput(FVector(
 		FMath::Abs(AccelerationAlpha.X) < CharactersSettings->AccelerationThreshold ? 0 : AccelerationAlpha.X,
@@ -658,7 +683,7 @@ void AFreeFallCharacter::UpdateEveryMovementInfluence(float DeltaTime)
 	if(OtherCharacterGrabbing)
 	{
 		UpdateMovementInfluence(DeltaTime, OtherCharacterGrabbing, bIsInCircularGrab);
-		GEngine->AddOnScreenDebugMessage(-1,15, FColor::Red, OtherCharacterGrabbing->GetName());
+		//GEngine->AddOnScreenDebugMessage(-1,15, FColor::Red, OtherCharacterGrabbing->GetName());
 	}
 }
 
@@ -708,13 +733,15 @@ bool AFreeFallCharacter::IsLookingToCloseToGrabber(float AngleLimit)
 {
 	if(!OtherCharacterGrabbedBy || !OtherCharacterGrabbing) return false;
 
-	float SelfYRotation = GetActorRotation().Yaw;
-	float OtherYRotation = OtherCharacterGrabbedBy->GetActorRotation().Yaw;
-	float LookDiffAngle = FMath::Abs(OtherYRotation - SelfYRotation);
+	FVector SelfForwardVector = GetActorForwardVector();
+	FVector OtherForwardVector = OtherCharacterGrabbedBy->GetActorForwardVector();
+	float DotProduct = FVector::DotProduct(SelfForwardVector, OtherForwardVector);
+	float AngleInRadians = FMath::Acos(DotProduct);
+	float AngleInDegrees = FMath::RadiansToDegrees(AngleInRadians);
 
-	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, GetName() + " - " + (LookDiffAngle > 180.f - AngleLimit && LookDiffAngle < 180 + AngleLimit ? "Yes" : "No"));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::SanitizeFloat(AngleInDegrees));
 	
-	return LookDiffAngle > 180.f - AngleLimit && LookDiffAngle < 180 + AngleLimit;
+	return AngleInDegrees > 180.f - AngleLimit && AngleInDegrees < 180 + AngleLimit;
 }
 
 TObjectPtr<USceneComponent> AFreeFallCharacter::GetObjectGrabPoint() const
@@ -743,7 +770,7 @@ void AFreeFallCharacter::BindInputDeGrabActions(UEnhancedInputComponent* Enhance
 
 void AFreeFallCharacter::OnInputDeGrab(const FInputActionValue& Value)
 {
-	GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Emerald, "Degrab Input");
+	//GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Emerald, "Degrab Input");
 	if(!OtherCharacterGrabbedBy) return;
 
 	CurrentNumberOfDeGrabInput--;
@@ -767,6 +794,7 @@ void AFreeFallCharacter::ActivateDeGrab()
 #pragma endregion
 
 #pragma region Bounce Fucntions
+
 void AFreeFallCharacter::BounceCooldown()
 {
 	bAlreadyCollided = true;
@@ -824,35 +852,53 @@ AFreeFallCharacter* AFreeFallCharacter::CollidedWithPlayer()
 void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBounceableInterface> OtherBounceableInterface, float SelfRestitutionMultiplier, float OtherRestitutionMultiplier, float GlobalMultiplier,
                                        bool bShouldConsiderMass, bool bShouldKeepRemainVelocity)
 {
+	//Get impact direction
+	FVector ImpactDirection = (OtherActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+	
 	//Get old velocity
 	FVector OldVelocity = GetVelocity();
+	FVector OtherVelocity = OtherBounceableInterface->GetVelocity();
 	
-	//Get impact direction
-	FVector ImpactDirection = (OtherActor->GetActorLocation() - GetActorLocation()).GetSafeNormal(); 
-
+	//If both velocities == 0 -> give a default velocity based on direction
+	if(OldVelocity.Size() == 0 && OtherBounceableInterface->GetVelocity().Size() == 0)
+	{
+		OldVelocity = ImpactDirection * 1000.0f;
+		OtherVelocity = -ImpactDirection * 1000.0f;
+	}
+	
+	FVector aled = -ImpactDirection * OtherVelocity.Size() * OtherRestitutionMultiplier;
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, FString::SanitizeFloat(aled.Size()));
+	
 	//Bounce self
 	//Player bounce
-	FVector NewVelocity = (-ImpactDirection * OtherBounceableInterface->GetVelocity().Size() * OtherRestitutionMultiplier
+	FVector NewVelocity = (-ImpactDirection * OtherVelocity.Size() * OtherRestitutionMultiplier
 		* (bShouldConsiderMass ? OtherBounceableInterface->GetMass() / GetMass() : 1)
 		+ (bShouldKeepRemainVelocity ? OldVelocity * (1 - SelfRestitutionMultiplier) : FVector::Zero())) 
 		* GlobalMultiplier;
 	//Neutralize Z bounce velocity
 	NewVelocity.Z = 0;
 	AddBounceForce(NewVelocity);
+	 
+	//Bounce other object
+	if(SelfRestitutionMultiplier != 0.0f)
+	{
+		NewVelocity = (ImpactDirection * OldVelocity.Size() * SelfRestitutionMultiplier
+		* (bShouldConsiderMass ? GetMass() / OtherBounceableInterface->GetMass() : 1)
+		+ (bShouldKeepRemainVelocity ? OtherVelocity * (1 - OtherRestitutionMultiplier) : FVector::Zero())) 
+		* GlobalMultiplier;
+		//Neutralize Z bounce velocity
+		NewVelocity.Z = 0;
+		OtherBounceableInterface->AddBounceForce(NewVelocity);
+	}
 
-	//Bounce other character
-	NewVelocity = (ImpactDirection * OldVelocity.Size() * SelfRestitutionMultiplier
-			* (bShouldConsiderMass ? GetMass() / OtherBounceableInterface->GetMass() : 1)
-			+ (bShouldKeepRemainVelocity ? OtherBounceableInterface->GetVelocity() * (1 - OtherRestitutionMultiplier) : FVector::Zero())) 
-			* GlobalMultiplier;
-	//Neutralize Z bounce velocity
-	NewVelocity.Z = 0;
-	OtherBounceableInterface->AddBounceForce(NewVelocity);
 
 	//Play Bounce Sound
 	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
 	SoundSubsystem->PlaySound("SFX_PLR_Collision_ST", this, false);
 
+	// Call for rumble
+	//UHapticsStatics::CallHapticsCollision(this, Cast<APlayerController>(GetController()));
+	UHapticsStatics::CallHapticsCollision(this, Cast<APlayerController>(this->Controller));
 	//Play bounce effect
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BounceEffect.LoadSynchronous(), GetActorLocation());
 	
@@ -872,7 +918,7 @@ void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBou
 		SoundSubsystem->PlaySound("VOC_PLR_Hit", this, true);
 		SoundSubsystem->PlaySound("VOC_PLR_Shock_ST", OtherFreeFallCharacter, true);
 
-		//Play random "onomatopé"
+		//Play random "onomatopée"
 		TArray<FName> ExpressionHit = {
 			"VOC_PLR_Angry_ST",
 			"VOC_PLR_Joy_ST",
@@ -887,8 +933,16 @@ void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBou
 		SetWasRecentlyBouncedTimer(OtherFreeFallCharacter);
 		OtherFreeFallCharacter->SetWasRecentlyBouncedTimer(this);
 
-		BounceCooldown();
 	}
+
+	BounceCooldown();
+}
+
+void AFreeFallCharacter::BounceRoutineFromBounceData(AActor* OtherActor,
+	TScriptInterface<IBounceableInterface> OtherBounceableInterface, FBounceData BounceData)
+{
+	BounceRoutine(OtherActor, OtherBounceableInterface, BounceData.SelfRestitutionMultiplier, BounceData.OtherRestitutionMultiplier,
+		BounceData.BounceMultiplier, BounceData.bShouldConsiderMass, BounceData.bShouldKeepRemainingVelocity);
 }
 
 
@@ -900,19 +954,10 @@ void AFreeFallCharacter::OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent
 	//Check if have bouncable interface
 	if(!OtherActor->Implements<UBounceableInterface>()) return;
 	TScriptInterface<IBounceableInterface> OtherBounceableInterface = TScriptInterface<IBounceableInterface>(OtherActor);
-	
-	switch (OtherBounceableInterface->GetBounceParameterType())
-	{
-	case Obstacle:
-		BounceRoutine(OtherActor, OtherBounceableInterface, BouncePlayerRestitutionMultiplier,
-			BounceObstacleRestitutionMultiplier, BounceObstacleMultiplier, bShouldConsiderMassObject, bShouldKeepRemainingVelocity);
-		break;
-	case Player:
-		BounceRoutine(OtherActor, OtherBounceableInterface, BouncePlayerRestitutionMultiplier,
-	BouncePlayerRestitutionMultiplier, BouncePlayerMultiplier, true, bShouldKeepRemainingVelocity);
-		break;
-	}
-	
+
+	//Find Bounce parameter data from parameter type
+	FBounceData* BounceData = BounceParameterData.Find(OtherBounceableInterface->GetBounceParameterType());
+	BounceRoutineFromBounceData(OtherActor, OtherBounceableInterface, *BounceData);
 }
 
 

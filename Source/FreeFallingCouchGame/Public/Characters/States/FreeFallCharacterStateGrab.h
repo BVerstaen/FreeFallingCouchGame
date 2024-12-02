@@ -46,7 +46,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Grab - Catch")
 	float GrabMinimumDistance = 30.0f;
 	
-	/*Distance minimum avec lequel un joueur n'est pas recenter*/
+	/*Distance maximum avec lequel un joueur n'est pas recenter*/
 	UPROPERTY(EditAnywhere, Category="Grab - Catch")
 	float GrabMaximumDistance = 200.0f;
 

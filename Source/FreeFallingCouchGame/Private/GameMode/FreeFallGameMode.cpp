@@ -4,9 +4,11 @@
 #include "GameMode/FreeFallGameMode.h"
 
 #include "LocalMultiplayerSubsystem.h"
+#include "Audio/SoundSubsystem.h"
 #include "Characters/FreeFallCharacter.h"
 #include "Engine/LevelStreamingDynamic.h"
 #include "GameFramework/PlayerStart.h"
+#include "Haptic/HapticsSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Match/GameDataInstanceSubsystem.h"
 #include "Settings/CharactersSettings.h"
@@ -80,7 +82,7 @@ void AFreeFallGameMode::Init()
 	else
 	{
 		OldPlayerScore.Empty();
-		for (int i = 0; i < GetDefault<UMapSettings>()->NumberOfPlayers; i++)
+		for (int i = 0; i < NumberOfPlayers; i++)
 		{
 			OldPlayerScore.Add(GameDataSubsystem->GetPlayerScoreFromID(i));
 		}
@@ -136,6 +138,7 @@ UFreeFallCharacterInputData* AFreeFallGameMode::LoadInputDataFromConfig()
 		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, TEXT("CharactersSettings est nullptr"));
 		return nullptr;
 	}
+	GetGameInstance()->GetSubsystem<UHapticsSubsystem>()->InitHaptics(CharacterSettings->RumbleSystem);
 	return CharacterSettings->InputData.LoadSynchronous();
 }
 
@@ -252,7 +255,12 @@ AParachute* AFreeFallGameMode::RespawnParachute(FVector SpawnLocation)
 	SpawnTransform.SetLocation(SpawnLocation);
 
 	//Spawn parachute
-	return GetWorld()->SpawnActorDeferred<AParachute>(MapSettings->ParachuteSubclass, SpawnTransform);
+	AParachute* NewParachuteInstance = GetWorld()->SpawnActorDeferred<AParachute>(MapSettings->ParachuteSubclass, SpawnTransform);
+	FTransform ParachuteTransform = FTransform::Identity;
+	ParachuteTransform.SetLocation(ParachuteSpawnLocation);
+	NewParachuteInstance->FinishSpawning(ParachuteTransform);
+	
+	return NewParachuteInstance;
 }
 
 void AFreeFallGameMode::CallArenaActorOnCharacterDestroyed(AFreeFallCharacter* Character)
@@ -301,16 +309,21 @@ void AFreeFallGameMode::StartMatch()
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------MATCH START--------------------"));
 
 	//Reset next parachute holder ID
-	NextParachuteHolderID = -1;
+	GameDataSubsystem->NextParachuteHolderID = -1;
 	
 	//Spawn Characters for pre match
 	TArray<APlayerStart*> PlayerStartsPoints;
 	FindPlayerStartActorsInMap(PlayerStartsPoints);
 	SpawnCharacters(PlayerStartsPoints, true);
+
+	//Play gameplay music
+	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
+	SoundSubsystem->PlayMusic("MUS_GameplayTimer_ST");
 	
 	//Create parachute & equip to next player
 	ParachuteInstance = RespawnParachute(ParachuteSpawnLocation);
 	ParachuteInstance->OnParachuteGrabbed.AddDynamic(this, &AFreeFallGameMode::BeginFirstRound);
+	ParachuteInstance->PlayFallDownAnimation(ParachuteSpawnLocation);
 }
 
 void AFreeFallGameMode::BeginFirstRound(AFreeFallCharacter* NewOwner)
@@ -319,12 +332,12 @@ void AFreeFallGameMode::BeginFirstRound(AFreeFallCharacter* NewOwner)
 	if(!MapSettings) return;
 
 	//Get first parachute holder
-	NextParachuteHolderID = NewOwner->getIDPlayerLinked();
+	GameDataSubsystem->NextParachuteHolderID = NewOwner->getIDPlayerLinked();
 	
 	//Reset Player score
 	GameDataSubsystem->ResetPlayerScore();
 	OldPlayerScore.Empty();
-	for (int i = 0; i < GetDefault<UMapSettings>()->NumberOfPlayers; ++i)
+	for (int i = 0; i < NumberOfPlayers; ++i)
 	{
 		GameDataSubsystem->SetPlayerScoreFromID(i, 0);
 		OldPlayerScore.Add(0);
@@ -373,7 +386,7 @@ void AFreeFallGameMode::StartRound()
 	ParachuteInstance->OnParachuteDropped.AddDynamic(this, &AFreeFallGameMode::FindNewOwnerForParachute);
 	for(AFreeFallCharacter* Character : CharactersInsideArena)
 	{
-		if(Character->getIDPlayerLinked() == NextParachuteHolderID)
+		if(Character->getIDPlayerLinked() == GameDataSubsystem->NextParachuteHolderID)
 		{
 			ParachuteInstance->EquipToPlayer(Character);
 			break;
@@ -515,12 +528,12 @@ void AFreeFallGameMode::EndRound()
 	
 	//Give next parachute to last player
 	int MinimumScoreID = 0;
-	for(int i = 0; i < GetDefault<UMapSettings>()->NumberOfPlayers; i++)
+	for(int i = 0; i < NumberOfPlayers; i++)
 	{
-		if(GameDataSubsystem->GetPlayerScoreFromID(i) < GameDataSubsystem->GetPlayerScoreFromID(MinimumScoreID))
+		if(GameDataSubsystem->GetPlayerScoreFromID(i) < GameDataSubsystem->GetPlayerScoreFromID(MinimumScoreID) && GameDataSubsystem->GetPlayerScoreFromID(i)!=-1)
 			MinimumScoreID = i;
 	}
-	NextParachuteHolderID = MinimumScoreID + 1;
+	GameDataSubsystem->NextParachuteHolderID = MinimumScoreID;
 
 	//Destroy parachute if already exists
 	if(ParachuteInstance)

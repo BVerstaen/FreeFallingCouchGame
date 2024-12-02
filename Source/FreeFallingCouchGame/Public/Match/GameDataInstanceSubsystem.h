@@ -16,9 +16,14 @@ class FREEFALLINGCOUCHGAME_API UGameDataInstanceSubsystem : public UGameInstance
 	GENERATED_BODY()
 
 public:
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	int CurrentRound = 0;
 
+	int NextParachuteHolderID = -1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int CurrentColorVisionDeficiency;
+	
 #pragma region PlayerScore
 	
 protected:

@@ -29,13 +29,14 @@ void UFreeFallCharacterStateDive::StateEnter(EFreeFallCharacterStateID PreviousS
 {
 	Super::StateEnter(PreviousStateID);
 
+	OldFlySpeed = Character->GetCharacterMovement()->MaxFlySpeed;
+	
 	if(Character->GetLockControls())
 	{
 		Character->GetStateMachine()->ChangeState(EFreeFallCharacterStateID::Idle);
 		return;
 	}
 	
-	OldFlySpeed = Character->GetCharacterMovement()->MaxFlySpeed;
 
 	UFreeFallCharacterStateMove* StateMove = Cast<UFreeFallCharacterStateMove>(StateMachine->GetState(EFreeFallCharacterStateID::Move));
 	AccelerationSpeed = StateMove == nullptr? 0 : StateMove->AccelerationSpeed;

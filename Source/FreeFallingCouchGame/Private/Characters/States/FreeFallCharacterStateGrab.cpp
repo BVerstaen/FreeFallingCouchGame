@@ -30,14 +30,6 @@ void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousS
 {
 	Super::StateEnter(PreviousStateID);
 	//Get previous state ID
-
-	//Can't grab if is grabbed
-	if(Character->OtherCharacterGrabbing && Character->GrabbingState != EFreeFallCharacterGrabbingState::GrabPlayer)
-		ExitStateConditions();
-	
-	//Can't grab if is in Sensible Area
-	if(Character->IsLookingToCloseToGrabber(ChainGrabAngleLimit))
-		ExitStateConditions();
 	
 	//Stop grabbing if release key
 	if(!Character->bInputGrabPressed)
@@ -67,7 +59,13 @@ void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousS
 		ExitStateConditions();
 		return;
 	}
-
+	
+	//Can't grab if is in Sensible Area
+	if(Character->IsLookingToCloseToGrabber(ChainGrabAngleLimit))
+		ExitStateConditions();
+	
+	//Play start grab animation
+	Character->PlayAnimation(StartGrabAnimation, false, true);
 	
 	//Check if caught character
 	if(Character->GrabbingState == EFreeFallCharacterGrabbingState::None)
@@ -79,9 +77,6 @@ void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousS
 			//Play grab sound
 			USoundSubsystem* SoundSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USoundSubsystem>();
 			SoundSubsystem->PlaySound("SFX_PLR_Grab_ST", Character, true);
-
-			//Play start grab animation
-			Character->PlayAnimation(StartGrabAnimation, false, true);
 		}
 	}
 	if(Character->GrabbingState == EFreeFallCharacterGrabbingState::None)
@@ -91,9 +86,6 @@ void UFreeFallCharacterStateGrab::StateEnter(EFreeFallCharacterStateID PreviousS
 			//Play grab sound
 			USoundSubsystem* SoundSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USoundSubsystem>();
 			SoundSubsystem->PlaySound("SFX_PLR_Grab_ST", Character, true);
-
-			//Play start grab animation
-			Character->PlayAnimation(StartGrabAnimation, false, true);
 		}
 	}
 	ExitStateConditions();
@@ -265,9 +257,7 @@ bool UFreeFallCharacterStateGrab::PlayerGrab() const
 	{
 		USoundSubsystem* SoundSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USoundSubsystem>();
 		SoundSubsystem->PlaySound("SFX_PLR_SlurpGrab_ST", Character, true);
-
-		//Play start grab animation
-		Character->PlayAnimation(StartGrabAnimation, false, true);
+		
 		return false;
 	}
 	
@@ -288,6 +278,7 @@ bool UFreeFallCharacterStateGrab::PlayerGrab() const
 	{
 		//Remove References
 		FoundCharacter->OtherCharacterGrabbedBy->OtherCharacterGrabbing = nullptr;
+		FoundCharacter->OtherCharacterGrabbedBy->OtherCharacterGrabbing->GrabbingState = EFreeFallCharacterGrabbingState::None;
 		FoundCharacter->OtherCharacterGrabbedBy = nullptr;
 	}
 	
@@ -297,7 +288,7 @@ bool UFreeFallCharacterStateGrab::PlayerGrab() const
 	
 	//Calculate location offset
 	FVector GrabOffset = FoundCharacter->GetActorLocation() - Character->GetActorLocation();
-	if(GrabOffset.Size() <= GrabMinimumDistance)
+	if(GrabOffset.Size() <= GrabMinimumDistance || GrabOffset.Size() >= GrabMaximumDistance)
 	{
 		FoundCharacter->SetActorLocation(Character->GetActorLocation() + Character->GetActorForwardVector() * GrabMinimumDistance);
 		GrabOffset = FoundCharacter->GetActorLocation() - Character->GetActorLocation();
