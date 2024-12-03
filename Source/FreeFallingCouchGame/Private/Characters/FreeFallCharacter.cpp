@@ -16,6 +16,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Haptic/HapticsStatics.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Obstacle/Obstacle.h"
 #include "Other/DiveLevels.h"
 #include "Other/Parachute.h"
@@ -86,7 +87,11 @@ void AFreeFallCharacter::BeginPlay()
 	{
 		CapsuleCollision->OnComponentHit.AddDynamic(this, &AFreeFallCharacter::OnCapsuleCollisionHit);
 	}
-	
+
+
+	//Init dive size paramters
+	DiveMaximumSize = GetActorScale3D().X;
+	DiveMinimumSize = GetActorScale3D().X * DiveMinimumSizeFactor;	
 }
 
 // Called every frame
@@ -136,6 +141,8 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 		UsedPowerUps.Remove(PowerUpObject);
 	}
 	PowerUpsToRemove.Empty();
+
+	UpdateSizeBasedOnDive();
 }
 
 void AFreeFallCharacter::DestroyPlayer(ETypeDeath DeathType)
@@ -171,16 +178,18 @@ void AFreeFallCharacter::DestroyPlayer(ETypeDeath DeathType)
 	}
 
 	UNiagaraComponent* test = nullptr;
-	FVector particleVelocity;
+	FVector particleVelocity = GetVelocity();
 	switch (DeathType)
 	{
 	case ETypeDeath::Side:
 		UE_LOG(LogTemp, Warning, TEXT("Side Death"));
 		 test = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DeathEffectSide.LoadSynchronous(), GetActorLocation());
-		particleVelocity = GetVelocity();
-		particleVelocity.Normalize();
-		particleVelocity *= 3000.0f; 
-		test->SetVectorParameter("DirectionParticles", -particleVelocity);
+		if(test->IsValidLowLevel())
+		{
+			particleVelocity.Normalize();
+			particleVelocity *= IntensityParticles; 
+			test->SetVectorParameter("DirectionParticles", -particleVelocity);
+		}
 		break;
 	default:
 		//Play bounce effect
@@ -415,6 +424,17 @@ void AFreeFallCharacter::SetDiveMaterialColor()
 ADiveLevels* AFreeFallCharacter::GetDiveLevelsActor() const
 {
 	return DiveLevelsActor;
+}
+
+void AFreeFallCharacter::UpdateSizeBasedOnDive()
+{
+	float DiveProgrssion = UKismetMathLibrary::NormalizeToRange(GetActorLocation().Z,
+		DiveLevelsActor->GetDiveBoundZCoord(EDiveLayersID::Bottom, EDiveLayerBoundsID::Down),
+		DiveLevelsActor->GetDiveBoundZCoord(EDiveLayersID::Middle, EDiveLayerBoundsID::Middle));
+	
+	float NewScale = FMath::Lerp(DiveMinimumSize, DiveMaximumSize, DiveProgrssion);
+	FVector NewScaleVcetor = FVector(NewScale, NewScale, NewScale);
+	SetActorScale3D(NewScaleVcetor * DiveScaleFactor);
 }
 
 ACameraActor* AFreeFallCharacter::GetCameraActor() const

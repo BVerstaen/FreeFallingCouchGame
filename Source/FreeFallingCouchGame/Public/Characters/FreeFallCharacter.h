@@ -58,9 +58,10 @@ public:
 	TSoftObjectPtr<UNiagaraSystem> DeathEffect;
 	UPROPERTY(EditAnywhere, Category="Death")
 	TSoftObjectPtr<UNiagaraSystem> DeathEffectSide;
-	
+
+	// The strength the particles are shot at 
 	UPROPERTY(EditAnywhere, Category="Death")
-	float IntensityParticles = 2000.0f;
+	float IntensityParticles = 3000.0f;
 	
 	void DestroyPlayer(ETypeDeath DeathType);
 
@@ -218,6 +219,21 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<ACameraActor> CameraActor;
+
+
+protected:
+	//Le facteur de taille minimum qd dive 
+	UPROPERTY(EditAnywhere, Category="Dive level")
+	float DiveMinimumSizeFactor = .5f;
+	
+	float DiveMaximumSize;
+	float DiveMinimumSize;
+	
+	UFUNCTION()
+	void UpdateSizeBasedOnDive();
+
+public:
+	float DiveScaleFactor = 1.0f;
 	
 private:
 	void BindInputDiveAxisAndActions(UEnhancedInputComponent* EnhancedInputComponent);

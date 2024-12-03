@@ -22,7 +22,7 @@ class FREEFALLINGCOUCHGAME_API UPowerUpObjectSmaller : public UPowerUpObject
 
 private:
 	UPROPERTY()
-	FVector CharacterBaseScale;
+	float CharacterBaseScaleMultiplier;
 
 	//Multiply base scale with that number (between 0 and 1)
 	UPROPERTY(EditAnywhere)
