@@ -3,6 +3,9 @@
 
 #include "Obstacle/ObstacleSpawnerManager.h"
 
+#include "GameMode/FreeFallGameMode.h"
+#include "Kismet/GameplayStatics.h"
+
 
 // Sets default values
 AObstacleSpawnerManager::AObstacleSpawnerManager()
@@ -23,9 +26,18 @@ void AObstacleSpawnerManager::BeginPlay()
 		ObstacleSpawner->PauseSpawner();
 	}
 
-	
+	//Start Timer after round start
+	if(AFreeFallGameMode* GameMode = Cast<AFreeFallGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
+	{
+		GameMode->OnStartRound.AddDynamic(this, &AObstacleSpawnerManager::StartTimer);
+	}
+}
+
+void AObstacleSpawnerManager::StartTimer()
+{
 	//Start default timer
 	float SpawnDelay = FMath::RandRange(ObstacleMinTimer, ObstacleMaxTimer);
+	bTimerPlaying = true;
 	GetWorldTimerManager().SetTimer(SpawnerTimer, this, &AObstacleSpawnerManager::LaunchSpawn, SpawnDelay, false);
 }
 
@@ -35,6 +47,8 @@ void AObstacleSpawnerManager::LaunchSpawn()
 	AObstacleSpawner* Spawner = LinkedObstacleSpawners[FMath::RandHelper(LinkedObstacleSpawners.Num())];
 	Spawner->SpawnObstacle();
 
+	GEngine->AddOnScreenDebugMessage(-1,15,FColor::Red,"Spawned Obstacle");
+	
 	//Reset Timer
 	GetWorldTimerManager().ClearTimer(SpawnerTimer);
 	float SpawnDelay = FMath::RandRange(ObstacleMinTimer, ObstacleMaxTimer);

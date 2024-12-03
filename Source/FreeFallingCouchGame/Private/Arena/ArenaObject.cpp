@@ -34,7 +34,7 @@ void UArenaObject::Init(const AFreeFallGameMode* FreeFallGameMode)
 	
 	MainCameraController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	
-	Parachute = FreeFallGameMode->GetParachuteInstance();
+	//Parachute = FreeFallGameMode->GetParachuteInstance();
 
 	CameraMain = FindCameraByTag("CameraMain");
 	if(!CameraMain)
@@ -142,7 +142,7 @@ void UArenaObject::CheckAndRemoveOutOfBoundPlayers()
 	for (AFreeFallCharacter* Character : CharactersToRemove)
 	{
 		CharactersInsideArena.Remove(Character);
-		Character->DestroyPlayer();
+		Character->DestroyPlayer(ETypeDeath::Side);
 	}
 	CharactersToRemove.Empty();
 }

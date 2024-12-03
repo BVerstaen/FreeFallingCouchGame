@@ -31,8 +31,8 @@ protected:
 
 	void ReleasePlayerGrab(EFreeFallCharacterStateID PreviousStateID);
 	void ReleaseObjectGrab(EFreeFallCharacterStateID PreviousStateID);
-	void PlayerGrab() const;
-	void ObjectGrab() const;
+	bool PlayerGrab() const;
+	bool ObjectGrab() const;
 	
 	
 	/*Distance de la boule (par rapport au forward du joueur) qui check si on peut grab un joueur ou obstacle*/
@@ -46,7 +46,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Grab - Catch")
 	float GrabMinimumDistance = 30.0f;
 	
-	/*Distance minimum avec lequel un joueur n'est pas recenter*/
+	/*Distance maximum avec lequel un joueur n'est pas recenter*/
 	UPROPERTY(EditAnywhere, Category="Grab - Catch")
 	float GrabMaximumDistance = 200.0f;
 
@@ -75,8 +75,16 @@ protected:
 	/*Multiplicateur de base quand le joueur lance sa prise (pour les objets)  (force par défaut si immobile)*/
 	UPROPERTY(EditAnywhere, Category="ObjectGrab - Launch")
 	float LaunchObjectBaseLaunchMultiplier = 0.f;
+
+	UPROPERTY(EditAnywhere, Category="Grab - Animation")
+	TObjectPtr<UAnimSequence> StartGrabAnimation;
+
+	UPROPERTY(EditAnywhere, Category="Grab - Animation")
+	TObjectPtr<UAnimSequence> EndGrabAnimation;
 	
 	UPROPERTY()
 	EFreeFallCharacterStateID PreviousState;
 
+
+	
 };

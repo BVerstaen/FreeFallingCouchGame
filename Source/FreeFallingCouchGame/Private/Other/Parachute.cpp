@@ -52,13 +52,16 @@ void AParachute::EquipToPlayer(AFreeFallCharacter* Character)
 	Character->Parachute = this;
 	FAttachmentTransformRules AttachmentRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget,EAttachmentRule::KeepWorld, true);
 	AttachToComponent(Character->GetParachuteAttachPoint(), AttachmentRules);
+
+	Character->OnParachuteGet(this);
 	
 	Mesh->SetSimulatePhysics(false);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	if(!Character->OnWasEliminated.IsAlreadyBound(this, &AParachute::GiveToMurderer))
 		Character->OnWasEliminated.AddDynamic(this, &AParachute::GiveToMurderer);
-	
+
+	StopFallDownAnimation();
 	OnParachuteGrabbed.Broadcast(Character);
 
 	SetActorRelativeScale3D(OriginScale);
@@ -84,7 +87,8 @@ void AParachute::StealParachute(AFreeFallCharacter* PreviousOwner, AFreeFallChar
 	//Remove previous actor reference
 	PreviousOwner->OnWasEliminated.RemoveDynamic(this, &AParachute::GiveToMurderer);
 	PreviousOwner->Parachute = nullptr;
-
+	PreviousOwner->OnParachuteLoss(this);
+	
 	//Detach from old actor and attach to new one
 	FDetachmentTransformRules DetachmentRules = FDetachmentTransformRules(EDetachmentRule::KeepWorld, false);
 	DetachFromActor(DetachmentRules);
@@ -107,6 +111,7 @@ AParachute* AParachute::DropParachute(AFreeFallCharacter* PreviousOwner)
 	//Remove previous actor reference
 	PreviousOwner->OnWasEliminated.RemoveDynamic(this, &AParachute::GiveToMurderer);
 	PreviousOwner->Parachute = nullptr;
+	PreviousOwner->OnParachuteLoss(this);
 	
 	//Detach from old actor and attach to new one
 	FDetachmentTransformRules DetachmentRules = FDetachmentTransformRules(EDetachmentRule::KeepWorld, false);

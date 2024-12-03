@@ -16,9 +16,14 @@ class FREEFALLINGCOUCHGAME_API UGameDataInstanceSubsystem : public UGameInstance
 	GENERATED_BODY()
 
 public:
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	int CurrentRound = 0;
 
+	int NextParachuteHolderID = -1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int CurrentColorVisionDeficiency;
+	
 #pragma region PlayerScore
 	
 protected:
@@ -26,6 +31,9 @@ protected:
 	TMap<int, int> PlayerScoreFromID;
 	
 public:
+	//Get PlayerID from Player score, returns -1 if not found
+	const int* GetPlayerIDFromScore(int Score);
+	
 	//Get Player score from PlayerID, returns -1 if not found
 	int GetPlayerScoreFromID(int PlayerID);
 

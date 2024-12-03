@@ -26,7 +26,7 @@ void UMatchSelectionWidget::TestCallOnPressed(FString NameElementPressed)
 
 void UMatchSelectionWidget::ReceiveData(int inMaxRounds,float inRoundTimer, float inEventDelay, FString inEraChosen,
 		 EMatchTypes InMatchType, ETrackingRewardCategory InTracker)
-{
+	{
 	//AFreeFallGameMode* MyMode = Cast<AFreeFallGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	//if(MyMode->IsValidLowLevel())
 
@@ -36,7 +36,11 @@ void UMatchSelectionWidget::ReceiveData(int inMaxRounds,float inRoundTimer, floa
 		GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple, FString::Printf(TEXT("Valid Subsystem")));
 		GameDataSubsystem->CreateMatchParameters();
 		GameDataSubsystem->GetMatchParameters()->setMatchParameters (
-	   inMaxRounds, inRoundTimer, inEventDelay,
-	   inEraChosen, InMatchType, InTracker);
+	   inMaxRounds,
+	   inRoundTimer,
+	   inEventDelay,
+	   inEraChosen,
+	   InMatchType,
+	   InTracker);
 	}
 }

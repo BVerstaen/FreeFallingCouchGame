@@ -3,6 +3,7 @@
 
 #include "GameMode/VictorySceneGameMode.h"
 
+#include "Audio/SoundSubsystem.h"
 #include "Match/GameDataInstanceSubsystem.h"
 
 void AVictorySceneGameMode::BeginPlay()
@@ -10,7 +11,7 @@ void AVictorySceneGameMode::BeginPlay()
 	Super::BeginPlay();
 
 	UGameDataInstanceSubsystem* GameDataInstanceSubsystem = GetGameInstance()->GetSubsystem<UGameDataInstanceSubsystem>();
-	//TODO Get scores data
+
 	ScoreList =
 	{
 		GameDataInstanceSubsystem->GetPlayerScoreFromID(0),
@@ -21,6 +22,17 @@ void AVictorySceneGameMode::BeginPlay()
 	
 	TArray<int> WinnersList = GetWinners();
 	OnGotWinner.Broadcast(WinnersList);
+
+	//Play win music
+	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
+	if(WinnersList.Num() > 0)
+	{
+		SoundSubsystem->PlayMusic("MUS_Victory_ST_Loop");
+	}
+	else
+	{
+		SoundSubsystem->PlayMusic("MUS_Lose_ST_Loop");
+	}
 }
 
 TArray<int> AVictorySceneGameMode::GetWinners()
@@ -28,7 +40,7 @@ TArray<int> AVictorySceneGameMode::GetWinners()
 	TArray<int> WinnersList;
 
 	int HighestScore = 0;
-	int CurrentPlayerID = 1;
+	int CurrentPlayerID = 0;
 	for(int Score : ScoreList)
 	{
 		//In case of equality
@@ -50,6 +62,21 @@ TArray<int> AVictorySceneGameMode::GetWinners()
 	return WinnersList;
 }
 
+const int AVictorySceneGameMode::GetPlayerIDFromScorePosition(int ScorePosition)
+{
+	UGameDataInstanceSubsystem* GameDataInstanceSubsystem = GetGameInstance()->GetSubsystem<UGameDataInstanceSubsystem>();
+	ScoreList =
+	{
+		GameDataInstanceSubsystem->GetPlayerScoreFromID(0),
+		GameDataInstanceSubsystem->GetPlayerScoreFromID(1),
+		GameDataInstanceSubsystem->GetPlayerScoreFromID(2),
+		GameDataInstanceSubsystem->GetPlayerScoreFromID(3)
+	};
+	ScoreList.Sort(SortPredicate);
+	
+	return *GameDataInstanceSubsystem->GetPlayerIDFromScore(ScoreList[ScorePosition]);
+}
+
 FString AVictorySceneGameMode::FormatWinningPlayers(const TArray<int>& WinningPlayers)
 {
 	if (WinningPlayers.Num() == 0)
@@ -62,7 +89,7 @@ FString AVictorySceneGameMode::FormatWinningPlayers(const TArray<int>& WinningPl
 	//if only one winner
 	if (WinningPlayers.Num() == 1)
 	{
-		Result = FString::Printf(TEXT("Player %d wins!"), WinningPlayers[0]);
+		Result = FString::Printf(TEXT("Player %d wins!"), WinningPlayers[0] + 1);
 	}
 	else
 	{
@@ -72,17 +99,17 @@ FString AVictorySceneGameMode::FormatWinningPlayers(const TArray<int>& WinningPl
 			if (i == WinningPlayers.Num() - 1)
 			{
 				//If last player -> add "and"
-				Result += FString::Printf(TEXT("and %d"), WinningPlayers[i]);
+				Result += FString::Printf(TEXT("and %d"), WinningPlayers[i] + 1);
 			}
 			else if (i == WinningPlayers.Num() - 2)
 			{
 				//If before last player -> don't add a comma
-				Result += FString::Printf(TEXT("%d "), WinningPlayers[i]);
+				Result += FString::Printf(TEXT("%d "), WinningPlayers[i] + 1);
 			}
 			else
 			{
 				//else add comma
-				Result += FString::Printf(TEXT("%d, "), WinningPlayers[i]);
+				Result += FString::Printf(TEXT("%d, "), WinningPlayers[i] + 1);
 			}
 		}
 		
@@ -91,4 +118,9 @@ FString AVictorySceneGameMode::FormatWinningPlayers(const TArray<int>& WinningPl
 	}
 
 	return Result;
+}
+
+bool AVictorySceneGameMode::SortPredicate(int itemA, int itemB)
+{
+	return (itemA > itemB);
 }

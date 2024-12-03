@@ -23,6 +23,9 @@ protected:
 	bool bTimerPlaying;
 
 public:
+	UFUNCTION()
+	void StartTimer();
+	
 	void LaunchSpawn();
 
 	UFUNCTION(CallInEditor)

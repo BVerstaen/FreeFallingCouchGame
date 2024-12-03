@@ -29,7 +29,7 @@ protected:
 #pragma region Parameters
 
 public:
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TObjectPtr<UStaticMeshComponent> Mesh;
 	
 	UPROPERTY(EditAnywhere)
@@ -59,7 +59,8 @@ public:
 #pragma endregion
 
 #pragma region Sounds
-	
+
+public:
 	UPROPERTY(EditAnywhere)
 	TArray<FName> SoundsOnSpawn;
 
@@ -92,6 +93,9 @@ public:
 	UFUNCTION()
 	void SetupWarning(FVector ImpulseVector, FVector InDirection);
 
+	UFUNCTION()
+	void DebugRayTrace(TArray<FHitResult> RV_Hits, FVector const& EndLocation);
+	
 #pragma region Bounceable
 public:
 	
@@ -104,6 +108,12 @@ public:
 	virtual void AddBounceForce(FVector Velocity) override;
 	
 	virtual AFreeFallCharacter* CollidedWithPlayer() override;
+
+	UFUNCTION(BlueprintImplementableEvent, meta=(DisplayName="Bounced"))
+	void BounceSpecificBehaviour();
 	
+protected:
+	UPROPERTY(EditAnywhere)
+	TEnumAsByte<EBounceParameters> BounceType = EBounceParameters::Obstacle;
 #pragma endregion 
 };

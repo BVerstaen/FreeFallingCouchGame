@@ -4,9 +4,11 @@
 #include "GameMode/FreeFallGameMode.h"
 
 #include "LocalMultiplayerSubsystem.h"
+#include "Audio/SoundSubsystem.h"
 #include "Characters/FreeFallCharacter.h"
 #include "Engine/LevelStreamingDynamic.h"
 #include "GameFramework/PlayerStart.h"
+#include "Haptic/HapticsSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Match/GameDataInstanceSubsystem.h"
 #include "Settings/CharactersSettings.h"
@@ -43,9 +45,6 @@ void AFreeFallGameMode::Init()
 	{
 		ParachuteSpawnLocation = FVector(0, 0, 0);
 	}
-
-	//Reset next parachute holder ID
-	NextParachuteHolderID = -1;
 	
 	//Add wobble to camera
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
@@ -54,6 +53,25 @@ void AFreeFallGameMode::Init()
 	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
 	ULocalMultiplayerSubsystem* LocalMultiplayerSubsystem = GetGameInstance()->GetSubsystem<ULocalMultiplayerSubsystem>();
 	LocalMultiplayerSubsystem->bCanCreateNewPlayer = MapSettings->bActivateControlsInGame;
+
+	// receive match data from GameDataInstanceSubsystem and check its validity to start the match, Setup CurrentParameters Object
+	GameDataSubsystem = GetGameInstance()->GetSubsystem<UGameDataInstanceSubsystem>();
+	if(GameDataSubsystem->IsValidLowLevel())
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Blue, TEXT("Subsystem valid, checking match data"));
+		UMatchParameters* refParameters = GameDataSubsystem->GetMatchParameters();
+		if(refParameters->IsValidLowLevel())
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Blue, TEXT("Data received valid, starting with Subsystem parameters"));
+			SetupParameters(refParameters);
+		} else {
+			GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("Data not received, starting with default parameters"));
+			SetupParameters(nullptr);
+		}
+	} else {
+		GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("Subsystem invalid, starting with default parameters"));
+		SetupParameters(nullptr);
+	}
 	
 	//TODO Find way to receive player made modifications
 
@@ -64,7 +82,7 @@ void AFreeFallGameMode::Init()
 	else
 	{
 		OldPlayerScore.Empty();
-		for (int i = 0; i < GetDefault<UMapSettings>()->NumberOfPlayers; i++)
+		for (int i = 0; i < NumberOfPlayers; i++)
 		{
 			OldPlayerScore.Add(GameDataSubsystem->GetPlayerScoreFromID(i));
 		}
@@ -120,6 +138,7 @@ UFreeFallCharacterInputData* AFreeFallGameMode::LoadInputDataFromConfig()
 		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, TEXT("CharactersSettings est nullptr"));
 		return nullptr;
 	}
+	GetGameInstance()->GetSubsystem<UHapticsSubsystem>()->InitHaptics(CharacterSettings->RumbleSystem);
 	return CharacterSettings->InputData.LoadSynchronous();
 }
 
@@ -191,7 +210,7 @@ bool AFreeFallGameMode::GetCharacterInvertDiveInput(int PlayerIndex)
 	}
 }
 
-void AFreeFallGameMode::SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints)
+void AFreeFallGameMode::SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints, bool bLockControls)
 {
 	UFreeFallCharacterInputData* InputData = LoadInputDataFromConfig();
 	UInputMappingContext* InputMappingContext = LoadInputMappingContextFromConfig();
@@ -215,6 +234,7 @@ void AFreeFallGameMode::SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints
 		NewCharacter->AutoPossessPlayer = SpawnPoint->AutoReceiveInput;
 		NewCharacter->InvertDiveInput = GetCharacterInvertDiveInput(ID_Player);
 		NewCharacter->setIDPlayerLinked(ID_Player);
+		NewCharacter->SetLockControls(bLockControls);
 		NewCharacter->FinishSpawning(SpawnPoint->GetTransform());
 		/*NewCharacter->SetOrientX(SpawnPoint->GetStartOrientX());*/
 
@@ -235,7 +255,17 @@ AParachute* AFreeFallGameMode::RespawnParachute(FVector SpawnLocation)
 	SpawnTransform.SetLocation(SpawnLocation);
 
 	//Spawn parachute
-	return GetWorld()->SpawnActorDeferred<AParachute>(MapSettings->ParachuteSubclass, SpawnTransform);
+	AParachute* NewParachuteInstance = GetWorld()->SpawnActorDeferred<AParachute>(MapSettings->ParachuteSubclass, SpawnTransform);
+	FTransform ParachuteTransform = FTransform::Identity;
+	ParachuteTransform.SetLocation(ParachuteSpawnLocation);
+	NewParachuteInstance->FinishSpawning(ParachuteTransform);
+	
+	return NewParachuteInstance;
+}
+
+void AFreeFallGameMode::CallArenaActorOnCharacterDestroyed(AFreeFallCharacter* Character)
+{
+	ArenaActorInstance->OnCharacterDestroyed.Broadcast(Character);
 }
 
 AParachute* AFreeFallGameMode::GetParachuteInstance() const
@@ -275,25 +305,44 @@ void AFreeFallGameMode::StartMatch()
 {
 	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
 	if(!MapSettings) return;
-
-	// receive match data from GameDataInstanceSubsystem and check its validity to start the match
-	GameDataSubsystem = GetGameInstance()->GetSubsystem<UGameDataInstanceSubsystem>();
-	if(GameDataSubsystem->IsValidLowLevel())
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Blue, TEXT("Subsystem valid, checking match data"));
-		UMatchParameters* refParameters = GameDataSubsystem->GetMatchParameters();
-		if(refParameters->IsValidLowLevel())
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Blue, TEXT("Data received valid, starting with Subsystem parameters"));
-			SetupMatch(refParameters);
-		}
-	} else {
-		GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("Data received And/Or Subsystem invalid, starting with default parameters"));
-		SetupMatch(nullptr);
-	}
 	
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------MATCH START--------------------"));
 
+	//Reset next parachute holder ID
+	GameDataSubsystem->NextParachuteHolderID = -1;
+	
+	//Spawn Characters for pre match
+	TArray<APlayerStart*> PlayerStartsPoints;
+	FindPlayerStartActorsInMap(PlayerStartsPoints);
+	SpawnCharacters(PlayerStartsPoints, true);
+
+	//Play gameplay music
+	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
+	SoundSubsystem->PlayMusic("MUS_GameplayTimer_ST");
+	
+	//Create parachute & equip to next player
+	ParachuteInstance = RespawnParachute(ParachuteSpawnLocation);
+	ParachuteInstance->OnParachuteGrabbed.AddDynamic(this, &AFreeFallGameMode::BeginFirstRound);
+	ParachuteInstance->PlayFallDownAnimation(ParachuteSpawnLocation);
+}
+
+void AFreeFallGameMode::BeginFirstRound(AFreeFallCharacter* NewOwner)
+{
+	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
+	if(!MapSettings) return;
+
+	//Get first parachute holder
+	GameDataSubsystem->NextParachuteHolderID = NewOwner->getIDPlayerLinked();
+	
+	//Reset Player score
+	GameDataSubsystem->ResetPlayerScore();
+	OldPlayerScore.Empty();
+	for (int i = 0; i < NumberOfPlayers; ++i)
+	{
+		GameDataSubsystem->SetPlayerScoreFromID(i, 0);
+		OldPlayerScore.Add(0);
+	}
+	
 	//Round counter and delegate 
 	RoundCounterWidget = CreateWidget<URoundCounterWidget>(UGameplayStatics::GetPlayerController(GetWorld(), 0), MapSettings->RoundCounterWidget);
 	if(RoundCounterWidget)
@@ -301,16 +350,6 @@ void AFreeFallGameMode::StartMatch()
 		RoundCounterWidget->AddToViewport();
 		RoundCounterWidget->OnFinishCounter.AddDynamic(this, &AFreeFallGameMode::StartRound);
 	}
-
-	//Reset Player score
-	GameDataSubsystem->ResetPlayerScore();
-	OldPlayerScore.Empty();
-	for (int i = 0; i < GetDefault<UMapSettings>()->NumberOfPlayers; ++i)
-	{
-		GameDataSubsystem->SetPlayerScoreFromID(i, 0);
-		OldPlayerScore.Add(0);
-	}
-	
 }
 
 void AFreeFallGameMode::StartRound()
@@ -327,16 +366,27 @@ void AFreeFallGameMode::StartRound()
 	
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple, FString::Printf(TEXT("Current Round: %i"), GameDataSubsystem->CurrentRound));
 
-	TArray<APlayerStart*> PlayerStartsPoints;
-	FindPlayerStartActorsInMap(PlayerStartsPoints);
-	SpawnCharacters(PlayerStartsPoints);
-
+	//Spawn players if not already
+	if(CharactersInsideArena.Num() <= 0)
+	{
+		TArray<APlayerStart*> PlayerStartsPoints;
+		FindPlayerStartActorsInMap(PlayerStartsPoints);
+		SpawnCharacters(PlayerStartsPoints);		
+	}
+	//Else release player controls
+	else
+	{
+		for(AFreeFallCharacter* Character : CharactersInsideArena)
+		{
+			Character->SetLockControls(false);
+		}
+	}
 	//Create parachute & equip to next player
 	ParachuteInstance = RespawnParachute(ParachuteSpawnLocation);
 	ParachuteInstance->OnParachuteDropped.AddDynamic(this, &AFreeFallGameMode::FindNewOwnerForParachute);
 	for(AFreeFallCharacter* Character : CharactersInsideArena)
 	{
-		if(Character->getIDPlayerLinked() == NextParachuteHolderID)
+		if(Character->getIDPlayerLinked() == GameDataSubsystem->NextParachuteHolderID)
 		{
 			ParachuteInstance->EquipToPlayer(Character);
 			break;
@@ -346,10 +396,11 @@ void AFreeFallGameMode::StartRound()
 	ArenaActorInstance->Init(this);
 	ArenaActorInstance->OnCharacterDestroyed.AddDynamic(this, &AFreeFallGameMode::CheckEndRoundDeath);
 	TrackerActorInstance->Init(ParachuteInstance, CharactersInsideArena);
-	SetupMatch(nullptr); //Possiblement à enlever, j'ai juste rerajouté pour pas tout péter :)
+	//SetupMatch(nullptr); //Possiblement à enlever, j'ai juste rerajouté pour pas tout péter :)
 	
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------ROUND START--------------------"));
 	GameDataSubsystem->CurrentRound++;
+	
 	if(CurrentParameters->getTimerEventDelay() > 0.f)
 		RoundEventTimer();
 	if(CurrentParameters->getRoundTimer() > 0.f)
@@ -358,9 +409,10 @@ void AFreeFallGameMode::StartRound()
 	{
 		OnStartRound.Broadcast();
 	}
+	ShowInGameUI();
 }
 //void AFreeFallGameMode::SetupMatch(TSubclassOf<UMatchParameters> UserParameters)
-void AFreeFallGameMode::SetupMatch(UMatchParameters *UserParameters)
+void AFreeFallGameMode::SetupParameters(UMatchParameters *UserParameters)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "SetupMatch");
 	// Get Values passed in selection screen
@@ -369,13 +421,14 @@ void AFreeFallGameMode::SetupMatch(UMatchParameters *UserParameters)
 		CurrentParameters = NewObject<UMatchParameters>(UserParameters);
 
 	} else
-	{
+	{ 	
 		CurrentParameters = NewObject<UMatchParameters>(DefaultParameters);
 		CurrentParameters->Init(DefaultParameters);
 	}
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "Test: " + CurrentParameters->getEraChosen());
 	// Selection screen has a UMatchParameters variable and can call this when switching values
 }
+
 #pragma endregion 
 
 #pragma region DuringRound
@@ -449,7 +502,10 @@ void AFreeFallGameMode::AddPoints(TArray<int> ArrayPlayersID)
 		// Assign points
 		const TArray<int> WinPoints = CurrentParameters->getScoreValues();
 		for (int i  = 0; i< ArrayPlayersID.Num(); i++)
+		{
+			if(ArrayPlayersID.Num() >= i && WinPoints.Num() >= i) break;
 			GameDataSubsystem->AddPlayerScoreFromID(ArrayPlayersID[i], WinPoints[i]);
+		}
 	}
 	// Empty lossOrder
 	LossOrder.Empty();
@@ -475,12 +531,12 @@ void AFreeFallGameMode::EndRound()
 	
 	//Give next parachute to last player
 	int MinimumScoreID = 0;
-	for(int i = 0; i < GetDefault<UMapSettings>()->NumberOfPlayers; i++)
+	for(int i = 0; i < NumberOfPlayers; i++)
 	{
-		if(GameDataSubsystem->GetPlayerScoreFromID(i) < GameDataSubsystem->GetPlayerScoreFromID(MinimumScoreID))
+		if(GameDataSubsystem->GetPlayerScoreFromID(i) < GameDataSubsystem->GetPlayerScoreFromID(MinimumScoreID) && GameDataSubsystem->GetPlayerScoreFromID(i)!=-1)
 			MinimumScoreID = i;
 	}
-	NextParachuteHolderID = MinimumScoreID + 1;
+	GameDataSubsystem->NextParachuteHolderID = MinimumScoreID;
 
 	//Destroy parachute if already exists
 	if(ParachuteInstance)
