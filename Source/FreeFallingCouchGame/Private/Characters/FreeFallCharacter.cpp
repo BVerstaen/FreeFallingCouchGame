@@ -333,8 +333,6 @@ void AFreeFallCharacter::OnInputMove(const FInputActionValue& Value)
 void AFreeFallCharacter::ApplyMovementFromAcceleration(float DeltaTime)
 {
 	Decelerate(DeltaTime);
-	GEngine->AddOnScreenDebugMessage(-1,DeltaTime,FColor::Orange, TEXT("AccelerationAlpha : " + AccelerationAlpha.ToString()));
-	GEngine->AddOnScreenDebugMessage(-1,DeltaTime,FColor::Orange, TEXT("MaxFlySpeed : " + FString::SanitizeFloat(GetCharacterMovement()->MaxFlySpeed)));
 	const float ScaleValue = MovementSpeed / GetCharacterMovement()->MaxFlySpeed;
 	AddMovementInput(FVector(
 		FMath::Abs(AccelerationAlpha.X) < CharactersSettings->AccelerationThreshold ? 0 : AccelerationAlpha.X,
@@ -382,12 +380,10 @@ void AFreeFallCharacter::Decelerate(float DeltaTime)
 		if ((InputMove.X > 0 || FMath::Abs(InputMove.X) < CharactersSettings->InputMoveThreshold) && AccelerationAlpha.X < 0)
 		{
 			AccelerationAlpha.X = FMath::Min(AccelerationAlpha.X + DecelerationSpeed * DeltaTime, 0);
-			GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Orange, TEXT("Decelerating"));
 		}
 		else if ((InputMove.X < 0 || FMath::Abs(InputMove.X) < CharactersSettings->InputMoveThreshold) && AccelerationAlpha.X > 0)
 		{
 			AccelerationAlpha.X = FMath::Max(AccelerationAlpha.X - DecelerationSpeed * DeltaTime, 0);
-			GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Orange, TEXT("Decelerating"));
 		}
 	}
 	if (FMath::Abs(AccelerationAlpha.Y) > CharactersSettings->AccelerationThreshold)
@@ -395,12 +391,10 @@ void AFreeFallCharacter::Decelerate(float DeltaTime)
 		if ((InputMove.Y > 0 || FMath::Abs(InputMove.Y) < CharactersSettings->InputMoveThreshold) && AccelerationAlpha.Y < 0)
 		{
 			AccelerationAlpha.Y = FMath::Min(AccelerationAlpha.Y + DecelerationSpeed * DeltaTime, 0);
-			GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Orange, TEXT("Decelerating"));
 		}
 		else if ((InputMove.Y < 0 || FMath::Abs(InputMove.Y) < CharactersSettings->InputMoveThreshold) && AccelerationAlpha.Y > 0)
 		{
 			AccelerationAlpha.Y = FMath::Max(AccelerationAlpha.Y - DecelerationSpeed * DeltaTime, 0);
-			GEngine->AddOnScreenDebugMessage(-1,DeltaTime, FColor::Orange, TEXT("Decelerating"));
 		}
 	}
 }
