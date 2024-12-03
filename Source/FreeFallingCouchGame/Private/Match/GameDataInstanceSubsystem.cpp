@@ -3,6 +3,11 @@
 
 #include "Match/GameDataInstanceSubsystem.h"
 
+const int* UGameDataInstanceSubsystem::GetPlayerIDFromScore(int Score)
+{
+	return PlayerScoreFromID.FindKey(Score);
+}
+
 int UGameDataInstanceSubsystem::GetPlayerScoreFromID(int PlayerID)
 {
 	if (PlayerScoreFromID.Contains(PlayerID))

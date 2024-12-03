@@ -14,7 +14,7 @@ void UPowerUpObjectSmaller::Tick(float DeltaTime)
 	EffectClock+=DeltaTime;
 	if (EffectClock >= Duration && !bIsActionFinished)
 	{
-		OwnerCharacter->SetActorScale3D(CharacterBaseScale);
+		OwnerCharacter->DiveScaleFactor = CharacterBaseScaleMultiplier;
 		bIsActionFinished = true;
 	}
 }
@@ -27,8 +27,8 @@ void UPowerUpObjectSmaller::Use()
 	SoundSubsystem->PlaySound("SFX_PLR_Potiondrink_ST", OwnerCharacter, false);
 	SoundSubsystem->PlaySound("SFX_PLR_becomelittle_ST", OwnerCharacter, false);
 	
-	CharacterBaseScale = OwnerCharacter->GetActorScale();
-	OwnerCharacter->SetActorScale3D(CharacterBaseScale * ScaleMultiplier);
+	CharacterBaseScaleMultiplier = OwnerCharacter->DiveScaleFactor;
+	OwnerCharacter->DiveScaleFactor = ScaleMultiplier;
 }
 
 EPowerUpsID UPowerUpObjectSmaller::GetPowerUpID()

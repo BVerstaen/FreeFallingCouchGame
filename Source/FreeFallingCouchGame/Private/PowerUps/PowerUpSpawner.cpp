@@ -68,7 +68,11 @@ void APowerUpSpawner::FindPowerUpSpawnPoints()
 	for (TObjectPtr<AActor> ActorFound : ActorsFound)
 	{
 		TObjectPtr<APowerUpSpawnPoint> SpawnPointActor = Cast<APowerUpSpawnPoint>(ActorFound);
-		if (SpawnPointActor != nullptr) SpawnPointActors.Add(SpawnPointActor);
+		if (SpawnPointActor != nullptr)
+		{
+			SpawnPointActors.Add(SpawnPointActor);
+			SpawnPointActor->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
+		}
 	}
 }
 

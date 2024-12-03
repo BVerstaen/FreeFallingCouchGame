@@ -31,6 +31,9 @@ protected:
 	TMap<int, int> PlayerScoreFromID;
 	
 public:
+	//Get PlayerID from Player score, returns -1 if not found
+	const int* GetPlayerIDFromScore(int Score);
+	
 	//Get Player score from PlayerID, returns -1 if not found
 	int GetPlayerScoreFromID(int PlayerID);
 
