@@ -56,4 +56,8 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<ACameraActor> CameraActor;
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bDisableTopLayer;
 };
