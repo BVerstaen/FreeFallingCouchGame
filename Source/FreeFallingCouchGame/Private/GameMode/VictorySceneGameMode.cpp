@@ -11,7 +11,7 @@ void AVictorySceneGameMode::BeginPlay()
 	Super::BeginPlay();
 
 	UGameDataInstanceSubsystem* GameDataInstanceSubsystem = GetGameInstance()->GetSubsystem<UGameDataInstanceSubsystem>();
-	//TODO Get scores data
+
 	ScoreList =
 	{
 		GameDataInstanceSubsystem->GetPlayerScoreFromID(0),
@@ -62,6 +62,21 @@ TArray<int> AVictorySceneGameMode::GetWinners()
 	return WinnersList;
 }
 
+const int AVictorySceneGameMode::GetPlayerIDFromScorePosition(int ScorePosition)
+{
+	UGameDataInstanceSubsystem* GameDataInstanceSubsystem = GetGameInstance()->GetSubsystem<UGameDataInstanceSubsystem>();
+	ScoreList =
+	{
+		GameDataInstanceSubsystem->GetPlayerScoreFromID(0),
+		GameDataInstanceSubsystem->GetPlayerScoreFromID(1),
+		GameDataInstanceSubsystem->GetPlayerScoreFromID(2),
+		GameDataInstanceSubsystem->GetPlayerScoreFromID(3)
+	};
+	ScoreList.Sort(SortPredicate);
+	
+	return *GameDataInstanceSubsystem->GetPlayerIDFromScore(ScoreList[ScorePosition]);
+}
+
 FString AVictorySceneGameMode::FormatWinningPlayers(const TArray<int>& WinningPlayers)
 {
 	if (WinningPlayers.Num() == 0)
@@ -103,4 +118,9 @@ FString AVictorySceneGameMode::FormatWinningPlayers(const TArray<int>& WinningPl
 	}
 
 	return Result;
+}
+
+bool AVictorySceneGameMode::SortPredicate(int itemA, int itemB)
+{
+	return (itemA > itemB);
 }
