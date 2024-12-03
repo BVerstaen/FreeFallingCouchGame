@@ -3,6 +3,24 @@
 
 #include "Match/GameDataInstanceSubsystem.h"
 
+int UGameDataInstanceSubsystem::GetPlayerLookFromID(int PlayerID)
+{
+	if (PlayerCostumeMap.Contains(PlayerID))
+	{
+		return PlayerCostumeMap[PlayerID];
+	}
+	return -1;
+}
+
+void UGameDataInstanceSubsystem::SetPlayerLookFromID(int PlayerID, int CostumeID)
+{
+	if (!PlayerCostumeMap.Contains(PlayerID))
+	{
+		PlayerCostumeMap.Add(PlayerID);
+	}
+	PlayerCostumeMap[PlayerID] = CostumeID;
+}
+
 int UGameDataInstanceSubsystem::GetPlayerScoreFromID(int PlayerID)
 {
 	if (PlayerScoreFromID.Contains(PlayerID))
