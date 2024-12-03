@@ -200,6 +200,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "InGameUI")
 	void ShowInGameUI();
 
-
+	UFUNCTION(BlueprintCallable)
+	void PlayParachuteFallingAnimation();
 #pragma endregion 
 };
