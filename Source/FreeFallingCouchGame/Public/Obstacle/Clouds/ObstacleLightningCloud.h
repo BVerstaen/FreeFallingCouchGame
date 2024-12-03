@@ -26,12 +26,20 @@ public:
 	virtual void TriggerEvent() override;
 
 private:
-	UPROPERTY(EditAnywhere)
-	float EventTime;
+	UPROPERTY(EditAnywhere, Category = "Lightning")
+	int NbLightning;
 
-	UPROPERTY(EditAnywhere)
-	int nbLightning;
+	UPROPERTY(EditAnywhere, Category = "Lightning")
+	float LightningDuration;
+	
+	UPROPERTY(EditAnywhere, Category = "Lightning")
+	float LightningMaxRadius;
 
-	UPROPERTY(EditAnywhere)
-	float LightningRadius;
+	UPROPERTY(EditAnywhere, Category = "Lightning")
+	float LightningMinRadius;
+
+	float LightningClock;
+
+	bool bIsLightning;
+	
 };
