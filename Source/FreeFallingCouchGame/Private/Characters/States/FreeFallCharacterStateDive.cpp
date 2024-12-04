@@ -212,9 +212,9 @@ void UFreeFallCharacterStateDive::CheckTargetedLayer()
 		{
 			case EDiveLayersID::Top:
 				TargetLayer = CurrentLayer;
-				break;
+			break;
 			case EDiveLayersID::Middle:
-				TargetLayer = EDiveLayersID::Top;
+				TargetLayer = DiveLevelsActor->bDisableTopLayer ? CurrentLayer : EDiveLayersID::Top;
 			break;
 			case EDiveLayersID::Bottom:
 				TargetLayer = EDiveLayersID::Middle;
