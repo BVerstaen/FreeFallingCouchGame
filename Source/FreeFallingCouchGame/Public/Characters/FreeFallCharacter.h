@@ -62,7 +62,8 @@ public:
 	// The strength the particles are shot at 
 	UPROPERTY(EditAnywhere, Category="Death")
 	float IntensityParticles = 3000.0f;
-	
+
+	UFUNCTION(BlueprintCallable)
 	void DestroyPlayer(ETypeDeath DeathType);
 
 #pragma region Mesh Rotation
