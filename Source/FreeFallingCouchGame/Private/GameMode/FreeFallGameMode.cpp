@@ -510,12 +510,11 @@ void AFreeFallGameMode::AddPoints(TArray<int> ArrayPlayersID)
 {
 	if(IsValid(GameDataSubsystem))
 	{
-		// Assign points
 		const TArray<int> WinPoints = CurrentParameters->getScoreValues();
 		for (int i  = 0; i< ArrayPlayersID.Num(); i++)
 		{
-			if(ArrayPlayersID.Num() >= i && WinPoints.Num() >= i) break;
-			GameDataSubsystem->AddPlayerScoreFromID(ArrayPlayersID[i], WinPoints[i]);
+			if(ArrayPlayersID.Num() >= i && WinPoints.Num() >= i)
+				GameDataSubsystem->AddPlayerScoreFromID(ArrayPlayersID[i], WinPoints[i]);
 		}
 	}
 	// Empty lossOrder
