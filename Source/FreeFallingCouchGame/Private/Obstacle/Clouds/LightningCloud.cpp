@@ -4,6 +4,8 @@
 #include "Obstacle/Clouds/LightningCloud.h"
 
 #include "Characters/FreeFallCharacter.h"
+#include "GameMode/FreeFallGameMode.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 
@@ -27,12 +29,13 @@ void ALightningCloud::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	LightningClock += DeltaTime;
-	if (LightningClock >= TimeBeforeLightning && bHasStruckLightning)
+	if (LightningClock >= TimeBeforeLightning && !bHasStruckLightning)
 	{
 		bHasStruckLightning = true;
 		StruckLightning();
 		KillPlayerInsideLightning();
 		OnStruckLightning.Broadcast(this);
+		Destroy();
 	}
 }
 
@@ -68,7 +71,14 @@ void ALightningCloud::KillPlayerInsideLightning()
 	for (FHitResult HitResult : HitResults)
 	{
 		TObjectPtr<AFreeFallCharacter> Character = Cast<AFreeFallCharacter>(HitResult.GetActor());
-		if (Character) Character->DestroyPlayer(ETypeDeath::Classic);
+		if (Character)
+		{
+			if (AFreeFallGameMode* GameMode = Cast<AFreeFallGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
+			{
+				GameMode->CallArenaActorOnCharacterDestroyed(Character);
+				Character->DestroyPlayer(ETypeDeath::Classic);
+			}
+		}
 	}
 }
 

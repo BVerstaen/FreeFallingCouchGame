@@ -30,7 +30,8 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void StruckLightning();
-	
+
+	UPROPERTY(BlueprintReadOnly)
 	float LightningRadius = 0.f;
 
 private:

@@ -32,7 +32,7 @@ void ALightningCloudsManager::Tick(float DeltaTime)
 	SpawnClock += DeltaTime;
 	if (SpawnClock >= SpawnCooldown)
 	{
-		SpawnedLightning += 1;
+		SpawnedLightning++;
 		SpawnCooldown = FMath::RandRange(MinSpawnCooldown, MaxSpawnCooldown);
 		SpawnClock = 0.f;
 		CreateLightningCloud();
@@ -44,6 +44,7 @@ void ALightningCloudsManager::TriggerEvent()
 {
 	Super::TriggerEvent();
 
+	GEngine->AddOnScreenDebugMessage(-1,10.f,FColor::Cyan,"LightningCloudsManager::TriggerEvent");
 	bIsSpawningClouds = true;
 	SpawnCooldown = FMath::RandRange(MinSpawnCooldown, MaxSpawnCooldown);
 	SpawnClock = 0.f;
@@ -74,6 +75,7 @@ void ALightningCloudsManager::CreateLightningCloud()
 		FMath::RandRange(LightningMinRadius, LightningMaxRadius));
 
 	LightningCloud->OnStruckLightning.AddDynamic(this, &ALightningCloudsManager::LightningStrucked);
+	LightningCloud->FinishSpawning(SpawnTransform);
 	ActiveLightningClouds.Add(LightningCloud);
 }
 
@@ -87,8 +89,9 @@ FVector ALightningCloudsManager::GetRandomLightningCloudPosition()
 			FMath::RandRange(-SpawningRange.X, SpawningRange.X),
 			FMath::RandRange(-SpawningRange.Y, SpawningRange.Y),
 			0);
+		SpawnPosition += GetActorLocation();
 		nbIterations++;
-	} while (IsNearAnyClouds(SpawnPosition) || nbIterations >= 100000);
+	} while (IsNearAnyClouds(SpawnPosition) && nbIterations <= 100000);
 
 	if (nbIterations >= 10000) GEngine->AddOnScreenDebugMessage(-1, 100.f, FColor::Red, "Couldn't find any free cloud position");
 	return SpawnPosition;
