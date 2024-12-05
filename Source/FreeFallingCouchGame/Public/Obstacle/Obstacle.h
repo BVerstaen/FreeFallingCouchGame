@@ -55,6 +55,10 @@ public:
 	/*le poids de l'obstacle*/
 	UPROPERTY(EditAnywhere)
 	float ObjectMass;
+
+	/*Multiplicateur individuelle pour chaque Obstacle*/
+	UPROPERTY(EditAnywhere)
+	float IndividualSpeedMultiplier = 1.0f;
 	
 #pragma endregion
 

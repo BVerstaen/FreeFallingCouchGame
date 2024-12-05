@@ -39,7 +39,7 @@ void AObstacle::BeginPlay()
 
 	FVector refDirection = Direction;
 	Direction.Normalize();
-	FVector ImpulseVector = Direction * Speed;
+	FVector ImpulseVector = Direction * Speed * IndividualSpeedMultiplier;
 	if(Mesh != nullptr)
 	{
 		Mesh->AddImpulse(ImpulseVector, NAME_None, true);
