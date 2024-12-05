@@ -100,7 +100,7 @@ void UArenaObject::Tick(float DeltaTime)
 
 void UArenaObject::CheckAndRemoveOutOfBoundPlayers()
 {
-	TArray<TObjectPtr<AFreeFallCharacter>> CharactersToRemove;
+TArray<TObjectPtr<AFreeFallCharacter>> CharactersToRemove;
 	
 	//Check if character was rendered on screen (inverted loop to avoid indexation problems)
 	for(int i = CharactersInsideArena.Num() - 1; i > -1; i--)

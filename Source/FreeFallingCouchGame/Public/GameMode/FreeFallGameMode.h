@@ -137,7 +137,7 @@ public:
 	void StartRound();
 	
 	//DANS LE CODE, TERRIBLE CODE, L'ARCHITECTURE EST MORT CE SOIIIIIIR
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void CallArenaActorOnCharacterDestroyed(AFreeFallCharacter* Character);
 	
 private:
@@ -200,6 +200,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "InGameUI")
 	void ShowInGameUI();
 
-
+	UFUNCTION(BlueprintCallable)
+	void PlayParachuteFallingAnimation();
 #pragma endregion 
 };

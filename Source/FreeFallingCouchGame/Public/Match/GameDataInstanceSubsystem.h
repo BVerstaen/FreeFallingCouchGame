@@ -24,13 +24,35 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int CurrentColorVisionDeficiency;
 	
+#pragma region PlayerCostume
+public:
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDCostumeSwitch, int, IDCostume, int, IDplayer);
+	UPROPERTY(BlueprintAssignable,BlueprintCallable, Category = "EventsCostume")
+	FDCostumeSwitch OnCostumeSwitch;
+    
+    	//Get Costume ID from PlayerID, returns -1 if not found
+    	UFUNCTION(BlueprintCallable)
+    	int GetPlayerLookFromID(int PlayerID);
+    
+    	//Set Player Costume ID from PlayerID, creates one if necessary
+    	UFUNCTION(BlueprintCallable)
+    	void SetPlayerLookFromID(int PlayerID, int LookID);
+    
+protected:
+	// <Player ID, Costume ID>
+	UPROPERTY(BlueprintReadOnly)
+	TMap<int, int> PlayerCostumeMap;
+#pragma endregion
+
 #pragma region PlayerScore
-	
 protected:
 	UPROPERTY()
 	TMap<int, int> PlayerScoreFromID;
 	
 public:
+	//Get PlayerID from Player score, returns -1 if not found
+	const int* GetPlayerIDFromScore(int Score);
+	
 	//Get Player score from PlayerID, returns -1 if not found
 	int GetPlayerScoreFromID(int PlayerID);
 

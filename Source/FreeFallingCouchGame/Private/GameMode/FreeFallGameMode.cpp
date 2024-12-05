@@ -323,7 +323,10 @@ void AFreeFallGameMode::StartMatch()
 	//Create parachute & equip to next player
 	ParachuteInstance = RespawnParachute(ParachuteSpawnLocation);
 	ParachuteInstance->OnParachuteGrabbed.AddDynamic(this, &AFreeFallGameMode::BeginFirstRound);
-	ParachuteInstance->PlayFallDownAnimation(ParachuteSpawnLocation);
+
+	FVector ParachuteBeginPosition = ParachuteInstance->GetActorLocation();
+	ParachuteBeginPosition.Z += 1000;
+	ParachuteInstance->SetActorLocation(ParachuteBeginPosition);
 }
 
 void AFreeFallGameMode::BeginFirstRound(AFreeFallCharacter* NewOwner)
@@ -349,6 +352,14 @@ void AFreeFallGameMode::BeginFirstRound(AFreeFallCharacter* NewOwner)
 	{
 		RoundCounterWidget->AddToViewport();
 		RoundCounterWidget->OnFinishCounter.AddDynamic(this, &AFreeFallGameMode::StartRound);
+	}
+}
+
+void AFreeFallGameMode::PlayParachuteFallingAnimation()
+{
+	if(ParachuteInstance)
+	{
+		ParachuteInstance->PlayFallDownAnimation(ParachuteSpawnLocation);
 	}
 }
 
@@ -499,10 +510,12 @@ void AFreeFallGameMode::AddPoints(TArray<int> ArrayPlayersID)
 {
 	if(IsValid(GameDataSubsystem))
 	{
-		// Assign points
 		const TArray<int> WinPoints = CurrentParameters->getScoreValues();
 		for (int i  = 0; i< ArrayPlayersID.Num(); i++)
-			GameDataSubsystem->AddPlayerScoreFromID(ArrayPlayersID[i], WinPoints[i]);
+		{
+			if(ArrayPlayersID.Num() >= i && WinPoints.Num() >= i)
+				GameDataSubsystem->AddPlayerScoreFromID(ArrayPlayersID[i], WinPoints[i]);
+		}
 	}
 	// Empty lossOrder
 	LossOrder.Empty();

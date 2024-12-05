@@ -110,6 +110,7 @@ EDiveLayersID ADiveLevels::GetDiveLayersFromCoord(float PlayerCoordZ)
 {
 	if (PlayerCoordZ > GetDiveBoundZCoord(EDiveLayersID::Top, EDiveLayerBoundsID::Down))
 	{
+		if (bDisableTopLayer) return EDiveLayersID::Middle;
 		return EDiveLayersID::Top;
 	}
 	if (PlayerCoordZ < GetDiveBoundZCoord(EDiveLayersID::Bottom,  EDiveLayerBoundsID::Up))
