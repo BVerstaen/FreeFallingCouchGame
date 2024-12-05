@@ -198,8 +198,8 @@ void UFreeFallCharacterStateGrab::ReleasePlayerGrab(EFreeFallCharacterStateID Pr
 		}
 			
 		//Launch other character
-		FVector LaunchVelocity = Character->GetMovementComponent()->Velocity * LaunchOtherCharacterForceMultiplier;
-		LaunchVelocity += Character->GetActorForwardVector() * LaunchOtherCharacterBaseLaunchMultiplier;
+		FVector LaunchVelocity = Character->GetActorForwardVector() * LaunchOtherCharacterBaseLaunchMultiplier;
+		LaunchVelocity += Character->GetMovementComponent()->Velocity * LaunchOtherCharacterForceMultiplier;
 		Character->OtherCharacterGrabbing->LaunchCharacter(LaunchVelocity, true, true);
 
 		//Play push sound
