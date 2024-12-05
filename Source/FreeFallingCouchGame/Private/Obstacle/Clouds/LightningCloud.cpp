@@ -35,6 +35,9 @@ void ALightningCloud::Tick(float DeltaTime)
 		StruckLightning();
 		KillPlayerInsideLightning();
 		OnStruckLightning.Broadcast(this);
+	}
+	if (LightningClock >= TimeBeforeLightning + TimeBeforeDestruction && bHasStruckLightning)
+	{
 		Destroy();
 	}
 }
