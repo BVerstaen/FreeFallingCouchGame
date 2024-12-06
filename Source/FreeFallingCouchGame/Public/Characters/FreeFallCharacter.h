@@ -11,6 +11,7 @@
 #include "NiagaraSystem.h"
 #include "FreeFallCharacter.generated.h"
 
+enum class EPowerUpsID : uint8;
 class UCharactersSettings;
 class UPowerUpObject;
 class AParachute;
@@ -22,6 +23,13 @@ class UFreeFallCharacterInputData;
 class UFreeFallCharacterState;
 enum class EFreeFallCharacterStateID : uint8;
 class UFreeFallCharacterStateMachine;
+
+UENUM()
+enum class ETypeDeath : uint8
+{
+	Classic,
+	Side,
+};
 
 UCLASS()
 class FREEFALLINGCOUCHGAME_API AFreeFallCharacter : public ACharacter, public IDiveLayersSensible, public IBounceableInterface
@@ -43,9 +51,20 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 #pragma endregion
-
+protected:
+	
 public:
-	void DestroyPlayer();
+	UPROPERTY(EditAnywhere, Category="Death")
+	TSoftObjectPtr<UNiagaraSystem> DeathEffect;
+	UPROPERTY(EditAnywhere, Category="Death")
+	TSoftObjectPtr<UNiagaraSystem> DeathEffectSide;
+
+	// The strength the particles are shot at 
+	UPROPERTY(EditAnywhere, Category="Death")
+	float IntensityParticles = 3000.0f;
+
+	UFUNCTION(BlueprintCallable)
+	void DestroyPlayer(ETypeDeath DeathType);
 
 #pragma region Mesh Rotation
 	
@@ -88,9 +107,16 @@ public:
 	UPROPERTY()
 	TObjectPtr<UInputMappingContext> InputMappingContext;
 
+	UFUNCTION()
+	void SetLockControls(bool lockControls);
+
+	UFUNCTION()
+	bool GetLockControls() const;
+	
 protected:
 	void SetupMappingContextIntoController() const;
 
+	bool bAreControlsBlocked = false;
 #pragma endregion
 
 #pragma region Input Move
@@ -194,6 +220,21 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<ACameraActor> CameraActor;
+
+
+protected:
+	//Le facteur de taille minimum qd dive 
+	UPROPERTY(EditAnywhere, Category="Dive level")
+	float DiveMinimumSizeFactor = .5f;
+	
+	float DiveMaximumSize;
+	float DiveMinimumSize;
+	
+	UFUNCTION()
+	void UpdateSizeBasedOnDive();
+
+public:
+	float DiveScaleFactor = 1.0f;
 	
 private:
 	void BindInputDiveAxisAndActions(UEnhancedInputComponent* EnhancedInputComponent);
@@ -301,6 +342,9 @@ public:
 
 	UPROPERTY()	
 	bool bIsGrabbable = true;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UAnimSequence> MidGrabAnimation;
 	
 	FVector GrabHeavyObjectRelativeLocationPoint;
 	
@@ -366,37 +410,13 @@ protected:
 	/*Cooldown entre 2 rebonds*/
 	UPROPERTY(EditAnywhere, Category="Bounce Collision")
 	float BounceCooldownDelay = .1f;
-	
-	/*Combien JE donne à l'autre joueur / l'autre obstacle (je garde 1 - X)*/
+
 	UPROPERTY(EditAnywhere, Category="Bounce Collision")
-	float BouncePlayerRestitutionMultiplier = 1.f;
-
-	/*Dois-je garder ma vélocité restante ou non ?*/
-	UPROPERTY(EditAnywhere, Category="Bounce Collision")
-	bool bShouldKeepRemainingVelocity = false;
+	TMap<TEnumAsByte<EBounceParameters>, FBounceData> BounceParameterData;
 	
-	/*Multiplicateur de rebondissement entre les joueurs*/
-	UPROPERTY(EditAnywhere, Category="Bounce Collision - Between players")
-	float BouncePlayerMultiplier = 1.f;
-
-	/*Multiplicateur de rebondissement entre joueur / objets*/
-	UPROPERTY(EditAnywhere, Category="Bounce Collision - Player / Object")
-	float BounceObstacleMultiplier = 1.f;
-
-	/*Combien L'obstacle avec qui je collisionne donne à mon joueur (il garde 1 - X)*/
-	UPROPERTY(EditAnywhere, Category="Bounce Collision - Player / Object")
-	float BounceObstacleRestitutionMultiplier = 1.f;
-
-	/*Dois-je considerer la masse de l'objet dans les calcules de rebond ?
-	 * Coté joueur -> ObstacleMass / PlayerMass
-	 * Coté objet -> PlayerMass / ObstacleMass 
-	 */
-	UPROPERTY(EditAnywhere, Category="Bounce Collision - Player / Object")
-	bool bShouldConsiderMassObject = false;
-
 public:
-	/*La masse du joueur (sert pour les collisions entre objets)*/
-	UPROPERTY(EditAnywhere, Category="Bounce Collision - Player / Object")
+	/*La masse du joueur*/
+	UPROPERTY(EditAnywhere, Category="Bounce Collision")
 	float PlayerMass;
 
 protected:
@@ -422,6 +442,12 @@ public:
 	FWasEliminated OnWasEliminated;
 	
 public:
+	UFUNCTION()
+	void BounceRoutine(AActor* OtherActor, TScriptInterface<IBounceableInterface> OtherBounceableInterface, float SelfRestitutionMultiplier, float OtherRestitutionMultiplier, float GlobalMultiplier, bool bShouldConsiderMass, bool bShouldKeepRemainVelocity);
+
+	UFUNCTION()
+	void BounceRoutineFromBounceData(AActor* OtherActor, TScriptInterface<IBounceableInterface> OtherBounceableInterface, FBounceData BounceData);
+	
 	UFUNCTION(BlueprintCallable)
 	void BounceCooldown();
 
@@ -431,7 +457,6 @@ public:
 protected:
 	UFUNCTION()
 	void OnCapsuleCollisionHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
 	
 	UFUNCTION()
 	void ResetBounce();
@@ -447,12 +472,13 @@ public:
 	virtual void AddBounceForce(FVector Velocity) override;
 	virtual AFreeFallCharacter* CollidedWithPlayer() override;
 	
-	UFUNCTION()
-	void BounceRoutine(AActor* OtherActor, TScriptInterface<IBounceableInterface> OtherBounceableInterface, float SelfRestitutionMultiplier, float OtherRestitutionMultiplier, float GlobalMultiplier, bool bShouldConsiderMass, bool bShouldKeepRemainVelocity);
 
 protected:
 	UPROPERTY(EditAnywhere, Category="Bounce Collision")
 	TSoftObjectPtr<UNiagaraSystem> BounceEffect;
+
+	UPROPERTY(EditAnywhere, Category="Bounce Collision")
+	TObjectPtr<UAnimSequence> DamageAnimation;
 	
 #pragma endregion
 
@@ -470,11 +496,21 @@ public:
 	UFUNCTION()
 	USceneComponent* GetParachuteAttachPoint(); 
 	
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnParachuteGet(AParachute* NewParachute);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnParachuteLoss(AParachute* PreviousParachute);
+	
 #pragma endregion
 
 #pragma region PowerUp
 
 public:
+	//Called when change about PowerUps, set to None if Character has no PowerUp;
+	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
+	void UpdatePowerUpUI(EPowerUpsID PowerUpID);
+	
 	UPROPERTY()
 	TObjectPtr<UPowerUpObject> CurrentPowerUp;
 
@@ -499,6 +535,33 @@ private:
 	void BindInputUsePowerUpActions(UEnhancedInputComponent* EnhancedInputComponent);
 
 	void OnInputUsePowerUp(const FInputActionValue& Value);
+	
+#pragma endregion
+
+#pragma region Animation
+
+public:
+	UFUNCTION()
+	void PlayAnimation(UAnimSequence* Animation, bool Looping, bool BlockUntilEndOfAnim = false, float AnimationDuration = -1.0f);
+	
+	UFUNCTION()
+	void RestoreAnimation();
+	
+	UPROPERTY(EditAnywhere, Category="Animation")
+	TObjectPtr<UAnimSequence> DefaultAnimation;
+	
+	UPROPERTY()
+	TObjectPtr<UAnimSequence> QueuedAnimation;
+	
+	UPROPERTY()
+	TObjectPtr<UAnimSequence> PlayingAnimation;
+
+	
+	bool QueuedAnimationLooping = false;
+
+	UPROPERTY()
+	FTimerHandle BlockUntilEndOfAnimTimerHandle;
+	bool bBlockNewAnimation = false;
 	
 #pragma endregion
 };

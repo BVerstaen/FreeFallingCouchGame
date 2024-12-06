@@ -19,17 +19,21 @@ void ULocalMultiplayerSubsystem::CreateAndInitPlayers(ELocalMultiplayerInputMapp
 		UGameplayStatics::CreatePlayer(GetWorld(),-1);
 	}
 
+	//Connect existing assigned gamepad players
+	for (const TPair<int, int> ConnectedGamePad : PlayerIndexFromGamepadProfileIndex)
+	{
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Emerald, "Keyboard : " + FString::FromInt(ConnectedGamePad.Key) + " , " + FString::FromInt(ConnectedGamePad.Value));
+		AssignGamepadInputMapping(ConnectedGamePad.Value, ConnectedGamePad.Key, MappingType);
+	}
+	
 	//Connect existing assigned keyboard players
 	for (const TPair<int, int> ConnectedKeyboard : PlayerIndexFromKeyboardProfileIndex)
 	{
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Emerald, "Keyboard : " + FString::FromInt(ConnectedKeyboard.Key) + " , " + FString::FromInt(ConnectedKeyboard.Value));
 		AssignKeyboardMapping(ConnectedKeyboard.Key, ConnectedKeyboard.Value, MappingType);
 	}
 
-	//Connect existing assigned gamepad players
-	for (const TPair<int, int> ConnectedGamepadProfileIndex : PlayerIndexFromGamepadProfileIndex)
-	{
-		AssignGamepadInputMapping(ConnectedGamepadProfileIndex.Key, MappingType);
-	} 
+
 }
 
 void ULocalMultiplayerSubsystem::ErasePlayers()
@@ -37,6 +41,7 @@ void ULocalMultiplayerSubsystem::ErasePlayers()
 	PlayerIndexFromGamepadProfileIndex.Empty();
 	PlayerIndexFromKeyboardProfileIndex.Empty();
 	LastAssignedPlayerIndex = -1;
+	NumberOfPlayers = 0;
 }
 
 
@@ -47,7 +52,7 @@ int ULocalMultiplayerSubsystem::GetAssignedPlayerIndexFromKeyboardProfileIndex(i
 		return PlayerIndexFromKeyboardProfileIndex[keyboardProfileIndex];
 	}
 	return -1;
-}
+}	
 
 int ULocalMultiplayerSubsystem::AssignNewPlayerToKeyboardProfile(int KeyboardProfileIndex)
 {
@@ -66,6 +71,8 @@ void ULocalMultiplayerSubsystem::AssignKeyboardMapping(int PlayerIndex, int Keyb
 	if(LocalPlayer == nullptr) return;
 	UEnhancedInputLocalPlayerSubsystem* PlayerSubsystem = LocalPlayer->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
 	if(PlayerSubsystem == nullptr) return;
+
+	if(KeyboardProfileIndex >= LocalMultiplayerSettings->KeyboardProfilesData.Num() || KeyboardProfileIndex < 0) return;
 	
 	UInputMappingContext* IMC = LocalMultiplayerSettings->KeyboardProfilesData[KeyboardProfileIndex].GetIMCFromType(MappingType);
 	if(IMC == nullptr) return;
@@ -97,12 +104,16 @@ int ULocalMultiplayerSubsystem::AssignNewPlayerToGamepadDeviceID(int DeviceID)
 	return LastAssignedPlayerIndex;
 }
 
-void ULocalMultiplayerSubsystem::AssignGamepadInputMapping(int PlayerIndex, ELocalMultiplayerInputMappingType MappingType) const
+void ULocalMultiplayerSubsystem::AssignGamepadInputMapping(int PlayerIndex, int DeviceID, ELocalMultiplayerInputMappingType MappingType) const
 {
 	const ULocalMultiplayerSettings* LocalMultiplayerSettings = GetDefault<ULocalMultiplayerSettings>();
-
-	APlayerController* LocalPlayer = UGameplayStatics::GetPlayerController(GetWorld(), PlayerIndex);
-	UEnhancedInputLocalPlayerSubsystem* PlayerSubsystem = LocalPlayer->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	
+	APlayerController* LocalPlayerController = UGameplayStatics::GetPlayerController(GetWorld(), PlayerIndex);
+	ULocalPlayer* LocalPlayer = LocalPlayerController->GetLocalPlayer();
+	if(LocalPlayer == nullptr) return;
+	LocalPlayer->SetControllerId(DeviceID);
+	
+	UEnhancedInputLocalPlayerSubsystem* PlayerSubsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
 	if(PlayerSubsystem == nullptr) return;
 	
 	UInputMappingContext* IMC = LocalMultiplayerSettings->GamepadProfileData.GetIMCFromType(MappingType);
@@ -111,4 +122,20 @@ void ULocalMultiplayerSubsystem::AssignGamepadInputMapping(int PlayerIndex, ELoc
 	FModifyContextOptions FModify;
 	FModify.bForceImmediately = true;
 	PlayerSubsystem->AddMappingContext(IMC, 1, FModify);
+}
+
+void ULocalMultiplayerSubsystem::SetCanCreateNewPlayer(bool canCreate)
+{
+	bCanCreateNewPlayer = canCreate;
+}
+
+int ULocalMultiplayerSubsystem::GetNumberOfPlayers()
+{
+	return NumberOfPlayers;
+}
+
+bool ULocalMultiplayerSubsystem::IsPlayerLimitReached()
+{
+	const ULocalMultiplayerSettings* LocalMultiplayerSettings = GetDefault<ULocalMultiplayerSettings>();
+	return LastAssignedPlayerIndex + 1 >= LocalMultiplayerSettings->NbMaxGamepad;
 }

@@ -53,6 +53,12 @@ public:
 	UE_DEPRECATED(5.3, "Function is depreciated, no need to RecenterParachute anymore")
 	void RecenterParachute() const;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void PlayFallDownAnimation(FVector EndLocation);
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void StopFallDownAnimation();
+	
 private:
 	UFUNCTION()
 	void GiveToMurderer(AFreeFallCharacter* PreviousOwner, AFreeFallCharacter* NextOwner);

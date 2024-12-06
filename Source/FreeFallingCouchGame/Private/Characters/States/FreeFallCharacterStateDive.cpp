@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Characters/States/FreeFallCharacterStateDive.h"
@@ -29,6 +29,15 @@ void UFreeFallCharacterStateDive::StateEnter(EFreeFallCharacterStateID PreviousS
 {
 	Super::StateEnter(PreviousStateID);
 
+	OldFlySpeed = Character->GetCharacterMovement()->MaxFlySpeed;
+	
+	if(Character->GetLockControls())
+	{
+		Character->GetStateMachine()->ChangeState(EFreeFallCharacterStateID::Idle);
+		return;
+	}
+	
+
 	UFreeFallCharacterStateMove* StateMove = Cast<UFreeFallCharacterStateMove>(StateMachine->GetState(EFreeFallCharacterStateID::Move));
 	AccelerationSpeed = StateMove == nullptr? 0 : StateMove->AccelerationSpeed;
 
@@ -39,10 +48,10 @@ void UFreeFallCharacterStateDive::StateEnter(EFreeFallCharacterStateID PreviousS
 		return;
 	}
 	
-	Character->GetMesh()->PlayAnimation(DiveAnimation, true);
 	Character->OnInputFastDiveEvent.AddDynamic(this, &UFreeFallCharacterStateDive::OnInputFastDive);
 	Character->bIsDiveForced = false;
-
+	OldInputDive = 0.0f;
+	
 	//Not crash if DiveLevelsActor is not set in scene
 	if (DiveLevelsActor == nullptr)
 	{
@@ -71,6 +80,8 @@ void UFreeFallCharacterStateDive::StateEnter(EFreeFallCharacterStateID PreviousS
 void UFreeFallCharacterStateDive::StateExit(EFreeFallCharacterStateID NextStateID)
 {
 	Super::StateExit(NextStateID);
+
+	Character->GetCharacterMovement()->MaxFlySpeed = OldFlySpeed;
 
 	Character->bIsDiveForced = true;
 
@@ -105,7 +116,16 @@ void UFreeFallCharacterStateDive::StateTick(float DeltaTime)
 	//Change Angle by rotation
 	Character->InterpMeshPlayer(FRotator(Character->GetPlayerDefaultRotation().Pitch, Character->GetMesh()->GetRelativeRotation().Yaw, InputDive * MeshMovementRotationAngle), DeltaTime, MeshMovementDampingSpeed);
 
-	
+	//Change animation based on dive direction
+	if(OldInputDive != InputDive)
+	{
+		OldInputDive = InputDive;
+		if(InputDive > 0)
+			Character->PlayAnimation(DiveDownwardsAnimation, true);
+		else
+			Character->PlayAnimation(DiveUpwardsAnimation, true);
+	}
+
 	if (FMath::Abs(InputDive) < CharactersSettings->InputMoveThreshold)
 	{
 		CurrentDivePhase = EDivePhase::DiveForcesApplying;
@@ -192,9 +212,9 @@ void UFreeFallCharacterStateDive::CheckTargetedLayer()
 		{
 			case EDiveLayersID::Top:
 				TargetLayer = CurrentLayer;
-				break;
+			break;
 			case EDiveLayersID::Middle:
-				TargetLayer = EDiveLayersID::Top;
+				TargetLayer = DiveLevelsActor->bDisableTopLayer ? CurrentLayer : EDiveLayersID::Top;
 			break;
 			case EDiveLayersID::Bottom:
 				TargetLayer = EDiveLayersID::Middle;

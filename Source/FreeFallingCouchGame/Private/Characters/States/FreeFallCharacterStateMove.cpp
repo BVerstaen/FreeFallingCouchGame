@@ -19,6 +19,11 @@ void UFreeFallCharacterStateMove::StateEnter(EFreeFallCharacterStateID PreviousS
 {
 	Super::StateEnter(PreviousStateID);
 
+	if(Character->GetLockControls())
+	{
+		Character->GetStateMachine()->ChangeState(EFreeFallCharacterStateID::Idle);
+		return;
+	}
 	
 	//Character->GetCharacterMovement()->MaxFlySpeed = StartMoveSpeed;
 	Character->OnInputGrabEvent.AddDynamic(this, &UFreeFallCharacterStateMove::OnInputGrab);
@@ -135,12 +140,12 @@ void UFreeFallCharacterStateMove::StateTick(float DeltaTime)
 			"Move : " +Character->GetActorRotation().ToString()
 			);
 	}
-	GEngine->AddOnScreenDebugMessage(
-		-1,
-		DeltaTime,
-		FColor::Cyan,
-		TEXT("Tick State Move")
-		);
+	// GEngine->AddOnScreenDebugMessage(
+	// 	-1,
+	// 	DeltaTime,
+	// 	FColor::Cyan,
+	// 	TEXT("Tick State Move")
+	// 	);
 }
 
 void UFreeFallCharacterStateMove::OnInputGrab()

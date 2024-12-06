@@ -27,7 +27,12 @@ void APowerUpCollectible::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	LifeClock += DeltaTime;
-			if (LifeClock >= LifeTime) Destroy();
+	if (LifeClock >= LifeTime)
+	{
+		OnDestructionEvent.Broadcast();
+		Destroy();
+		return;
+	}
 	if (OverlappingCharacter != nullptr)
 	{
 		if (OverlappingCharacter->CurrentPowerUp == nullptr)
@@ -68,6 +73,8 @@ void APowerUpCollectible::GivePowerToCharacter(AFreeFallCharacter* Character)
 		-1, 5, FColor::Emerald,
 		TEXT("Player : " + Character->GetSelfActor()->GetName() + " Collected PowerUp : " + UEnum::GetDisplayValueAsText(CreatedPowerUpObj->GetPowerUpID()).ToString())
 		);
+	OnDestructionEvent.Broadcast();
+	
 	this->Destroy();
 }
 
@@ -77,5 +84,16 @@ void APowerUpCollectible::RemoveCharacterFromOverlappingCharacters(AFreeFallChar
 	{
 		OverlappingCharacter = nullptr;
 	}
+}
+
+EPowerUpsID APowerUpCollectible::GetPowerUpID()
+{
+	return PowerUpID;
+}
+
+void APowerUpCollectible::SetPowerUp(EPowerUpsID ID, TSubclassOf<UPowerUpObject> Object)
+{
+	PowerUpObject = Object;
+	PowerUpID = ID;
 }
 

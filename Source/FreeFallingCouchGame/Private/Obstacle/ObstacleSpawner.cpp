@@ -4,6 +4,8 @@
 #include "Obstacle/ObstacleSpawner.h"
 
 #include "Audio/SoundSubsystem.h"
+#include "GameMode/FreeFallGameMode.h"
+#include "Kismet/GameplayStatics.h"
 
 AObstacleSpawner::AObstacleSpawner()
 {
@@ -25,8 +27,20 @@ void AObstacleSpawner::BeginPlay()
 	//Set spawner timer
 	if(bPlaySpawnTimer)
 	{
+		//Start Timer after round start
+		if(AFreeFallGameMode* GameMode = Cast<AFreeFallGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
+		{
+			GameMode->OnStartRound.AddDynamic(this, &AObstacleSpawner::StartTimer);
+		}
+	}
+}
+
+void AObstacleSpawner::StartTimer()
+{
+	if(bPlaySpawnTimer)
+	{
 		float SpawnDelay = FMath::RandRange(ObstacleMinTimer, ObstacleMaxTimer);
-		GetWorldTimerManager().SetTimer(SpawnTimer, this, &AObstacleSpawner::SpawnObstacle, SpawnDelay, false, SpawnDelay);
+		GetWorldTimerManager().SetTimer(SpawnTimer, this, &AObstacleSpawner::SpawnObstacleEvent, SpawnDelay, false, SpawnDelay);
 	}
 }
 
@@ -46,10 +60,11 @@ FVector AObstacleSpawner::GetRandomLocationSpawnVector() const
 	return GetTransform().GetLocation() + LocalRandomPosition; 
 }
 
-void AObstacleSpawner::SpawnObstacle()
+
+AObstacle* AObstacleSpawner::SpawnObstacle()
 {
 	//Check if enough Obstacle
-	if(ObstaclesList.Num() <= 0) return;
+	if(ObstaclesList.Num() <= 0) return nullptr;
 	
 	//Get random obstacle
 	TSubclassOf<AObstacle> ObstacleToSpawn = ObstaclesList[FMath::RandRange(0, ObstaclesList.Num() - 1)];
@@ -94,9 +109,16 @@ void AObstacleSpawner::SpawnObstacle()
 	if(bPlaySpawnTimer)
 	{
 		float SpawnDelay = FMath::RandRange(ObstacleMinTimer, ObstacleMaxTimer);
-		GetWorldTimerManager().SetTimer(SpawnTimer, this, &AObstacleSpawner::SpawnObstacle, SpawnDelay, false);		
+		GetWorldTimerManager().SetTimer(SpawnTimer, this, &AObstacleSpawner::SpawnObstacleEvent, SpawnDelay, false);		
 	}
-	
+
+	return SpawningObstacle;
+}
+
+void AObstacleSpawner::SpawnObstacleEvent()
+{
+	GEngine->AddOnScreenDebugMessage(-1,10.0f, FColor::Blue, "Spawn");
+	SpawnObstacle();
 }
 
 void AObstacleSpawner::PauseSpawner()
@@ -114,5 +136,5 @@ void AObstacleSpawner::RestartSpawner()
 	//Reset timer with new delay
 	GetWorldTimerManager().ClearTimer(SpawnTimer);
     float SpawnDelay = FMath::RandRange(ObstacleMinTimer, ObstacleMaxTimer);
-    GetWorldTimerManager().SetTimer(SpawnTimer, this, &AObstacleSpawner::SpawnObstacle, SpawnDelay, false);
+    GetWorldTimerManager().SetTimer(SpawnTimer, this, &AObstacleSpawner::SpawnObstacleEvent, SpawnDelay, false);
 }

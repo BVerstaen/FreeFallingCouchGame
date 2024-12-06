@@ -24,7 +24,6 @@ void UPowerUpObjectAngry::Use()
 	Super::Use();
 
 	USoundSubsystem* SoundSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USoundSubsystem>();
-	SoundSubsystem->PlaySound("SFX_PLR_Potiondrink_ST", OwnerCharacter, false);
 	SoundSubsystem->PlaySound("SFX_PLR_Piment_ST", OwnerCharacter, false);
 	
 	CharacterBaseMass = OwnerCharacter->PlayerMass;

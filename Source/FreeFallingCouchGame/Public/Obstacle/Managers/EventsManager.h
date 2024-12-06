@@ -36,8 +36,14 @@ private:
 	UFUNCTION()
 	void OnEventEnded(AEventActor* TriggeringActor);
 
+	UFUNCTION()
+	void OnStartTick();
+
+	UFUNCTION()
+	bool AtLeastOneObstacleSpawnerManagerPlaysTimer();
+	
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<AObstacleSpawnerManager> ObstacleSpawnerManager = nullptr;
+	TArray<TObjectPtr<AObstacleSpawnerManager>> ObstacleSpawnerManagerList;
 
 	//Temps entre chaque Events;
 	UPROPERTY(EditAnywhere)
@@ -53,6 +59,9 @@ private:
 	UPROPERTY()
 	bool EventHappening = false;
 
+	UPROPERTY()
+	bool CanTickTimer = false;
+	
 	UPROPERTY()
 	TObjectPtr<AEventActor> CurrentEventActor = nullptr;
 

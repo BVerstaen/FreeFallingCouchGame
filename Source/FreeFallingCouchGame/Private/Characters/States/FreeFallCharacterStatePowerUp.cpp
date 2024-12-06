@@ -7,6 +7,7 @@
 #include "Characters/FreeFallCharacterStateID.h"
 #include "Characters/FreeFallCharacterStateMachine.h"
 #include "PowerUps/PowerUpObject.h"
+#include "PowerUps/PowerUpsID.h"
 
 void UFreeFallCharacterStatePowerUp::StateEnter(EFreeFallCharacterStateID PreviousStateID)
 {
@@ -24,6 +25,7 @@ void UFreeFallCharacterStatePowerUp::StateEnter(EFreeFallCharacterStateID Previo
 			PowerUpObject->ResetEffectClock();
 			Character->CurrentPowerUp->PrepareForDestruction();
 			Character->CurrentPowerUp = nullptr;
+			Character->UpdatePowerUpUI(EPowerUpsID::None);
 			ExitStatePowerUp();
 			return;
 		}
@@ -32,6 +34,7 @@ void UFreeFallCharacterStatePowerUp::StateEnter(EFreeFallCharacterStateID Previo
 	Character->OnUsePowerUp.Broadcast(Character);
 	Character->UsedPowerUps.Add(Character->CurrentPowerUp);
 	Character->CurrentPowerUp = nullptr;
+	Character->UpdatePowerUpUI(EPowerUpsID::None);
 	ExitStatePowerUp();
 }
 

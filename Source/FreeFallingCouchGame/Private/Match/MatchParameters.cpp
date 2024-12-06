@@ -25,7 +25,7 @@ int UMatchParameters::getMaxRounds() const
 	return MaxRounds;
 }
 
-void UMatchParameters::setMatchParameters(int inMaxRounds, float inEventDelay, float inRoundTimer, FString inEraChosen,
+void UMatchParameters::setMatchParameters(int inMaxRounds, float inRoundTimer, float inEventDelay, FString inEraChosen,
 	EMatchTypes InMatchType, ETrackingRewardCategory InTracker)
 {
 	MaxRounds = inMaxRounds;
@@ -36,6 +36,6 @@ void UMatchParameters::setMatchParameters(int inMaxRounds, float inEventDelay, f
 	TrackedValue = InTracker;
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Received Data !");
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple, FString::Printf(
-	TEXT("Selected Rounds : %i \n  Event delay: %f"), 
-	inMaxRounds, inEventDelay));
+	TEXT("Selected Rounds : %i \nEvent delay: %f,\nRound timer: %f "), 
+	MaxRounds, EventDelay, RoundTimer));
 }

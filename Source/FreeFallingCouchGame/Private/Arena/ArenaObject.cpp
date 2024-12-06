@@ -34,7 +34,7 @@ void UArenaObject::Init(const AFreeFallGameMode* FreeFallGameMode)
 	
 	MainCameraController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	
-	Parachute = FreeFallGameMode->GetParachuteInstance();
+	//Parachute = FreeFallGameMode->GetParachuteInstance();
 
 	CameraMain = FindCameraByTag("CameraMain");
 	if(!CameraMain)
@@ -100,7 +100,7 @@ void UArenaObject::Tick(float DeltaTime)
 
 void UArenaObject::CheckAndRemoveOutOfBoundPlayers()
 {
-	TArray<TObjectPtr<AFreeFallCharacter>> CharactersToRemove;
+TArray<TObjectPtr<AFreeFallCharacter>> CharactersToRemove;
 	
 	//Check if character was rendered on screen (inverted loop to avoid indexation problems)
 	for(int i = CharactersInsideArena.Num() - 1; i > -1; i--)
@@ -142,7 +142,7 @@ void UArenaObject::CheckAndRemoveOutOfBoundPlayers()
 	for (AFreeFallCharacter* Character : CharactersToRemove)
 	{
 		CharactersInsideArena.Remove(Character);
-		Character->DestroyPlayer();
+		Character->DestroyPlayer(ETypeDeath::Side);
 	}
 	CharactersToRemove.Empty();
 }

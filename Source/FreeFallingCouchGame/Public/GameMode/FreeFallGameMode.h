@@ -60,7 +60,7 @@ private:
 
 	TSubclassOf<AFreeFallCharacter> GetFreeFallCharacterClassFromInputType(EAutoReceiveInput::Type InputType) const;
 
-	void SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints);
+	void SpawnCharacters(const TArray<APlayerStart*>& SpawnPoints, bool bLockControls = false);
 
 	bool GetCharacterInvertDiveInput(int PlayerIndex);
 	
@@ -98,6 +98,7 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UArenaObject> ArenaActorInstance;
 
+	
 	UPROPERTY()
 	TObjectPtr<ATrackerActor> TrackerActorInstance;
 
@@ -135,14 +136,15 @@ public:
 	UFUNCTION()
 	void StartRound();
 	
+	//DANS LE CODE, TERRIBLE CODE, L'ARCHITECTURE EST MORT CE SOIIIIIIR
+	UFUNCTION(BlueprintCallable)
+	void CallArenaActorOnCharacterDestroyed(AFreeFallCharacter* Character);
+	
 private:
 	// Timers
 	void RoundEventTimer();
 	void RoundTimer();
 	void ClearTimers();
-
-	UPROPERTY()
-	int NextParachuteHolderID = -1;
 
 	UFUNCTION()
 	void FindNewOwnerForParachute(AFreeFallCharacter* PreviousOwner);
@@ -185,7 +187,20 @@ private:
 	void CheckEndRoundDeath(AFreeFallCharacter* Character);
 	// Sets up the values for the match & rounds to follow
 	//void SetupMatch(TSubclassOf<UMatchParameters> UserParameters);
-	void SetupMatch(UMatchParameters *UserParameters);
+	void SetupParameters(UMatchParameters *UserParameters);
 	
 #pragma endregion
+
+#pragma region PreFirstRound
+
+public:
+	UFUNCTION()
+	void BeginFirstRound(AFreeFallCharacter* NewOwner);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "InGameUI")
+	void ShowInGameUI();
+
+	UFUNCTION(BlueprintCallable)
+	void PlayParachuteFallingAnimation();
+#pragma endregion 
 };
