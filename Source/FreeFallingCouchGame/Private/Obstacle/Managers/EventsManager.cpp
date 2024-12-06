@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Obstacle/ObstacleSpawner.h"
 #include "Obstacle/ObstacleSpawnerManager.h"
+#include "Obstacle/Events/CameraMoverActor.h"
 #include "Obstacle/Events/EventActor.h"
 
 
@@ -108,6 +109,7 @@ void AEventsManager::Tick(float DeltaTime)
 				Manager->PauseTimer();
 			}
 		}
+		if (CameraMoverActor != nullptr) CameraMoverActor->StopCameraManMovements();
 		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red,"Trigger Event");
 	}
 }
@@ -123,6 +125,7 @@ void AEventsManager::OnEventEnded(AEventActor* TriggeringActor)
 	{
 		Manager->ResumeTimer();
 	}
+	if (CameraMoverActor != nullptr) CameraMoverActor->StartCameraMovement();
 }
 
 AEventActor* AEventsManager::GetRandomEvent()
