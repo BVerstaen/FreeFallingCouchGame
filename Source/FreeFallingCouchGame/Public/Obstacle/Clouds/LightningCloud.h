@@ -28,6 +28,9 @@ public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStruckLightning, ALightningCloud*, LightningCloudActor);
 	FStruckLightning OnStruckLightning;
 
+	UPROPERTY(EditAnywhere)
+	float TimeBeforeDestruction;
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void StruckLightning();
 

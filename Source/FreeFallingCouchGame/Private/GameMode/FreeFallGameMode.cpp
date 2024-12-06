@@ -510,11 +510,13 @@ void AFreeFallGameMode::AddPoints(TArray<int> ArrayPlayersID)
 {
 	if(IsValid(GameDataSubsystem))
 	{
-		const TArray<int> WinPoints = CurrentParameters->getScoreValues();
+		//const TArray<int> WinPoints = CurrentParameters->getScoreValues();
+		//Remplacement car ne marche pas (renvoie toujours Empty)
+		const TArray<int> WinPoints = {3,2,1,0};
+		
 		for (int i  = 0; i< ArrayPlayersID.Num(); i++)
 		{
-			if(ArrayPlayersID.Num() >= i && WinPoints.Num() >= i)
-				GameDataSubsystem->AddPlayerScoreFromID(ArrayPlayersID[i], WinPoints[i]);
+			GameDataSubsystem->AddPlayerScoreFromID(ArrayPlayersID[i], WinPoints[i]);
 		}
 	}
 	// Empty lossOrder
