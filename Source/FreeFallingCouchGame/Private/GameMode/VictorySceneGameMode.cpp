@@ -40,41 +40,41 @@ TArray<int> AVictorySceneGameMode::GetWinners()
 	TArray<int> WinnersList;
 
 	int HighestScore = 0;
-	int CurrentPlayerID = 0;
+	int CurrentIndex = 0;
 	for(int Score : ScoreList)
 	{
 		//In case of equality
 		if(Score == HighestScore && HighestScore > 0)
 		{
-			WinnersList.Add(CurrentPlayerID);
+			WinnersList.Add(CurrentIndex);
 		}
 		//In case of highest number
 		else if(Score > HighestScore)
 		{
 			WinnersList.Empty();
-			WinnersList.Add(CurrentPlayerID);
+			WinnersList.Add(CurrentIndex);
 			HighestScore = Score;
 		}
 
-		CurrentPlayerID++;
+		CurrentIndex++;
 	}
-
+	
 	return WinnersList;
 }
 
 const int AVictorySceneGameMode::GetPlayerIDFromScorePosition(int ScorePosition)
 {
 	UGameDataInstanceSubsystem* GameDataInstanceSubsystem = GetGameInstance()->GetSubsystem<UGameDataInstanceSubsystem>();
-	ScoreList =
+	TArray<int> UnSortedScoreList =
 	{
 		GameDataInstanceSubsystem->GetPlayerScoreFromID(0),
 		GameDataInstanceSubsystem->GetPlayerScoreFromID(1),
 		GameDataInstanceSubsystem->GetPlayerScoreFromID(2),
 		GameDataInstanceSubsystem->GetPlayerScoreFromID(3)
 	};
-	ScoreList.Sort(SortPredicate);
+	UnSortedScoreList.Sort(SortPredicate);
 	
-	return *GameDataInstanceSubsystem->GetPlayerIDFromScore(ScoreList[ScorePosition]);
+	return *GameDataInstanceSubsystem->GetPlayerIDFromScore(UnSortedScoreList[ScorePosition]);
 }
 
 FString AVictorySceneGameMode::FormatWinningPlayers(const TArray<int>& WinningPlayers)

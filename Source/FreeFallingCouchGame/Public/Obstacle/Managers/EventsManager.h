@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "EventsManager.generated.h"
 
+class ACameraMoverActor;
 class AObstacleSpawnerManager;
 class AEventActor;
 
@@ -44,6 +45,9 @@ private:
 	
 	UPROPERTY(EditAnywhere)
 	TArray<TObjectPtr<AObstacleSpawnerManager>> ObstacleSpawnerManagerList;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<ACameraMoverActor> CameraMoverActor;
 
 	//Temps entre chaque Events;
 	UPROPERTY(EditAnywhere)
