@@ -29,7 +29,7 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	TArray<int> ScoreList;
-
+	
 	UFUNCTION(BlueprintCallable)
 	FString FormatWinningPlayers(const TArray<int>& WinningPlayers);
 
