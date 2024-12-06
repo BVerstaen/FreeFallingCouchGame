@@ -3,7 +3,6 @@
 
 #include "Obstacle/ObstacleSpawner.h"
 
-#include "SelectionSet.h"
 #include "Audio/SoundSubsystem.h"
 #include "GameMode/FreeFallGameMode.h"
 #include "Kismet/GameplayStatics.h"
