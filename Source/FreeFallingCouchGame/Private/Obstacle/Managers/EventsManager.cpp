@@ -3,6 +3,7 @@
 
 #include "Obstacle/Managers/EventsManager.h"
 
+#include "LocalizationDescriptor.h"
 #include "GameMode/FreeFallGameMode.h"
 #include "Haptic/HapticsStatics.h"
 #include "Kismet/GameplayStatics.h"
@@ -34,6 +35,7 @@ void AEventsManager::BeginPlay()
 	//Start Timer after round start
 	if(AFreeFallGameMode* GameMode = Cast<AFreeFallGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
+		//TimeBetweenEvents = GameMode->GetCurrentParameters()->getTimerEventDelay();
 		GameMode->OnStartRound.AddDynamic(this, &AEventsManager::OnStartTick);
 	}
 }
