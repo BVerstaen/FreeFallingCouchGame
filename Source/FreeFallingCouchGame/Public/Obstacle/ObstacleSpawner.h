@@ -71,6 +71,9 @@ public :
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ObstacleMaxTimer;
 
+	UPROPERTY(EditAnywhere)
+	bool bFaceSpawner;
+	
 #pragma endregion
 	
 private:
