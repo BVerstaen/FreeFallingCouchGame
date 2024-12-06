@@ -3,6 +3,7 @@
 
 #include "Obstacle/ObstacleSpawner.h"
 
+#include "SelectionSet.h"
 #include "Audio/SoundSubsystem.h"
 #include "GameMode/FreeFallGameMode.h"
 #include "Kismet/GameplayStatics.h"
@@ -92,6 +93,13 @@ AObstacle* AObstacleSpawner::SpawnObstacle()
 		);
 	if(SpawningObstacle->Mesh)
 		SpawningObstacle->Mesh->AddTorqueInDegrees(ObstacleFinalTorqueRotation, NAME_None, true);
+
+	if(bFaceSpawner)
+	{
+		FVector FaceDirection = -GetActorLocation().GetSafeNormal();
+		FaceDirection.Z = 0;
+		SpawningObstacle->SetActorRotation(FaceDirection.Rotation());
+	}
 	
 	SpawningObstacle->FinishSpawning(SpawnTransform);
 

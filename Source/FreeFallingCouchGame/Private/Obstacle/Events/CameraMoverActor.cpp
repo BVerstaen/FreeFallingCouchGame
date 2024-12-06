@@ -22,7 +22,7 @@ void ACameraMoverActor::BeginPlay()
 	//Start Timer after round start
 	if(AFreeFallGameMode* GameMode = Cast<AFreeFallGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
-		GameMode->OnStartRound.AddDynamic(this, &ACameraMoverActor::StartCameraMovements);
+		GameMode->OnStartRound.AddDynamic(this, &ACameraMoverActor::StartCameraMovement);
 	}
 }
 
@@ -38,13 +38,34 @@ void ACameraMoverActor::TriggerEvent()
 	ReceiveTriggerEvent();
 }
 
-void ACameraMoverActor::StartCameraMovements()
+void ACameraMoverActor::StartCameraMovement()
 {
-	ReceiveStartCameraMovements();
+	GetWorldTimerManager().SetTimer(CameraManMovementTimer, this, &ACameraMoverActor::MoveCameraMan, FMath::RandRange(MinTimeBetweenMovements, MaxTimeBetweenMovements), false);
 }
+
+void ACameraMoverActor::MoveCameraMan()
+{
+	GetWorldTimerManager().ClearTimer(CameraManMovementTimer);
+	ReceiveMoveCameraMan();
+}
+
+void ACameraMoverActor::StopCameraManMovements()
+{
+	ReceiveStopCameraMan();
+	GetWorldTimerManager().ClearTimer(CameraManMovementTimer);
+}
+
+
 
 void ACameraMoverActor::CallOnEventEnded()
 {
 	OnEventEnded.Broadcast(this);
+	GetWorldTimerManager().SetTimer(CameraManMovementTimer, this, &ACameraMoverActor::MoveCameraMan, FMath::RandRange(MinTimeBetweenMovements, MaxTimeBetweenMovements), false);
+}
+
+void ACameraMoverActor::CallOnCameraManMovementEnded()
+{
+	GetWorldTimerManager().ClearTimer(CameraManMovementTimer);
+	GetWorldTimerManager().SetTimer(CameraManMovementTimer, this, &ACameraMoverActor::MoveCameraMan, FMath::RandRange(MinTimeBetweenMovements, MaxTimeBetweenMovements), false);
 }
 
