@@ -25,6 +25,9 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 	bool IsGamepad = EventArgs.IsGamepad();
 	if(!IsGamepad)
 	{
+		if(!LocalMultiplayerSettings->EnableKeyboard)
+			return Super::InputKey(EventArgs);
+		
 		int KeyboardProfile = LocalMultiplayerSettings->FindKeyboardProfileIndexFromKey(EventArgs.Key, ELocalMultiplayerInputMappingType::InGame);
 		if(KeyboardProfile >= 0)
 		{
