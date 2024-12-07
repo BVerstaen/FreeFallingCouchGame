@@ -52,4 +52,7 @@ public:
 
 	UPROPERTY(Config, EditAnywhere, Category="LocalMultiplayer")
 	int NbMaxGamepad = 4;
+
+	UPROPERTY(Config, EditAnywhere, Category="LocalMultiplayer")
+	bool EnableKeyboard = true;
 };
