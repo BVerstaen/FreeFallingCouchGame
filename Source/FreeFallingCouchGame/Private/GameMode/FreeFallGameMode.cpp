@@ -476,6 +476,12 @@ void AFreeFallGameMode::CheckEndRoundDeath(AFreeFallCharacter* Character)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple,
 		FString::Printf(TEXT("Player number %i was eliminated!"), Character->getIDPlayerLinked()));
+
+	if(LossOrder.Num() > 0)
+	{
+		if(LossOrder[0] == Character->getIDPlayerLinked()) return;
+	}
+	
 	LossOrder.Insert(Character->getIDPlayerLinked(), 0);
 	CharactersInsideArena.Remove(Character);
 	if(CharactersInsideArena.Num() <= 1)
