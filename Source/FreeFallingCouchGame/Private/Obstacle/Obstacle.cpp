@@ -2,10 +2,7 @@
 
 
 #include "Obstacle/Obstacle.h"
-
-#include "SceneRenderTargetParameters.h"
 #include "Audio/SoundSubsystem.h"
-#include "VFX/DepthAffectedObj.h"
 
 
 // Sets default values
@@ -23,6 +20,7 @@ AObstacle::AObstacle()
 
 	Mesh->SetSimulatePhysics(true);
 	Mesh->SetEnableGravity(false);
+	Mesh->bRenderCustomDepth = true;
 }
 
 // Called when the game starts or when spawned
