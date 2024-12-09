@@ -3,6 +3,7 @@
 
 #include "Obstacle/Managers/EventsManager.h"
 
+#include "LocalizationDescriptor.h"
 #include "GameMode/FreeFallGameMode.h"
 #include "Haptic/HapticsStatics.h"
 #include "Kismet/GameplayStatics.h"
@@ -50,6 +51,8 @@ void AEventsManager::Destroyed()
 
 void AEventsManager::OnStartTick()
 {
+	AFreeFallGameMode* GameMode = Cast<AFreeFallGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	TimeBetweenEvents = GameMode->GetCurrentParameters()->getTimerEventDelay();
 	CanTickTimer = true;
 }
 

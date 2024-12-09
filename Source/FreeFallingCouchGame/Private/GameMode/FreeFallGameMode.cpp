@@ -263,6 +263,11 @@ AParachute* AFreeFallGameMode::RespawnParachute(FVector SpawnLocation)
 	return NewParachuteInstance;
 }
 
+UMatchParameters* AFreeFallGameMode::GetCurrentParameters()
+{
+	return CurrentParameters;
+}
+
 void AFreeFallGameMode::CallArenaActorOnCharacterDestroyed(AFreeFallCharacter* Character)
 {
 	ArenaActorInstance->OnCharacterDestroyed.Broadcast(Character);
@@ -430,6 +435,9 @@ void AFreeFallGameMode::SetupParameters(UMatchParameters *UserParameters)
 	if(IsValid(UserParameters))
 	{
 		CurrentParameters = NewObject<UMatchParameters>(UserParameters);
+		CurrentParameters->setMatchParameters(UserParameters->getMaxRounds(), UserParameters->getRoundTimer(),
+			UserParameters->getTimerEventDelay(), UserParameters->getEraChosen());
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "SetupMatch : " + FString::FromInt(CurrentParameters->getMaxRounds()));
 
 	} else
 	{ 	
