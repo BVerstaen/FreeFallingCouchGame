@@ -73,6 +73,9 @@ private:
 	UPROPERTY()
 	TArray<TObjectPtr<ALightningCloud>> ActiveLightningClouds;
 
+	UPROPERTY()
+	TObjectPtr<ACameraActor> CameraActor;
+
 	bool bIsSpawningClouds;
 
 	float SpawnClock = 0.f;

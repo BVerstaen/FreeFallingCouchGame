@@ -3,6 +3,7 @@
 
 #include "Obstacle/Clouds/LightningCloud.h"
 
+#include "Camera/CameraActor.h"
 #include "Characters/FreeFallCharacter.h"
 #include "GameMode/FreeFallGameMode.h"
 #include "Kismet/GameplayStatics.h"
@@ -42,16 +43,20 @@ void ALightningCloud::Tick(float DeltaTime)
 	}
 }
 
-void ALightningCloud::SetupLightningCloud(float m_TimeBeforeLightning, float m_LightningRadius)
+void ALightningCloud::SetupLightningCloud(float m_TimeBeforeLightning, float m_LightningRadius, TObjectPtr<ACameraActor> Camera)
 {
 	TimeBeforeLightning = m_TimeBeforeLightning;
 	LightningRadius = m_LightningRadius;
+	CameraActor = Camera;
+
+	ShootDirection = bDirectionDependsOnCamera? GetActorLocation() - CameraActor->GetActorLocation() : -GetActorUpVector();
+	ShootDirection.Normalize();
 }
 
 void ALightningCloud::KillPlayerInsideLightning()
 {
 	FVector StartPoint = GetActorLocation();
-	FVector EndPoint = GetActorLocation() + GetActorUpVector() * -LightningLength;
+	FVector EndPoint = GetActorLocation() + ShootDirection * LightningLength;
 	TArray<TEnumAsByte<EObjectTypeQuery>> traceObjectTypes;
 	traceObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
 	TArray<AActor*> ignoreActors;
