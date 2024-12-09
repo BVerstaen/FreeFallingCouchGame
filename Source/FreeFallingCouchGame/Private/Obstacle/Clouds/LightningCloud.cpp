@@ -50,7 +50,12 @@ void ALightningCloud::SetupLightningCloud(float m_TimeBeforeLightning, float m_L
 	CameraActor = Camera;
 
 	ShootDirection = bDirectionDependsOnCamera? GetActorLocation() - CameraActor->GetActorLocation() : -GetActorUpVector();
+
+	LightningRotation = ShootDirection.Rotation();
+	
 	ShootDirection.Normalize();
+
+	
 }
 
 void ALightningCloud::KillPlayerInsideLightning()
