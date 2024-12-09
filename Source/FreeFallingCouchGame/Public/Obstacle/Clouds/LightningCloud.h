@@ -23,7 +23,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void SetupLightningCloud(float m_TimeBeforeLightning, float m_LightningRadius);
+	void SetupLightningCloud(float m_TimeBeforeLightning, float m_LightningRadius, TObjectPtr<ACameraActor> Camera);
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStruckLightning, ALightningCloud*, LightningCloudActor);
 	FStruckLightning OnStruckLightning;
@@ -37,10 +37,20 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	float LightningRadius = 0.f;
 
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bDirectionDependsOnCamera;
+
+	UPROPERTY(BlueprintReadOnly)
+	FVector ShootDirection;
+	
 private:
 	float TimeBeforeLightning = 100.f;
 
 	float LightningClock = 0.f;
+
+	UPROPERTY()
+	TObjectPtr<ACameraActor> CameraActor;
 
 
 	bool bHasStruckLightning = false;
