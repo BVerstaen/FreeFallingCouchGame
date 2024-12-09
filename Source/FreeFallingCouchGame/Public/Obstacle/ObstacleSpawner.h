@@ -73,7 +73,6 @@ public :
 
 	UPROPERTY(EditAnywhere)
 	bool bFaceSpawner;
-	
 #pragma endregion
 	
 private:
@@ -92,6 +91,6 @@ public:
 	void PauseSpawner();
 	UFUNCTION(BlueprintCallable, CallInEditor)
 	void RestartSpawner();
-
+	
 	bool bPlaySpawnTimer;
 };

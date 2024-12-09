@@ -44,9 +44,20 @@ void AObstacleSpawnerManager::StartTimer()
 void AObstacleSpawnerManager::LaunchSpawn()
 {
 	//Spawn Random timer
-	AObstacleSpawner* Spawner = LinkedObstacleSpawners[FMath::RandHelper(LinkedObstacleSpawners.Num())];
+	int SpawnerIndex = FMath::RandHelper(LinkedObstacleSpawners.Num());
+	AObstacleSpawner* Spawner = LinkedObstacleSpawners[SpawnerIndex];
 	Spawner->SpawnObstacle();
 
+	if(bDoubleSpawn)
+	{
+		int SecondSpawnerIndex =  FMath::RandHelper(LinkedObstacleSpawners.Num());
+		if(SpawnerIndex == SecondSpawnerIndex)
+			SecondSpawnerIndex = (SpawnerIndex + 1) == LinkedObstacleSpawners.Num() ? SpawnerIndex - 1 : SpawnerIndex + 1;
+		
+		Spawner = LinkedObstacleSpawners[SecondSpawnerIndex];
+		Spawner->SpawnObstacle();
+	}
+	
 	GEngine->AddOnScreenDebugMessage(-1,15,FColor::Red,"Spawned Obstacle");
 	
 	//Reset Timer

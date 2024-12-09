@@ -115,6 +115,20 @@ void AEventsManager::Tick(float DeltaTime)
 		if (CameraMoverActor != nullptr) CameraMoverActor->StopCameraManMovements();
 		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red,"Trigger Event");
 	}
+
+
+	//Double Spawn code
+	EventDoubleSpawnClock += DeltaTime;
+	if(EventDoubleSpawnClock > TimeDoubleSpawnTrigger && !bDoubleSpawned && !EventHappening)
+	{
+		AEventActor* EventActor = DoubleSpawnEvent;
+		EventActor->OnEventEnded.AddDynamic(this, &AEventsManager::OnEventEnded);
+		EventActor->TriggerEvent();
+		CurrentEventActor = EventActor;
+		UHapticsStatics::CallHapticsAll(this);
+		EventHappening = true;
+		bDoubleSpawned = true;
+	}
 }
 
 void AEventsManager::OnEventEnded(AEventActor* TriggeringActor)

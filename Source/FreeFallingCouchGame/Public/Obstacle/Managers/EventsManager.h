@@ -61,6 +61,9 @@ private:
 	float EventClock = 0.f;
 
 	UPROPERTY()
+	float EventDoubleSpawnClock = 0.f;
+	
+	UPROPERTY()
 	bool EventHappening = false;
 
 	UPROPERTY()
@@ -74,4 +77,12 @@ private:
 
 	UPROPERTY()
 	TArray<AEventActor*> AvailableEventsActors;
+
+	UPROPERTY(EditAnywhere,Category="Double Spawn Event")
+	TObjectPtr<AEventActor> DoubleSpawnEvent;
+	
+	UPROPERTY(EditAnywhere,Category="Double Spawn Event")
+	float TimeDoubleSpawnTrigger;
+
+	bool bDoubleSpawned = false;
 };
