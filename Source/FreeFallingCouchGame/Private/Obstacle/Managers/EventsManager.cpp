@@ -121,6 +121,7 @@ void AEventsManager::Tick(float DeltaTime)
 	EventDoubleSpawnClock += DeltaTime;
 	if(EventDoubleSpawnClock > TimeDoubleSpawnTrigger && !bDoubleSpawned && !EventHappening)
 	{
+		if (!DoubleSpawnEvent) return;
 		AEventActor* EventActor = DoubleSpawnEvent;
 		EventActor->OnEventEnded.AddDynamic(this, &AEventsManager::OnEventEnded);
 		EventActor->TriggerEvent();

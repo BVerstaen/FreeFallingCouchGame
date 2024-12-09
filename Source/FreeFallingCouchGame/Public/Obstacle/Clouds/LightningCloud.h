@@ -42,6 +42,8 @@ protected:
 	bool bDirectionDependsOnCamera;
 
 	UPROPERTY(BlueprintReadOnly)
+	FRotator LightningRotation;
+	
 	FVector ShootDirection;
 	
 private:
