@@ -88,6 +88,8 @@ void  ABaseWarningActor::FaceCamera()
 // Called every frame
 void ABaseWarningActor::Tick(float DeltaTime)
 {
+	if(!OwnerObstacle) Destroy();
+	
 	FaceCamera();
 	// Set rota arrow
 	switch (WarningType)
@@ -113,6 +115,7 @@ void ABaseWarningActor::Tick(float DeltaTime)
 
 void ABaseWarningActor::CheckDistanceColor()
 {
+	if(!OwnerObstacle) return;
 	float distance = GetDistanceTo(OwnerObstacle);
 	//GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple, FString::Printf(
 	//	TEXT("Distance of %f between obstacle and warning "),distance));

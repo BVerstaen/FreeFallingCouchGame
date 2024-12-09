@@ -169,6 +169,9 @@ private:
 	UFUNCTION()
 	void EndRoundCycleAddRewardPoints();
 	int CurrentCategory;
+
+	UFUNCTION()
+	TArray<int> FindEqualities();
 	
 	UFUNCTION()
 	void EndRoundWaitHide();
@@ -206,5 +209,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void PlayParachuteFallingAnimation();
+
+	bool IsTrackerInit = false;
 #pragma endregion 
 };
