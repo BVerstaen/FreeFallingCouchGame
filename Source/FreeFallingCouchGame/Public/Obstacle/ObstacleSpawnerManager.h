@@ -50,7 +50,10 @@ public:
 	
 	UPROPERTY()
 	FTimerHandle SpawnerTimer;
-
+	
+	UPROPERTY(EditAnywhere)
+	bool bDoubleSpawn;
+	
 #pragma region Camera Activation
 public:
 	/* Sous quel index de position de la caméra dois-je m'activer*/

@@ -7,6 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "UI/BaseWarningActor.h"
 #include "Interface/BounceableInterface.h"
+#include "VFX/DepthAffectedObj.h"
 #include "Obstacle.generated.h"
 
 UCLASS()
