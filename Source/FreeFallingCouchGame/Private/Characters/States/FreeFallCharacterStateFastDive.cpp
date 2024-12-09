@@ -126,7 +126,11 @@ void UFreeFallCharacterStateFastDive::CheckTargetedLayer()
 {
 	const float ZPosition = Character->GetActorLocation().Z;
 	const EDiveLayersID CurrentLayer = DiveLevelsActor->GetDiveLayersFromCoord(ZPosition);
-	if (Character->GetInputFastDive() < 0)
+	if (bSmartDiveInput && DiveLevelsActor->bDisableTopLayer)
+	{
+		TargetLayer = CurrentLayer == EDiveLayersID::Middle? EDiveLayersID::Bottom : EDiveLayersID::Middle;
+	}
+	else if (Character->GetInputFastDive() < 0)
 	{
 		switch (CurrentLayer)
 		{
@@ -170,10 +174,11 @@ void UFreeFallCharacterStateFastDive::CheckTargetedLayer()
 	TargetLayerZCenter = DiveLevelsActor->GetDiveBoundZCoord(TargetLayer, EDiveLayerBoundsID::Middle);
 	Character->GetCharacterMovement()->MaxFlySpeed = FMath::Abs(TargetLayerZCenter - ZPosition)/FMath::Max(0,CrossingLayerTime);
 	DirectionScaleValue = ZPosition < TargetLayerZCenter ? -1 : 1;
-	GEngine->AddOnScreenDebugMessage(-1,100.f, FColor::Purple, "FlySpeed = " + FString::SanitizeFloat(Character->GetCharacterMovement()->MaxFlySpeed));
+	/*GEngine->AddOnScreenDebugMessage(-1,100.f, FColor::Purple, "FlySpeed = " + FString::SanitizeFloat(Character->GetCharacterMovement()->MaxFlySpeed));
 	GEngine->AddOnScreenDebugMessage(-1,100.f, FColor::Purple, "ZPosition = " + FString::SanitizeFloat(ZPosition));
 	GEngine->AddOnScreenDebugMessage(-1,100.f, FColor::Purple, "TargetLayerZCenter = " + FString::SanitizeFloat(TargetLayerZCenter));
 	GEngine->AddOnScreenDebugMessage(-1,100.f, FColor::Purple, "CrossingLayerTime = " + FString::SanitizeFloat(CrossingLayerTime));
+	*/
 }
 
 void UFreeFallCharacterStateFastDive::ExitStateFastDive()
