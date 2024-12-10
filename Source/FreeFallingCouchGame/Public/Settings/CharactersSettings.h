@@ -7,6 +7,7 @@
 #include "Engine/DeveloperSettings.h"
 #include "Haptic/HapticsHandler.h"
 #include "CharactersSettings.generated.h"
+class UCharacterIndicatorWidget;
 class UInputMappingContext;
 //class UFreeFallCharacterInputData;
 class UFreeFallCharacterState;
@@ -23,6 +24,9 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category="States")
 	TMap<EFreeFallCharacterStateID, TSubclassOf<UFreeFallCharacterState>> SmashCharacterStates;
 
+	UPROPERTY(Config, EditAnywhere, Category="UI")
+	TSubclassOf<UUserWidget> CharacterIndicatorWidget;
+	
 	UPROPERTY(Config, EditAnywhere, Category="Ejection")
 	float MarginHorizontalOffScreen;
 
