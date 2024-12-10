@@ -7,6 +7,7 @@
 #include "GameMode/FreeFallGameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "Settings/CharactersSettings.h"
+#include "UI/Widgets/CharacterIndicatorWidget.h"
 
 
 // Sets default values
@@ -39,6 +40,12 @@ void UArenaObject::Init(const AFreeFallGameMode* FreeFallGameMode)
 	CameraMain = FindCameraByTag("CameraMain");
 	if(!CameraMain)
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Can't find the main camera! Add \"CameraMain\" tag to main camera!");
+
+	CharacterIndicatorWidgets.Empty();
+	for (TObjectPtr<AFreeFallCharacter> Character : CharactersInsideArena)
+	{
+		CreateCharacterIndicatorWidget(CharactersSettings->CharacterIndicatorWidget, Character->getIDPlayerLinked());
+	}
 }
 
 UCameraComponent* UArenaObject::FindCameraByTag(const FName& Tag) const
@@ -95,6 +102,7 @@ void UArenaObject::Tick(float DeltaTime)
 		return;
 
 	CheckAndRemoveOutOfBoundPlayers();
+	DisplayOffScreenCharacterIndicators();
 	LastFrameNumberWeTicked = GFrameCounter;
 }
 
@@ -142,6 +150,10 @@ TArray<TObjectPtr<AFreeFallCharacter>> CharactersToRemove;
 	for (AFreeFallCharacter* Character : CharactersToRemove)
 	{
 		CharactersInsideArena.Remove(Character);
+		
+		if (TObjectPtr<UCharacterIndicatorWidget> CharacterIndicatorWidget = GetCharacterIndicatorWidgetFromPlayerIndex(Character->getIDPlayerLinked()))
+			CharacterIndicatorWidget->SetVisibility(ESlateVisibility::Hidden);
+		
 		Character->DestroyPlayer(ETypeDeath::Side);
 	}
 	CharactersToRemove.Empty();
@@ -178,4 +190,61 @@ bool UArenaObject::IsNearOutOfBounds(FVector2D ScreenPosition, FVector2D Viewpor
 	FVector2D ViewportSize = ViewportSizeMax - ViewportSizeMin;
 	return !(ScreenPosition.X >= ViewportSize.X * NearEdgeScreenTolerance && ScreenPosition.X <= ViewportSize.X - ViewportSize.X * NearEdgeScreenTolerance &&
 				ScreenPosition.Y >= ViewportSize.Y * NearEdgeScreenTolerance && ScreenPosition.Y <= ViewportSize.Y - ViewportSize.Y * NearEdgeScreenTolerance);
+}
+
+void UArenaObject::CreateCharacterIndicatorWidget(TSubclassOf<UUserWidget> CharacterIndicatorWidgetClass, int PlayerIndex)
+{
+	UUserWidget* Widget = CreateWidget(GetWorld(), CharacterIndicatorWidgetClass);
+	Widget->AddToViewport();
+	Widget->SetAlignmentInViewport(FVector2D(0.5f, 0.5f));
+	Widget->SetVisibility(ESlateVisibility::Hidden);
+	UCharacterIndicatorWidget* CharacterIndicatorWidget = Cast<UCharacterIndicatorWidget>(Widget);
+	if (!CharacterIndicatorWidget) return;
+	CharacterIndicatorWidget->SetPlayerIndex(PlayerIndex);
+	CharacterIndicatorWidgets.Add(CharacterIndicatorWidget);
+}
+
+void UArenaObject::DisplayOffScreenCharacterIndicators()
+{
+	FVector2D ViewportBoundsMin;
+	FVector2D ViewportBoundsMax;
+	GetViewportBounds(ViewportBoundsMin, ViewportBoundsMax);
+
+	FVector2D ScreenPosition;
+	TObjectPtr<UCharacterIndicatorWidget> CharacterIndicatorWidget;
+	//Check if player position is a valid screen position
+	
+	for (TObjectPtr<AFreeFallCharacter> Character : CharactersInsideArena)
+	{
+		bool bCanConvertToScreen = MainCameraController->ProjectWorldLocationToScreen(Character->GetActorLocation(), ScreenPosition);
+		if(!bCanConvertToScreen) return;
+
+		CharacterIndicatorWidget = GetCharacterIndicatorWidgetFromPlayerIndex(Character->getIDPlayerLinked());
+		if (!CharacterIndicatorWidget) return;
+		
+		if (IsOutsideOfViewport(ScreenPosition, ViewportBoundsMin, ViewportBoundsMax))
+		{
+			CharacterIndicatorWidget->SetVisibility(ESlateVisibility::Visible);
+			CharacterIndicatorWidget->ShowCharacter(ScreenPosition, ViewportBoundsMin, ViewportBoundsMax);
+		}
+		else if (CharacterIndicatorWidget->GetVisibility() == ESlateVisibility::Visible)
+		{
+			CharacterIndicatorWidget->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+}
+
+TObjectPtr<UCharacterIndicatorWidget> UArenaObject::GetCharacterIndicatorWidgetFromPlayerIndex(int PlayerIndex)
+{
+	for (TObjectPtr<UCharacterIndicatorWidget> CharacterIndicatorWidget : CharacterIndicatorWidgets)
+	{
+		if (CharacterIndicatorWidget->PlayerIndex == PlayerIndex) return CharacterIndicatorWidget;
+	}
+	return nullptr;
+}
+
+bool UArenaObject::IsOutsideOfViewport(FVector2D ScreenPos, FVector2D ViewportBoundsMin, FVector2D ViewportBoundsMax)
+{
+	return !(ScreenPos.X >= ViewportBoundsMin.X && ScreenPos.X <= ViewportBoundsMax.X &&
+				ScreenPos.Y >= ViewportBoundsMin.Y && ScreenPos.Y <= ViewportBoundsMax.Y);
 }
