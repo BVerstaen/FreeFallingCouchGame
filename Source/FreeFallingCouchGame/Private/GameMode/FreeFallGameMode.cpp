@@ -33,7 +33,6 @@ void AFreeFallGameMode::Init()
 	TrackerActorInstance = GetWorld()->SpawnActor<ATrackerActor>();
 	GameDataSubsystem = GetGameInstance()->GetSubsystem<UGameDataInstanceSubsystem>();
 	
-
 	//Find Parachute Spawnlocation then destroy dummy parachute
 	AParachute* Parachute = Cast<AParachute>(UGameplayStatics::GetActorOfClass(GetWorld(), AParachute::StaticClass()));
 	if(Parachute)
@@ -190,6 +189,7 @@ TSubclassOf<AFreeFallCharacter> AFreeFallGameMode::GetFreeFallCharacterClassFrom
 	}
 }
 
+
 bool AFreeFallGameMode::GetCharacterInvertDiveInput(int PlayerIndex)
 {
 	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
@@ -332,6 +332,12 @@ void AFreeFallGameMode::StartMatch()
 	FVector ParachuteBeginPosition = ParachuteInstance->GetActorLocation();
 	ParachuteBeginPosition.Z += 1000;
 	ParachuteInstance->SetActorLocation(ParachuteBeginPosition);
+
+	if(!IsTrackerInit)
+	{
+		TrackerActorInstance->Init(ParachuteInstance, CharactersInsideArena);
+		IsTrackerInit = true;
+	}
 }
 
 void AFreeFallGameMode::BeginFirstRound(AFreeFallCharacter* NewOwner)
@@ -411,7 +417,13 @@ void AFreeFallGameMode::StartRound()
 	
 	ArenaActorInstance->Init(this);
 	ArenaActorInstance->OnCharacterDestroyed.AddDynamic(this, &AFreeFallGameMode::CheckEndRoundDeath);
-	TrackerActorInstance->Init(ParachuteInstance, CharactersInsideArena);
+
+	if(!IsTrackerInit)
+	{
+		TrackerActorInstance->Init(ParachuteInstance, CharactersInsideArena);
+		IsTrackerInit = true;
+	}
+
 	//SetupMatch(nullptr); //Possiblement à enlever, j'ai juste rerajouté pour pas tout péter :)
 	
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, TEXT("---------------------ROUND START--------------------"));
@@ -476,6 +488,12 @@ void AFreeFallGameMode::CheckEndRoundDeath(AFreeFallCharacter* Character)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple,
 		FString::Printf(TEXT("Player number %i was eliminated!"), Character->getIDPlayerLinked()));
+
+	if(LossOrder.Num() > 0)
+	{
+		if(LossOrder[0] == Character->getIDPlayerLinked()) return;
+	}
+	
 	LossOrder.Insert(Character->getIDPlayerLinked(), 0);
 	CharactersInsideArena.Remove(Character);
 	if(CharactersInsideArena.Num() <= 1)
@@ -585,9 +603,27 @@ void AFreeFallGameMode::EndRoundAddScore()
 	RoundScorePanelWidget->OnFinishShow.RemoveDynamic(this, &AFreeFallGameMode::EndRoundAddScore);
 	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
 
+	//If in the last round
+	int PlayerToAdvantage = -1;
+	if(GameDataSubsystem->CurrentRound >= CurrentParameters->getMaxRounds())
+	{
+		//Check for equalities
+		TArray<int> EqualPlayersID = FindEqualities();
+		if(EqualPlayersID.Num() > 1)
+		{
+			PlayerToAdvantage = EqualPlayersID[FMath::RandRange(0, EqualPlayersID.Num() - 1)];
+		}
+	}
+	
 	for(int i = 0; i < NumberOfPlayers; i++)
 	{
 		int NewScore = GameDataSubsystem->GetPlayerScoreFromID(i);
+		if(PlayerToAdvantage == i)
+		{
+			NewScore++;
+			GameDataSubsystem->AddPlayerScoreFromID(PlayerToAdvantage,1);
+		}
+		
 		RoundScorePanelWidget->AddScoreToRound(i + 1, NewScore);
 		OldPlayerScore[i] = NewScore;
 	}
@@ -619,6 +655,47 @@ void AFreeFallGameMode::EndRoundCycleAddRewardPoints()
 	}
 }
 
+TArray<int> AFreeFallGameMode::FindEqualities()
+{
+	TArray<int> EqualityPlayers;
+	int HighestScore = 0;
+	//Create predicted score list
+	TArray<int> PredictedScoreList;
+	for(int i = 0; i < NumberOfPlayers; i++)
+	{
+		PredictedScoreList.Add(GameDataSubsystem->GetPlayerScoreFromID(i));
+	}
+	
+	//Add reward point for each reward
+	for(ETrackingRewardCategory Category : TrackerActorInstance->CategoriesOfAward)
+	{
+		TArray<int> ExtraPoints = TrackerActorInstance->GetTrackingWinners(Category);
+		for(int ExtraPointWinner : ExtraPoints)
+		{
+			PredictedScoreList[ExtraPointWinner]++;
+		}
+	
+	}
+	//Check for highest score
+	for(int i = 0; i < NumberOfPlayers; i++)
+	{
+		int NewScore = PredictedScoreList[i];
+		//Reset if new highest score
+		if(NewScore > HighestScore)
+		{
+			HighestScore = NewScore;
+			EqualityPlayers.Empty();
+		}
+		//Add Equality if equal to highestScore
+		if(NewScore == HighestScore)
+		{
+			EqualityPlayers.Add(0);
+		}
+	}
+	
+	return EqualityPlayers;
+}
+
 void AFreeFallGameMode::EndRoundWaitHide()
 {
 	RoundScorePanelWidget->HideRoundScoreAnimation();
@@ -644,7 +721,6 @@ void AFreeFallGameMode::EndRoundHideScorePanel()
 		//StartRound();
 		UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
 		GEngine->AddOnScreenDebugMessage(-1,3.f,FColor::Silver, FString::FromInt(GameDataSubsystem->CurrentRound));
-		//ZIZICACA
 	}
 }
 
@@ -665,7 +741,7 @@ bool AFreeFallGameMode::EndRoundAddRewardPoints(ETrackingRewardCategory Category
 		int NewScore = GameDataSubsystem->GetPlayerScoreFromID(i);
 		if (OldPlayerScore[i] != NewScore)
 		{
-			RoundScorePanelWidget->AddScoreReward(i+1, NewScore, Category, DelayOnScreen);
+			RoundScorePanelWidget->AddScoreReward(i, NewScore, Category, DelayOnScreen);
 			OldPlayerScore[i] = NewScore;
 			DidChangeAnyScore = true;
 		}

@@ -30,14 +30,18 @@ public:
 	UPROPERTY(BlueprintAssignable,BlueprintCallable, Category = "EventsCostume")
 	FDCostumeSwitch OnCostumeSwitch;
     
-    	//Get Costume ID from PlayerID, returns -1 if not found
-    	UFUNCTION(BlueprintCallable)
-    	int GetPlayerLookFromID(int PlayerID);
-    
-    	//Set Player Costume ID from PlayerID, creates one if necessary
-    	UFUNCTION(BlueprintCallable)
-    	void SetPlayerLookFromID(int PlayerID, int LookID);
-    
+   	//Get Costume ID from PlayerID, returns -1 if not found
+   	UFUNCTION(BlueprintCallable)
+   	int GetPlayerLookFromID(int PlayerID);
+   
+   	//Set Player Costume ID from PlayerID, creates one if necessary
+   	UFUNCTION(BlueprintCallable)
+   	void SetPlayerLookFromID(int PlayerID, int LookID);
+
+	//Reset Player costumes link
+	UFUNCTION(BlueprintCallable)
+	void ResetPlayerCostumes();
+	
 protected:
 	// <Player ID, Costume ID>
 	UPROPERTY(BlueprintReadOnly)
