@@ -702,6 +702,10 @@ void AFreeFallCharacter::UpdateEveryMovementInfluence(float DeltaTime)
 void AFreeFallCharacter::UpdateObjectPosition(float DeltaTime) const
 {
 	OtherObject->SetActorLocation(GetObjectGrabPoint()->GetComponentLocation());
+	
+	FRotator TargetRotation = this->GetActorRotation();
+	TargetRotation += GrabDefaultRotationOffset;
+	OtherObject->SetActorRotation(TargetRotation);
 }
 
 void AFreeFallCharacter::UpdateHeavyObjectPosition(float DeltaTime)
