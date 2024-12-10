@@ -348,6 +348,8 @@ bool UFreeFallCharacterStateGrab::ObjectGrab() const
 			//Detach object
 			FDetachmentTransformRules DetachmentRules = FDetachmentTransformRules(EDetachmentRule::KeepWorld, false);
 			Character->OtherObject->DetachFromActor(DetachmentRules);
+
+			Character->GrabDefaultRotationOffset = Character->GetActorRotation() - FoundObstacle->GetActorRotation();
 		}
 	}
 	
