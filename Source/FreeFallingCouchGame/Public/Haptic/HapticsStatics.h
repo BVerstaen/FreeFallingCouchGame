@@ -16,6 +16,10 @@ class FREEFALLINGCOUCHGAME_API UHapticsStatics : public UBlueprintFunctionLibrar
 public:
 	UFUNCTION(BlueprintCallable, Category="Haptics", meta=(WorldContext="WorldContextObject"))
 	static void CallHapticsCollision(UObject* WorldContextObject, APlayerController* PlayerController);
+
+	UFUNCTION(BlueprintCallable, Category="Haptics", meta=(WorldContext="WorldContextObject"))
+	static void CallHapticsDive(UObject* WorldContextObject, APlayerController* PlayerController, bool bIsDivingDown);
+	
 	UFUNCTION(BlueprintCallable, Category="Haptics", meta=(WorldContext="WorldContextObject"))
 	static void CallHapticsAll(UObject* WorldContextObject);
 
