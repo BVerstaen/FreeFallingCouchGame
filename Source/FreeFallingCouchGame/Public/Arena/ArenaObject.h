@@ -9,6 +9,7 @@
 #include "Other/Parachute.h"
 #include "ArenaObject.generated.h"
 
+class UCharacterIndicatorWidget;
 class AFreeFallGameMode;
 
 //TODO Transform Arena Actor to tickable Object
@@ -90,6 +91,23 @@ public:
 private:
 	//To check if we call it multiple frames
 	uint32 LastFrameNumberWeTicked = INDEX_NONE;
+
+#pragma endregion
+
+#pragma region UI
+
+protected:
+	UPROPERTY()
+	TArray<TObjectPtr<UCharacterIndicatorWidget>> CharacterIndicatorWidgets;
+
+	void CreateCharacterIndicatorWidget(TSubclassOf<UUserWidget> CharacterIndicatorWidgetClass, int PlayerIndex);
+
+	void DisplayOffScreenCharacterIndicators();
+
+	TObjectPtr<UCharacterIndicatorWidget> GetCharacterIndicatorWidgetFromPlayerIndex(int PlayerIndex);
+
+	//Check if position is outside of Viewport without tolerance, return true if Position is outside of Viewport;
+	bool IsOutsideOfViewport(FVector2D ScreenPos, FVector2D ViewportSizeMin, FVector2D ViewportSizeMax);
 
 #pragma endregion
 	
