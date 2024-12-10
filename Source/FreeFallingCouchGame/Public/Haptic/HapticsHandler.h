@@ -16,6 +16,10 @@ class FREEFALLINGCOUCHGAME_API UHapticsHandler : public UObject
 public:
 	UFUNCTION()
 	 void CallHapticsSingle(APlayerController *Player);
+
+	UFUNCTION()
+	void CallHapticsSingleDive(APlayerController *Player, bool bIsDivingDown);
+	
 	UFUNCTION()
 	 void CallHapticsMulti();
 
@@ -26,5 +30,8 @@ public:
 	// Do not use this outside of blueprints
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "CallHapticsAll"))
 	void ReceiveCallHapticsAll();
+
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "CallHapticsSingleDive"))
+	void ReceiveCallHapticsDive(APlayerController *Player, bool bIsDivingDown);
 };
 

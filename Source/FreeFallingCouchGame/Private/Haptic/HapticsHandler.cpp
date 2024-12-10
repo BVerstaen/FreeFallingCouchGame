@@ -8,6 +8,11 @@ void UHapticsHandler::CallHapticsSingle(APlayerController *Player)
 	ReceiveCallHapticsCollision(Player);
 }
 
+void UHapticsHandler::CallHapticsSingleDive(APlayerController* Player, bool bIsDivingDown)
+{
+	ReceiveCallHapticsDive(Player, bIsDivingDown);
+}
+
 void UHapticsHandler::CallHapticsMulti()
 {
 	ReceiveCallHapticsAll();
