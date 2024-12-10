@@ -4,6 +4,7 @@
 #include "Obstacle/Clouds/LightningCloudsManager.h"
 
 #include "Audio/SoundSubsystem.h"
+#include "Camera/CameraActor.h"
 #include "GameMode/FreeFallGameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "Obstacle/Clouds/LightningCloud.h"
@@ -19,7 +20,9 @@ ALightningCloudsManager::ALightningCloudsManager()
 // Called when the game starts or when spawned
 void ALightningCloudsManager::BeginPlay()
 {
-	Super::BeginPlay(); //<- Spawn des Lightnings
+	Super::BeginPlay();
+
+	CameraActor = Cast<ACameraActor>(UGameplayStatics::GetActorOfClass(GetWorld(), ACameraActor::StaticClass()));
 }
 
 // Called every frame
@@ -72,7 +75,8 @@ void ALightningCloudsManager::CreateLightningCloud()
 	
 	LightningCloud->SetupLightningCloud(
 		FMath::RandRange(LightningMinDuration, LightningMaxDuration),
-		FMath::RandRange(LightningMinRadius, LightningMaxRadius));
+		FMath::RandRange(LightningMinRadius, LightningMaxRadius),
+		CameraActor);
 
 	LightningCloud->OnStruckLightning.AddDynamic(this, &ALightningCloudsManager::LightningStrucked);
 	LightningCloud->FinishSpawning(SpawnTransform);

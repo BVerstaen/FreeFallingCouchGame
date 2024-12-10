@@ -21,6 +21,11 @@ void UGameDataInstanceSubsystem::SetPlayerLookFromID(int PlayerID, int CostumeID
 	PlayerCostumeMap[PlayerID] = CostumeID;
 }
 
+void UGameDataInstanceSubsystem::ResetPlayerCostumes()
+{
+	PlayerCostumeMap.Empty();
+}
+
 const int* UGameDataInstanceSubsystem::GetPlayerIDFromScore(int Score)
 {
 	return PlayerScoreFromID.FindKey(Score);

@@ -3,6 +3,7 @@
 
 #include "Obstacle/Managers/EventsManager.h"
 
+#include "LocalizationDescriptor.h"
 #include "GameMode/FreeFallGameMode.h"
 #include "Haptic/HapticsStatics.h"
 #include "Kismet/GameplayStatics.h"
@@ -50,6 +51,8 @@ void AEventsManager::Destroyed()
 
 void AEventsManager::OnStartTick()
 {
+	AFreeFallGameMode* GameMode = Cast<AFreeFallGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	TimeBetweenEvents = GameMode->GetCurrentParameters()->getTimerEventDelay();
 	CanTickTimer = true;
 }
 
@@ -111,6 +114,21 @@ void AEventsManager::Tick(float DeltaTime)
 		}
 		if (CameraMoverActor != nullptr) CameraMoverActor->StopCameraManMovements();
 		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red,"Trigger Event");
+	}
+
+
+	//Double Spawn code
+	EventDoubleSpawnClock += DeltaTime;
+	if(EventDoubleSpawnClock > TimeDoubleSpawnTrigger && !bDoubleSpawned && !EventHappening)
+	{
+		if (!DoubleSpawnEvent) return;
+		AEventActor* EventActor = DoubleSpawnEvent;
+		EventActor->OnEventEnded.AddDynamic(this, &AEventsManager::OnEventEnded);
+		EventActor->TriggerEvent();
+		CurrentEventActor = EventActor;
+		UHapticsStatics::CallHapticsAll(this);
+		EventHappening = true;
+		bDoubleSpawned = true;
 	}
 }
 

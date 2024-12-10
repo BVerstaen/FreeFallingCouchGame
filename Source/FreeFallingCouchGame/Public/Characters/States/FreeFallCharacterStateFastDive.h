@@ -48,6 +48,10 @@ private:
 	UPROPERTY(EditAnywhere)
 	float CrossingLayerTime;
 
+	//If true, Player will switch between the two layers not caring about the input of the Player (needs topLayer disabled)
+	UPROPERTY(EditAnywhere)
+	bool bSmartDiveInput;
+
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UAnimSequence> DiveDownwardsAnimation;
 
@@ -66,6 +70,8 @@ private:
 	void CheckTargetedLayer();
 
 	void ExitStateFastDive();
+
+	void PlayHaptics();
 
 	UPROPERTY()
 	EDiveLayersID TargetLayer;

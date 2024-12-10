@@ -12,7 +12,7 @@ AObstacleRotatingPoint::AObstacleRotatingPoint()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-}
+}	
 
 // Called when the game starts or when spawned
 void AObstacleRotatingPoint::BeginPlay()
@@ -39,7 +39,7 @@ void AObstacleRotatingPoint::Tick(float DeltaTime)
 	//Change Linked spawner direction
 	FVector Direction = GetActorLocation() - LinkedObstacle->GetActorLocation();
 	Direction.Normalize();
-	Direction = FVector(Direction.X,Direction.Y,0);
+	Direction = FVector(Direction.X,Direction.Y,Direction.Z);
 	LinkedObstacle->ObstacleDirection = Direction;
 	
 }
