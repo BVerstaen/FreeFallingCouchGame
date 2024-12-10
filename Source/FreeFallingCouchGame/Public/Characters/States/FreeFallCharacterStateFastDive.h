@@ -71,6 +71,8 @@ private:
 
 	void ExitStateFastDive();
 
+	void PlayHaptics();
+
 	UPROPERTY()
 	EDiveLayersID TargetLayer;
 

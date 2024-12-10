@@ -8,6 +8,7 @@
 #include "Characters/FreeFallCharacterStateID.h"
 #include "Characters/FreeFallCharacterStateMachine.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Haptic/HapticsStatics.h"
 #include "Other/DiveLevels.h"
 
 
@@ -56,6 +57,7 @@ void UFreeFallCharacterStateFastDive::StateEnter(EFreeFallCharacterStateID Previ
 	}
 	
 	CheckTargetedLayer();
+	PlayHaptics();
 	
 	GEngine->AddOnScreenDebugMessage(
 		-1,
@@ -196,5 +198,25 @@ void UFreeFallCharacterStateFastDive::ExitStateFastDive()
 	else
 	{
 		StateMachine->ChangeState(EFreeFallCharacterStateID::Idle);
+	}
+}
+
+void UFreeFallCharacterStateFastDive::PlayHaptics()
+{
+	APlayerController* PlayerController = Cast<APlayerController>(Character->Controller);
+	const EDiveLayersID CurrentLayer = DiveLevelsActor->GetDiveLayersFromCoord(Character->GetActorLocation().Z);
+	switch (CurrentLayer)
+	{
+	case EDiveLayersID::Bottom:
+		UHapticsStatics::CallHapticsDive(this, PlayerController, false);
+		break;
+	case EDiveLayersID::Middle:
+		UHapticsStatics::CallHapticsDive(this, PlayerController, TargetLayer==EDiveLayersID::Bottom);
+		break;
+	case EDiveLayersID::Top:
+		UHapticsStatics::CallHapticsDive(this, PlayerController, true);
+		break;
+	default: 
+		break;
 	}
 }

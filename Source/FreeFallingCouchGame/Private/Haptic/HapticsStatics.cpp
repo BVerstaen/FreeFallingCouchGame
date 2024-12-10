@@ -15,7 +15,22 @@ void UHapticsStatics::CallHapticsCollision(UObject* WorldContextObject, APlayerC
 	
 	//GEngine->GetWorld()->GetGameInstance()->GetSubsystem<UHapticsSubsystem>()->GetHaptics()->ReceiveCallHapticsCollision(PlayerController);
 	//GEngine->GetWorld()->GetGameInstance()->GetSubsystem<UHapticsSubsystem>()->GetHaptics()->ReceiveCallHapticsCollision(PlayerController);
-	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, "Haptics collision");
+	//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, "Haptics collision");
+}
+
+void UHapticsStatics::CallHapticsDive(UObject* WorldContextObject, APlayerController* PlayerController,
+	bool bIsDivingDown)
+{
+	UWorld* World = WorldContextObject->GetWorld();
+	UGameInstance* GameInstance = World->GetGameInstance();
+	UHapticsSubsystem* HapticsSubsystem = GameInstance->GetSubsystem<UHapticsSubsystem>();
+	UHapticsHandler* HapticsHandler = HapticsSubsystem->GetHaptics();
+	HapticsHandler->CallHapticsSingleDive(PlayerController, bIsDivingDown);
+	
+	//GEngine->GetWorld()->GetGameInstance()->GetSubsystem<UHapticsSubsystem>()->GetHaptics()->ReceiveCallHapticsCollision(PlayerController);
+	//GEngine->GetWorld()->GetGameInstance()->GetSubsystem<UHapticsSubsystem>()->GetHaptics()->ReceiveCallHapticsCollision(PlayerController);
+	//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, "Haptics Dive");
+
 }
 
 void UHapticsStatics::CallHapticsAll(UObject* WorldContextObject)
