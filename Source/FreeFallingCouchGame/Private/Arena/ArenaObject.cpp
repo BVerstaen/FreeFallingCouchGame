@@ -216,6 +216,8 @@ void UArenaObject::DisplayOffScreenCharacterIndicators()
 	
 	for (TObjectPtr<AFreeFallCharacter> Character : CharactersInsideArena)
 	{
+		if(!Character) continue;
+		
 		bool bCanConvertToScreen = MainCameraController->ProjectWorldLocationToScreen(Character->GetActorLocation(), ScreenPosition);
 		if(!bCanConvertToScreen) return;
 
