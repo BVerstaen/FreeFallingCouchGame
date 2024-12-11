@@ -323,7 +323,7 @@ void AFreeFallGameMode::StartMatch()
 
 	//Play gameplay music
 	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
-	SoundSubsystem->PlayMusic("MUS_GameplayTimer_ST");
+	SoundSubsystem->PlayMusic("MUS_Ambiant_ST_Loop");
 	
 	//Create parachute & equip to next player
 	ParachuteInstance = RespawnParachute(ParachuteSpawnLocation);
