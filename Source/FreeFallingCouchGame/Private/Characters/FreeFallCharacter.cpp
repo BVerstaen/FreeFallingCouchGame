@@ -348,9 +348,9 @@ void AFreeFallCharacter::ApplyMovementFromAcceleration(float DeltaTime)
 	{
 		//Get angle btw Character & movement direction
 		float DotProduct = FVector::DotProduct(MovementDirection, CharacterDirection);
-		
 		//If Reached orientation Threshold in his grabbing state -> stop orientation and let yourself influenced
 		if((DotProduct > GrabbedOrientationThreshold && OtherCharacterGrabbedBy)
+			|| (DotProduct > OrientationThreshold && OtherCharacterGrabbing)
 			|| IsLookingToCloseToGrabber(GrabToCloseToGrabbedAngle))
 		{
 			bShouldOrientToMovement = false;
