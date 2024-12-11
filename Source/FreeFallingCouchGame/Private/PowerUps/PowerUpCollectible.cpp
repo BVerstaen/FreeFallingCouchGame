@@ -67,7 +67,10 @@ void APowerUpCollectible::GivePowerToCharacter(AFreeFallCharacter* Character)
 	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
 	SoundSubsystem->PlaySound("SFX_GPE_Power-up_ST", this, false);
 	if(Character)
+	{
 		SoundSubsystem->PlaySound("VOC_PLR_power-up_ST", Character, true);
+		Character->PlayVoiceSound("GetPowerUp");
+	}
 	
 	GEngine->AddOnScreenDebugMessage(
 		-1, 5, FColor::Emerald,

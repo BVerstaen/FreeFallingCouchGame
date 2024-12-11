@@ -153,6 +153,7 @@ void AFreeFallCharacter::DestroyPlayer(ETypeDeath DeathType)
 		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Player" + FString::FromInt(getIDPlayerLinked()) + " - got killed by - " + FString::FromInt(RecentlyBouncedOtherPlayerID));
 		if(OnWasEliminated.IsBound())
 			OnWasEliminated.Broadcast(this, RecentlyBouncedOtherPlayer);
+		RecentlyBouncedOtherPlayer->PlayVoiceSound("Elimination");
 	}
 	else
 	{
@@ -200,9 +201,8 @@ void AFreeFallCharacter::DestroyPlayer(ETypeDeath DeathType)
 	
 	UHapticsStatics::CallHapticsCollision(this, Cast<APlayerController>(this->Controller));
 	//Play death sound
-	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
-	SoundSubsystem->PlaySound("VOC_PLR_Death_ST", this, false);
-	
+	PlayVoiceSound("Death");
+
 	Destroy();
 }
 
@@ -909,7 +909,7 @@ void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBou
 
 	//Play Bounce Sound
 	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
-	SoundSubsystem->PlaySound("SFX_PLR_Collision_ST", this, false);
+	PlayVoiceSound("Collision");
 
 	// Call for rumble
 	//UHapticsStatics::CallHapticsCollision(this, Cast<APlayerController>(GetController()));
@@ -930,20 +930,7 @@ void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBou
 		}
 
 		//Play player bounce
-		SoundSubsystem->PlaySound("VOC_PLR_Hit", this, true);
-		SoundSubsystem->PlaySound("VOC_PLR_Shock_ST", OtherFreeFallCharacter, true);
-
-		//Play random "onomatopée"
-		TArray<FName> ExpressionHit = {
-			"VOC_PLR_Angry_ST",
-			"VOC_PLR_Joy_ST",
-			"VOC_PLR_Sad_ST",
-			"VOC_PLR_Fight_ST",
-			"VOC_PLR_Insult_ST",
-			"VOC_PLR_Warning_ST"
-		};
-		FName ExpressionName = ExpressionHit[FMath::RandRange(0, ExpressionHit.Num() - 1)];
-		SoundSubsystem->PlaySound(ExpressionName, this, false);
+		OtherFreeFallCharacter->PlayVoiceSound("Collision");
 		
 		SetWasRecentlyBouncedTimer(OtherFreeFallCharacter);
 		OtherFreeFallCharacter->SetWasRecentlyBouncedTimer(this);
