@@ -28,7 +28,7 @@ void UFreeFallCharacterStateDive::StateInit(UFreeFallCharacterStateMachine* InSt
 void UFreeFallCharacterStateDive::StateEnter(EFreeFallCharacterStateID PreviousStateID)
 {
 	Super::StateEnter(PreviousStateID);
-
+	Character->EnterDiveEvent();
 	OldFlySpeed = Character->GetCharacterMovement()->MaxFlySpeed;
 	
 	if(Character->GetLockControls())
@@ -82,7 +82,7 @@ void UFreeFallCharacterStateDive::StateExit(EFreeFallCharacterStateID NextStateI
 	Super::StateExit(NextStateID);
 
 	Character->GetCharacterMovement()->MaxFlySpeed = OldFlySpeed;
-
+	Character->ExitDiveEvent();
 	Character->bIsDiveForced = true;
 
 	Character->OnInputFastDiveEvent.RemoveDynamic(this, &UFreeFallCharacterStateDive::OnInputFastDive);

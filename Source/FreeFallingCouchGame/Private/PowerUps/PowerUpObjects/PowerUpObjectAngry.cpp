@@ -16,6 +16,7 @@ void UPowerUpObjectAngry::Tick(float DeltaTime)
 	{
 		OwnerCharacter->PlayerMass = CharacterBaseMass;
 		bIsActionFinished = true;
+		End();
 	}
 }
 

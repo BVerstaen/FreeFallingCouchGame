@@ -18,13 +18,13 @@ AObstacleDestroyer::AObstacleDestroyer()
 	BoxCollision = CreateDefaultSubobject<UBoxComponent>("Collision");
 	RootComponent = BoxCollision;
 
-	DrawDebugBox(GetWorld(), GetTransform().GetLocation(), BoxCollision->GetScaledBoxExtent(), FColor::Red, false, 99999, 0,1	);
+	//DrawDebugBox(GetWorld(), GetTransform().GetLocation(), BoxCollision->GetScaledBoxExtent(), FColor::Red, false, 99999, 0,1	);
 }
 
 void AObstacleDestroyer::BeginPlay()
 {
 	Super::BeginPlay();
-	DrawDebugBox(GetWorld(), GetTransform().GetLocation(), BoxCollision->GetScaledBoxExtent(), FColor::Red, true, -1, 0,1	);
+	//DrawDebugBox(GetWorld(), GetTransform().GetLocation(), BoxCollision->GetScaledBoxExtent(), FColor::Red, true, -1, 0,1	);
 	
 	BoxCollision->OnComponentEndOverlap.AddDynamic(this, &AObstacleDestroyer::OnOverlapEnd);
 

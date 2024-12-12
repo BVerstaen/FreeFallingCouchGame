@@ -28,6 +28,9 @@ public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStruckLightning, ALightningCloud*, LightningCloudActor);
 	FStruckLightning OnStruckLightning;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void PlaySound(const FString& SoundName);
+
 	UPROPERTY(EditAnywhere)
 	float TimeBeforeDestruction;
 

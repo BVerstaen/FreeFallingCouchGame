@@ -66,6 +66,20 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void DestroyPlayer(ETypeDeath DeathType);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void PlayVoiceSound(const FString& VoiceName);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void PlayerPowerUpEvent(EPowerUpsID PowerUpsID);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void PlayerPowerUpEventEnd(EPowerUpsID PowerUpsID);
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void EnterDiveEvent();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ExitDiveEvent();
 #pragma region Mesh Rotation
 	
 public :
