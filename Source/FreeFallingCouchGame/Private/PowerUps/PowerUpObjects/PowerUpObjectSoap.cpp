@@ -16,6 +16,7 @@ void UPowerUpObjectSoap::Tick(float DeltaTime)
 	{
 		OwnerCharacter->bIsGrabbable = true;
 		bIsActionFinished = true;
+		End();
 	}
 }
 

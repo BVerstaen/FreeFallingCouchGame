@@ -69,7 +69,12 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void PlayVoiceSound(const FString& VoiceName);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void PlayerPowerUpEvent(EPowerUpsID PowerUpsID);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void PlayerPowerUpEventEnd(EPowerUpsID PowerUpsID);
+	
 	UFUNCTION(BlueprintImplementableEvent)
 	void EnterDiveEvent();
 
