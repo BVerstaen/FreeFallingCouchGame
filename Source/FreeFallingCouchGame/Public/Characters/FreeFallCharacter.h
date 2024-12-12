@@ -66,6 +66,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void DestroyPlayer(ETypeDeath DeathType);
 
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "On Player Destroyed"))
+	void ReceiveOnPlayerDestroyed();
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void PlayVoiceSound(const FString& VoiceName);
 
