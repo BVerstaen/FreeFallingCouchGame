@@ -178,6 +178,8 @@ private:
 	UFUNCTION()
 	void EndRoundHideScorePanel();
 	UFUNCTION()
+	void EndRoundWaitTransition();
+	UFUNCTION()
 	bool EndRoundAddRewardPoints(ETrackingRewardCategory Category, float DelayOnScreen);
 	
 	void CheckEndRoundTimer();
