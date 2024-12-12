@@ -21,6 +21,7 @@ public:
 
 	virtual void Use();
 
+	virtual void End();
 	virtual void Tick(float DeltaTime);
 
 	void ResetEffectClock();
