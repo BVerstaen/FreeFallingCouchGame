@@ -711,6 +711,12 @@ void AFreeFallGameMode::EndRoundHideScorePanel()
 	if(OnEndRound.IsBound())
 		OnEndRound.Broadcast();
 	
+	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
+	GetWorld()->GetTimerManager().SetTimer(EndRoundTimerHandle, this, &AFreeFallGameMode::EndRoundWaitTransition, MapSettings->TimeBetweenGivingRewards, false, MapSettings->TimeBetweenGivingRewards);
+}
+
+void AFreeFallGameMode::EndRoundWaitTransition()
+{
 	// Check for end match
 	if(GameDataSubsystem->CurrentRound >= CurrentParameters->getMaxRounds())
 	{
