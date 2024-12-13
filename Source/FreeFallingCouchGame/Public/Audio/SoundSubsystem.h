@@ -26,6 +26,9 @@ public:
 	void PlayMusic(FName MusicName, float PitchMultiplier = 1.0f, float StartTime = 0.0f);
 
 	UFUNCTION(BlueprintCallable, Category = "Music")
+	void UpdateMusicVolume();
+	
+	UFUNCTION(BlueprintCallable, Category = "Music")
 	void StopMusic();
 
 	UFUNCTION(BlueprintPure, Category = "Music")
