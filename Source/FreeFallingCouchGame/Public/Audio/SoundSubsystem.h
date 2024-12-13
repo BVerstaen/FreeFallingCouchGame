@@ -35,10 +35,10 @@ public:
 	UAudioComponent* GetAudioComponent();
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Sound")
-	float SoundVolume = 1.0f;
+	float SoundVolume = .75f;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Sound")
-	float MusicVolume = 1.0f;
+	float MusicVolume = .9f;
 
 	UPROPERTY()
 	UAudioComponent* MusicComponent;
