@@ -17,7 +17,7 @@ public:
 	void CreateAndInitPlayers(ELocalMultiplayerInputMappingType MappingType);
 
 	UFUNCTION(BlueprintCallable)
-	void ErasePlayers();
+	void ErasePlayers(bool KeepFirstPlayer);
 	
 	int GetAssignedPlayerIndexFromKeyboardProfileIndex(int keyboardProfileIndex);
 
