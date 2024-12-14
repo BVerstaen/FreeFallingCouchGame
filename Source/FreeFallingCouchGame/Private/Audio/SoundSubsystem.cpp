@@ -88,8 +88,15 @@ void USoundSubsystem::PlayMusic(FName MusicName, float PitchMultiplier,
 		return;
 	}
 	
-	MusicComponent = UGameplayStatics::CreateSound2D(GetWorld(), Cue, 1.0f, PitchMultiplier, 0.0f, nullptr, true, true);
+	MusicComponent = UGameplayStatics::CreateSound2D(GetWorld(), Cue, MusicVolume, PitchMultiplier, 0.0f, nullptr, true, true);
 	MusicComponent->Play(StartTime);
+}
+
+void USoundSubsystem::UpdateMusicVolume()
+{
+	if(!MusicComponent) return;
+
+	MusicComponent->SetVolumeMultiplier(MusicVolume);
 }
 
 void USoundSubsystem::StopMusic()

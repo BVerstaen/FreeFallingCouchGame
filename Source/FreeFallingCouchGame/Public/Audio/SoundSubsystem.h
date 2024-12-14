@@ -26,16 +26,19 @@ public:
 	void PlayMusic(FName MusicName, float PitchMultiplier = 1.0f, float StartTime = 0.0f);
 
 	UFUNCTION(BlueprintCallable, Category = "Music")
+	void UpdateMusicVolume();
+	
+	UFUNCTION(BlueprintCallable, Category = "Music")
 	void StopMusic();
 
 	UFUNCTION(BlueprintPure, Category = "Music")
 	UAudioComponent* GetAudioComponent();
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Sound")
-	float SoundVolume = 1.0f;
+	float SoundVolume = 1.f;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Sound")
-	float MusicVolume = 1.0f;
+	float MusicVolume = 1.f;
 
 	UPROPERTY()
 	UAudioComponent* MusicComponent;
