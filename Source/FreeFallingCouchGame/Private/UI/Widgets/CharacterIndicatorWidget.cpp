@@ -22,7 +22,6 @@ void UCharacterIndicatorWidget::ShowCharacter(FVector2D CharacterScreenPos, FVec
 {
 	FVector2D WidgetSize = GetDesiredSize();
 	float ViewportScale = UWidgetLayoutLibrary::GetViewportScale(GetWorld());
-	GEngine->AddOnScreenDebugMessage(-1,3.f,FColor::Blue,"ViewportScale : " + FString::SanitizeFloat(ViewportScale));
 	FVector2D WidgetPosition;
 
 	//Calculate WidgetPosition depending on WidgetDesiredSize, ViewportBounds and Character ScreenPos;

@@ -34,12 +34,14 @@ void ACameraMoverActor::Tick(float DeltaTime)
 
 void ACameraMoverActor::TriggerEvent()
 {
+	bIsOnEvent = true;
 	Super::TriggerEvent();
 	ReceiveTriggerEvent();
 }
 
 void ACameraMoverActor::StartCameraMovement()
 {
+	bIsOnEvent = false;
 	GetWorldTimerManager().SetTimer(CameraManMovementTimer, this, &ACameraMoverActor::MoveCameraMan, FMath::RandRange(MinTimeBetweenMovements, MaxTimeBetweenMovements), false);
 }
 
@@ -51,6 +53,7 @@ void ACameraMoverActor::MoveCameraMan()
 
 void ACameraMoverActor::StopCameraManMovements()
 {
+	bIsOnEvent = true;
 	ReceiveStopCameraMan();
 	GetWorldTimerManager().ClearTimer(CameraManMovementTimer);
 }
@@ -60,12 +63,13 @@ void ACameraMoverActor::StopCameraManMovements()
 void ACameraMoverActor::CallOnEventEnded()
 {
 	OnEventEnded.Broadcast(this);
+	bIsOnEvent = false;
 	GetWorldTimerManager().SetTimer(CameraManMovementTimer, this, &ACameraMoverActor::MoveCameraMan, FMath::RandRange(MinTimeBetweenMovements, MaxTimeBetweenMovements), false);
 }
 
 void ACameraMoverActor::CallOnCameraManMovementEnded()
 {
 	GetWorldTimerManager().ClearTimer(CameraManMovementTimer);
-	GetWorldTimerManager().SetTimer(CameraManMovementTimer, this, &ACameraMoverActor::MoveCameraMan, FMath::RandRange(MinTimeBetweenMovements, MaxTimeBetweenMovements), false);
+	if (!bIsOnEvent) GetWorldTimerManager().SetTimer(CameraManMovementTimer, this, &ACameraMoverActor::MoveCameraMan, FMath::RandRange(MinTimeBetweenMovements, MaxTimeBetweenMovements), false);
 }
 
