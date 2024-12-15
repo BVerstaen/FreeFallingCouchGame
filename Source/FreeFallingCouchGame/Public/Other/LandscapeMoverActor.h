@@ -42,6 +42,8 @@ public:
 	/*La courbe du landscape*/
 	UPROPERTY(EditAnywhere, Category= "Landscape")
 	TSoftObjectPtr<UCurveFloat> LandscapeCurve;
+	UPROPERTY()
+	TObjectPtr<UCurveFloat> CurrentLandscapeCurve;
 	
 	/*Le landscape qui sera affacté*/
 	UPROPERTY(EditAnywhere, Category= "Landscape")
