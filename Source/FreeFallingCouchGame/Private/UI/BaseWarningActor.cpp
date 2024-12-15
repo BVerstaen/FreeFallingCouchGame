@@ -20,10 +20,15 @@ void ABaseWarningActor::BeginPlay()
 	if(!DataHit.bBlockingHit /*|| !RootArrow->IsValidLowLevel()*/)
 		Destroy();
 	APlayerCameraManager *temp = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
+	WarningType = EWarningType::Base;
 	if((DirectionObject.Z != 0))
 	{
 		WarningType = EWarningType::Vertical;
 		OverwriteWidgets();
+	} else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple, FString::Printf(
+		TEXT("!!!!!!!!!!!!!!!!!!!!!ARROW WARNING!!!!!!!!!!!!!!!!!!!!!!!! ")));
 	}
 	/*
 	if((DirectionObject.Z > 0.5 || DirectionObject.Z < -0.5)
@@ -122,6 +127,25 @@ void ABaseWarningActor::CheckDistanceColor()
 
 	//TODO UKismetMathLibrary::LinearColorLerp()
 	if(distance >= 1000) {
+		Arrow->SetTintColorAndOpacity(FLinearColor(0.0f, 1.0f, 0.0f , 1.0f));
+	} else if (distance >= 500 && distance <= 999) {
+		Arrow->SetTintColorAndOpacity(FLinearColor(1.0f, 0.5f, 0.1f, 1.0f));
+	} else if(distance >= 200 && distance <= 499) {
+		Arrow->SetTintColorAndOpacity(FLinearColor(1.0f, 0.0f, 0.0f, 1.0f));
+	}
+	if(distance < 200.0f)
+		Destroy();
+}
+/*
+void ABaseWarningActor::CheckDistanceColor()
+{
+	if(!OwnerObstacle) return;
+	float distance = GetDistanceTo(OwnerObstacle);
+	//GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Purple, FString::Printf(
+	//	TEXT("Distance of %f between obstacle and warning "),distance));
+
+	//TODO UKismetMathLibrary::LinearColorLerp()
+	if(distance >= 1000) {
 		Arrow->SetTintColorAndOpacity(FLinearColor(0.0f, 1.0f, 0.0f));
 	} else if (distance >= 500 && distance <= 999) {
 		Arrow->SetTintColorAndOpacity(FLinearColor(1.0f, 0.5f, 0.1f));
@@ -130,4 +154,6 @@ void ABaseWarningActor::CheckDistanceColor()
 	}
 	if(distance < 200.0f)
 		Destroy();
+
 }
+*/

@@ -56,4 +56,8 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float MaxTimeBetweenMovements = 15.f;
 
+	//True if Camera is not moving because an event is happening (CameraMover own event counts)
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsOnEvent = false;
+
 };

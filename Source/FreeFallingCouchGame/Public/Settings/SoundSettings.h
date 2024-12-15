@@ -29,5 +29,5 @@ public:
 	TMap<FName, FSoundListData> SoundLists;
 
 	UPROPERTY(Config, EditAnywhere, Category="Sound Settings")
-	TMap<FName, TSoftObjectPtr<USoundCue>> MusicLists;
+	TMap<FName, TSoftObjectPtr<USoundBase>> MusicLists;
 };

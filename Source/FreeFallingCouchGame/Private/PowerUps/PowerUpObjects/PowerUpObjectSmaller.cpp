@@ -16,6 +16,7 @@ void UPowerUpObjectSmaller::Tick(float DeltaTime)
 	{
 		OwnerCharacter->DiveScaleFactor = CharacterBaseScaleMultiplier;
 		bIsActionFinished = true;
+		End();
 	}
 }
 
