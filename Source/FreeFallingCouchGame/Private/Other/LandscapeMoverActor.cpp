@@ -50,12 +50,13 @@ void ALandscapeMoverActor::Tick(float DeltaTime)
 	if(!bIsLerping) return;
 	
 	float Progression = Timer / MaxTimer;
+	float CurveProgression = LandscapeCurve->GetFloatValue(Progression);
+	GEngine->AddOnScreenDebugMessage(-1,DeltaTime,FColor::Red,"Progression : " + FString::SanitizeFloat(Progression));
+	GEngine->AddOnScreenDebugMessage(-1,DeltaTime,FColor::Red,"Progression Curve : " + FString::SanitizeFloat(CurveProgression));
 
-	//GEngine->AddOnScreenDebugMessage(-1,DeltaTime,FColor::Red,"Progression : " + FString::SanitizeFloat(Progression));
-
-	FVector newPos = UKismetMathLibrary::VLerp(MinimumTransform.GetLocation(), MaximumTransform.GetLocation(), Progression);
-	FRotator newRotator = UKismetMathLibrary::RLerp(MinimumTransform.GetRotation().Rotator(), MaximumTransform.GetRotation().Rotator(), Progression, true);
-	FVector newScale = UKismetMathLibrary::VLerp(MinimumTransform.GetScale3D(), MaximumTransform.GetScale3D(), Progression);
+	FVector newPos = UKismetMathLibrary::VLerp(MinimumTransform.GetLocation(), MaximumTransform.GetLocation(), CurveProgression);
+	FRotator newRotator = UKismetMathLibrary::RLerp(MinimumTransform.GetRotation().Rotator(), MaximumTransform.GetRotation().Rotator(), CurveProgression, true);
+	FVector newScale = UKismetMathLibrary::VLerp(MinimumTransform.GetScale3D(), MaximumTransform.GetScale3D(), CurveProgression);
 
 	//Set Landscape transform
 	Landscape->SetActorLocation(newPos);
@@ -65,11 +66,11 @@ void ALandscapeMoverActor::Tick(float DeltaTime)
 	//Set Post process intensity
 	if(FishEyeCameraComponent && FishEyeCameraComponent->PostProcessSettings.WeightedBlendables.Array.Num() > 0)
 	{
-		if(!FMath::IsNaN(1-Progression))
-			FishEyeCameraComponent->PostProcessSettings.WeightedBlendables.Array[0].Weight = (1-Progression);
+		if(!FMath::IsNaN(1-CurveProgression))
+			FishEyeCameraComponent->PostProcessSettings.WeightedBlendables.Array[0].Weight = (1-CurveProgression);
 	}
 	
-	if(Progression < 0.0f)
+	if(Progression < 0.01f)
 		Pause();
 }
 
