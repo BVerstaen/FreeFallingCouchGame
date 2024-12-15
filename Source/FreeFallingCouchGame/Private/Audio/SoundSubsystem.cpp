@@ -77,9 +77,9 @@ void USoundSubsystem::PlayMusic(FName MusicName, float PitchMultiplier,
 	
 	const USoundSettings* SoundSettings = GetDefault<USoundSettings>();
 
-	const TSoftObjectPtr<USoundCue>* SoftCue = SoundSettings->MusicLists.Find(MusicName);
+	const TSoftObjectPtr<USoundBase>* SoftCue = SoundSettings->MusicLists.Find(MusicName);
 	if(!SoftCue) return;
-	USoundCue* Cue = SoftCue->LoadSynchronous();
+	USoundBase* Cue = SoftCue->LoadSynchronous();
 
 	//Play music cue
 	if(!Cue)
