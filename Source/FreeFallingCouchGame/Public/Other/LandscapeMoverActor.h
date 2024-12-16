@@ -39,7 +39,12 @@ public:
 	UCameraComponent* GetActiveCamera();
 	
 #pragma region Properties
-
+	/*La courbe du landscape*/
+	UPROPERTY(EditAnywhere, Category= "Landscape")
+	TSoftObjectPtr<UCurveFloat> LandscapeCurve;
+	UPROPERTY()
+	TObjectPtr<UCurveFloat> CurrentLandscapeCurve;
+	
 	/*Le landscape qui sera affacté*/
 	UPROPERTY(EditAnywhere, Category= "Landscape")
 	TObjectPtr<AActor> Landscape;

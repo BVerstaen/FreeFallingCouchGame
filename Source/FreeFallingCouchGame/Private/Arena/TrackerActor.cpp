@@ -44,10 +44,13 @@ void ATrackerActor::Init(AParachute* ParachuteInstance, TArray<AFreeFallCharacte
 	}
 
 	//Bind steal parachute
-	CurrentParachute->OnParachuteStolen.AddDynamic(this, &ATrackerActor::AddNbOfStealParachute);
-	CurrentParachute->OnParachuteGrabbed.AddDynamic(this, &ATrackerActor::StartParachuteTracking);
-	CurrentParachute->OnParachuteStolen.AddDynamic(this, &ATrackerActor::ChangeParachuteTracking);
-	CurrentParachute->OnParachuteDropped.AddDynamic(this, &ATrackerActor::ATrackerActor::StopParachuteTracking);
+	if(CurrentParachute)
+	{
+		CurrentParachute->OnParachuteGrabbed.AddDynamic(this, &ATrackerActor::StartParachuteTracking);
+		CurrentParachute->OnParachuteStolen.AddDynamic(this, &ATrackerActor::AddNbOfStealParachute);
+		CurrentParachute->OnParachuteStolen.AddDynamic(this, &ATrackerActor::ChangeParachuteTracking);
+		CurrentParachute->OnParachuteDropped.AddDynamic(this, &ATrackerActor::ATrackerActor::StopParachuteTracking);		
+	}
 }
 
 void ATrackerActor::Tick(float DeltaTime)
@@ -58,9 +61,10 @@ void ATrackerActor::Tick(float DeltaTime)
 
 void ATrackerActor::TrackHoldParachute(float DeltaTime)
 {
-	if(CurrentParachuteHolderIndex > 0)
+	//GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, "TrackHoldParachute : " + FString::SanitizeFloat(CurrentParachuteHolderIndex));
+	if(CurrentParachuteHolderIndex >= 0)
 	{
-		PlayerTrackedDataList[CurrentParachuteHolderIndex - 1].TimeWithParachute += DeltaTime;
+		PlayerTrackedDataList[CurrentParachuteHolderIndex].TimeWithParachute += DeltaTime;
 	}
 }
 

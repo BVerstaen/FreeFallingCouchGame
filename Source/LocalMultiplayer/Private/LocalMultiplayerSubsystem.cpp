@@ -36,12 +36,47 @@ void ULocalMultiplayerSubsystem::CreateAndInitPlayers(ELocalMultiplayerInputMapp
 
 }
 
-void ULocalMultiplayerSubsystem::ErasePlayers()
+void ULocalMultiplayerSubsystem::ErasePlayers(bool KeepFirstPlayer)
 {
+	//Get first player gamepad or keyboard profile
+	int FirstGamePadID = -1;
+	int FirstKeyboardID = -1;
+	if(KeepFirstPlayer)
+	{
+		if(!PlayerIndexFromGamepadProfileIndex.IsEmpty())
+		{
+			FirstGamePadID = *PlayerIndexFromGamepadProfileIndex.FindKey(0);
+		}
+		else if(!PlayerIndexFromKeyboardProfileIndex.IsEmpty())
+		{
+			FirstKeyboardID = *PlayerIndexFromKeyboardProfileIndex.FindKey(0);
+		}
+	}
+	
+	//Erase & reset values & list
 	PlayerIndexFromGamepadProfileIndex.Empty();
 	PlayerIndexFromKeyboardProfileIndex.Empty();
 	LastAssignedPlayerIndex = -1;
 	NumberOfPlayers = 0;
+
+	//Reassign first player
+	if(KeepFirstPlayer)
+	{
+		if(FirstGamePadID != -1)
+		{
+			PlayerIndexFromGamepadProfileIndex.Add(FirstGamePadID, 0);
+			LastAssignedPlayerIndex = 0;
+			NumberOfPlayers = 1;
+			OnNewPlayerCreated.Broadcast(0);
+		}
+		else if(FirstKeyboardID != -1)
+		{
+			PlayerIndexFromKeyboardProfileIndex.Add(FirstKeyboardID, 0);
+			LastAssignedPlayerIndex = 0;
+			NumberOfPlayers = 1;
+			OnNewPlayerCreated.Broadcast(0);	
+		}
+	}
 }
 
 

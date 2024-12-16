@@ -21,7 +21,9 @@ ALightningCloud::ALightningCloud()
 void ALightningCloud::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	PlaySound("CloudSpawnAmbient");
+	PlaySound("CloudWarning");
 }
 
 // Called every frame
@@ -34,11 +36,13 @@ void ALightningCloud::Tick(float DeltaTime)
 	{
 		bHasStruckLightning = true;
 		StruckLightning();
+		PlaySound("StruckLightning");
 		KillPlayerInsideLightning();
 		OnStruckLightning.Broadcast(this);
 	}
 	if (LightningClock >= TimeBeforeLightning + TimeBeforeDestruction && bHasStruckLightning)
 	{
+		PlaySound("CloudDisappearing");
 		Destroy();
 	}
 }

@@ -7,8 +7,8 @@
 #include "GameFramework/Actor.h"
 #include "BaseWarningActor.generated.h"
 
-UENUM()
-enum class EWarningType
+UENUM(BlueprintType)
+enum class EWarningType  : uint8
 {
 	Base,
 	Vertical,
@@ -47,7 +47,7 @@ protected:
 	UPROPERTY()
 	TSubclassOf<UUserWidget> CachedWidgetClass;
 	// Components
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UWidgetComponent *Arrow;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USceneComponent* RootBody;
@@ -63,9 +63,19 @@ protected:
 	FHitResult DataHit;
 	UPROPERTY()
 	APlayerCameraManager* CameraManagerRef;
+	float timerKill = 12.0f;
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 public:
+	// Kill after cooldown (failsafe)
+	void ForceKill();
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	// Events Color
+	UFUNCTION(BlueprintImplementableEvent)
+	void ObjectFarEvent(EWarningType WarningTypeSent);
+	UFUNCTION(BlueprintImplementableEvent)
+	void ObjectCloserEvent(EWarningType WarningTypeSent);
+	UFUNCTION(BlueprintImplementableEvent)
+	void ObjectVeryNearEvent(EWarningType WarningTypeSent);
 };

@@ -210,9 +210,19 @@ void UArenaObject::DisplayOffScreenCharacterIndicators()
 	FVector2D ViewportBoundsMax;
 	GetViewportBounds(ViewportBoundsMin, ViewportBoundsMax);
 
+
+	//Hide all Visible CharacterIndicatorWidget
+
+	for (TObjectPtr<UCharacterIndicatorWidget> Widget : CharacterIndicatorWidgets)
+	{
+		if (Widget->GetVisibility() == ESlateVisibility::Visible)
+		{
+			Widget->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+	
 	FVector2D ScreenPosition;
 	TObjectPtr<UCharacterIndicatorWidget> CharacterIndicatorWidget;
-	//Check if player position is a valid screen position
 	
 	for (TObjectPtr<AFreeFallCharacter> Character : CharactersInsideArena)
 	{
@@ -229,10 +239,11 @@ void UArenaObject::DisplayOffScreenCharacterIndicators()
 			CharacterIndicatorWidget->SetVisibility(ESlateVisibility::Visible);
 			CharacterIndicatorWidget->ShowCharacter(ScreenPosition, ViewportBoundsMin, ViewportBoundsMax);
 		}
-		else if (CharacterIndicatorWidget->GetVisibility() == ESlateVisibility::Visible)
+		//Only needed if widgets aren't all set to hidden
+		/*else if (CharacterIndicatorWidget->GetVisibility() == ESlateVisibility::Visible)
 		{
 			CharacterIndicatorWidget->SetVisibility(ESlateVisibility::Hidden);
-		}
+		}*/
 	}
 }
 

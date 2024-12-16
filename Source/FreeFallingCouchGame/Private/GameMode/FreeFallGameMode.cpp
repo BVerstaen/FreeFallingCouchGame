@@ -323,7 +323,7 @@ void AFreeFallGameMode::StartMatch()
 
 	//Play gameplay music
 	USoundSubsystem* SoundSubsystem = GetGameInstance()->GetSubsystem<USoundSubsystem>();
-	SoundSubsystem->PlayMusic("MUS_GameplayTimer_ST");
+	SoundSubsystem->PlayMusic("MUS_Ambiant_ST_Loop");
 	
 	//Create parachute & equip to next player
 	ParachuteInstance = RespawnParachute(ParachuteSpawnLocation);
@@ -711,6 +711,12 @@ void AFreeFallGameMode::EndRoundHideScorePanel()
 	if(OnEndRound.IsBound())
 		OnEndRound.Broadcast();
 	
+	const UMapSettings* MapSettings = GetDefault<UMapSettings>();
+	GetWorld()->GetTimerManager().SetTimer(EndRoundTimerHandle, this, &AFreeFallGameMode::EndRoundWaitTransition, MapSettings->TimeBetweenGivingRewards, false, MapSettings->TimeBetweenGivingRewards);
+}
+
+void AFreeFallGameMode::EndRoundWaitTransition()
+{
 	// Check for end match
 	if(GameDataSubsystem->CurrentRound >= CurrentParameters->getMaxRounds())
 	{

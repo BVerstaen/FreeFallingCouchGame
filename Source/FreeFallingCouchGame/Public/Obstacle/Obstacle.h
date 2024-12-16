@@ -96,7 +96,13 @@ public:
 	virtual bool CanBeTaken() override;
 
 	UFUNCTION()
+	void OnHitDestroyWarning(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	UFUNCTION()
 	void SetupWarning(FVector ImpulseVector, FVector InDirection);
+	
+	UPROPERTY()
+	ABaseWarningActor* LinkedWarningActor;
 
 	UFUNCTION()
 	void DebugRayTrace(TArray<FHitResult> RV_Hits, FVector const& EndLocation);
@@ -113,7 +119,7 @@ public:
 	virtual void AddBounceForce(FVector Velocity) override;
 	
 	virtual AFreeFallCharacter* CollidedWithPlayer() override;
-
+	
 	UFUNCTION(BlueprintImplementableEvent, meta=(DisplayName="Bounced"))
 	void BounceSpecificBehaviour();
 	

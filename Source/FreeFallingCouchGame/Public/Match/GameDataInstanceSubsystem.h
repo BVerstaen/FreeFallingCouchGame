@@ -19,11 +19,14 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	int CurrentRound = 0;
 
+	UPROPERTY(BlueprintReadWrite)
+	bool IsFinalRound = false;
+	
 	int NextParachuteHolderID = -1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int CurrentColorVisionDeficiency;
-	
+
 #pragma region PlayerCostume
 public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDCostumeSwitch, int, IDCostume, int, IDplayer);
