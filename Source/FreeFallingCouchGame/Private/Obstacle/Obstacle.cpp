@@ -45,7 +45,7 @@ void AObstacle::BeginPlay()
 		SetupWarning(ImpulseVector, refDirection);
 	}
 }
-
+#pragma region Warnings
 void AObstacle::DebugRayTrace(TArray<FHitResult> RV_Hits, FVector const& EndLocation)
 {
 	if (RV_Hits.GetData()[0].IsValidBlockingHit())
@@ -93,7 +93,7 @@ void AObstacle::SetupWarning(FVector ImpulseVector, FVector InDirection)
 		FTransform SpawnTransform = GetTransform();
 		FVector OriginPoint = RV_Hits.GetData()[0].Location;
 		SpawnTransform.SetLocation(OriginPoint);
-		ABaseWarningActor* LinkedWarningActor = GetWorld()->SpawnActorDeferred<ABaseWarningActor>(
+		LinkedWarningActor = GetWorld()->SpawnActorDeferred<ABaseWarningActor>(
 			ThingToSpawn,
 			SpawnTransform
 			);
@@ -103,8 +103,20 @@ void AObstacle::SetupWarning(FVector ImpulseVector, FVector InDirection)
 		LinkedWarningActor->SetHitResult(RV_Hits.GetData()[0]);
 		LinkedWarningActor->SetLinkedObstacle(this);
 		LinkedWarningActor->FinishSpawning(SpawnTransform);
+		Mesh->OnComponentHit.AddDynamic(this, &AObstacle::OnHitDestroyWarning);
 	} 
 }
+
+void AObstacle::OnHitDestroyWarning(UPrimitiveComponent* HitComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if(IsValid(LinkedWarningActor))
+	{
+		LinkedWarningActor->ForceKill();
+	}
+	LinkedWarningActor = nullptr;
+}
+#pragma endregion
 
 void AObstacle::ResetLaunch()
 {
@@ -123,6 +135,7 @@ bool AObstacle::CanBeTaken()
 {
 	return false;
 }
+
 
 #pragma region Bounceable
 
