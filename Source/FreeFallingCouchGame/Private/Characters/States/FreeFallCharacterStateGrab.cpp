@@ -277,8 +277,8 @@ bool UFreeFallCharacterStateGrab::PlayerGrab() const
 	if(FoundCharacter->OtherCharacterGrabbedBy)
 	{
 		//Remove References
-		FoundCharacter->OtherCharacterGrabbedBy->OtherCharacterGrabbing = nullptr;
 		FoundCharacter->OtherCharacterGrabbedBy->OtherCharacterGrabbing->GrabbingState = EFreeFallCharacterGrabbingState::None;
+		FoundCharacter->OtherCharacterGrabbedBy->OtherCharacterGrabbing = nullptr;
 		FoundCharacter->OtherCharacterGrabbedBy = nullptr;
 	}
 	
