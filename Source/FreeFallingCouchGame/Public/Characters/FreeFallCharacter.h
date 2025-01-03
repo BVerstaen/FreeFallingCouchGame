@@ -333,7 +333,9 @@ private:
 	//Update heavier object influence
 	UFUNCTION()
 	void UpdateHeavyObjectPosition(float DeltaTime);
+	
 	//Check and update if there's any dissociation problem -> handy to avoid physics problem
+	UE_DEPRECATED(5.3, "Function is depreciated, no need to check for dissociation problems")
 	UFUNCTION()
 	void UpdateDissociationProblems(float DeltaTime);
 	
@@ -398,7 +400,7 @@ private:
 public:
 	UFUNCTION()
 	void ActivateDeGrab();
-
+	
 	UFUNCTION(BlueprintImplementableEvent)
 	void ActivateEffectDeGrab();
 
