@@ -40,6 +40,8 @@ void ALandscapeMoverActor::BeginPlay()
 			GEngine->AddOnScreenDebugMessage(-1,30.f, FColor::Red, "No FishEye shader in camera (also set weight to 0.01f)");
 		}
 	}
+
+	CurrentLandscapeCurve = LandscapeCurve.LoadSynchronous();
 }
 
 // Called every frame
@@ -50,9 +52,19 @@ void ALandscapeMoverActor::Tick(float DeltaTime)
 	if(!bIsLerping) return;
 	
 	float Progression = Timer / MaxTimer;
-	float CurveProgression = LandscapeCurve->GetFloatValue(Progression);
-	GEngine->AddOnScreenDebugMessage(-1,DeltaTime,FColor::Red,"Progression : " + FString::SanitizeFloat(Progression));
-	GEngine->AddOnScreenDebugMessage(-1,DeltaTime,FColor::Red,"Progression Curve : " + FString::SanitizeFloat(CurveProgression));
+	//Check if timer is 0
+	if(Progression == 0.0f)
+		Progression = 1.0f;
+	
+	float CurveProgression = 1.0f;
+	
+	if(CurrentLandscapeCurve)
+	{
+		CurveProgression = CurrentLandscapeCurve->GetFloatValue(Progression);
+	}
+	
+	//GEngine->AddOnScreenDebugMessage(-1,DeltaTime,FColor::Red,"Progression : " + FString::SanitizeFloat(Progression));
+	//GEngine->AddOnScreenDebugMessage(-1,DeltaTime,FColor::Red,"Progression Curve : " + FString::SanitizeFloat(CurveProgression));
 
 	FVector newPos = UKismetMathLibrary::VLerp(MinimumTransform.GetLocation(), MaximumTransform.GetLocation(), CurveProgression);
 	FRotator newRotator = UKismetMathLibrary::RLerp(MinimumTransform.GetRotation().Rotator(), MaximumTransform.GetRotation().Rotator(), CurveProgression, true);

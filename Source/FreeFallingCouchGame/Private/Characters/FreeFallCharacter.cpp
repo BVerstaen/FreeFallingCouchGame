@@ -40,11 +40,11 @@ AFreeFallCharacter::AFreeFallCharacter()
 		CapsuleCollision->SetRelativeRotation(FRotator(0,90,0));
 		
 		//Attach
-		CapsuleCollision->SetupAttachment(RootComponent); // RootComponent est généralement la capsule
+		CapsuleCollision->SetupAttachment(RootComponent);
 
 		//Setup collisions
-		CapsuleCollision->SetCollisionProfileName(TEXT("BlockAllDynamic")); // Bloque tous les objets dynamiques
-		CapsuleCollision->SetNotifyRigidBodyCollision(true); // Permet de recevoir des notifications de collisions
+		CapsuleCollision->SetCollisionProfileName(TEXT("BlockAllDynamic"));
+		CapsuleCollision->SetNotifyRigidBodyCollision(true);
 		CapsuleCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	}
 
@@ -678,12 +678,6 @@ void AFreeFallCharacter::UpdateMovementInfluence(float DeltaTime, AFreeFallChara
 		FRotator NewStabilizedRotation = FMath::RInterpTo(GetActorRotation(), StabilizedRotation, DeltaTime, GrabRotationSpeed);
 		SetActorRotation(NewStabilizedRotation);
 	}
-
-	//Update dissociation problem if there's any
-	if(OtherCharacterGrabbing)
-	{
-		UpdateDissociationProblems(DeltaTime);
-	}
 }
 
 void AFreeFallCharacter::UpdateEveryMovementInfluence(float DeltaTime)
@@ -882,9 +876,6 @@ void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBou
 		OtherVelocity = -ImpactDirection * 1000.0f;
 	}
 	
-	FVector aled = -ImpactDirection * OtherVelocity.Size() * OtherRestitutionMultiplier;
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, FString::SanitizeFloat(aled.Size()));
-	
 	//Bounce self
 	//Player bounce
 	FVector NewVelocity = (-ImpactDirection * OtherVelocity.Size() * OtherRestitutionMultiplier
@@ -896,16 +887,13 @@ void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBou
 	AddBounceForce(NewVelocity);
 	 
 	//Bounce other object
-	if(SelfRestitutionMultiplier != 0.0f)
-	{
-		NewVelocity = (ImpactDirection * OldVelocity.Size() * SelfRestitutionMultiplier
-		* (bShouldConsiderMass ? GetMass() / OtherBounceableInterface->GetMass() : 1)
-		+ (bShouldKeepRemainVelocity ? OtherVelocity * (1 - OtherRestitutionMultiplier) : FVector::Zero())) 
-		* GlobalMultiplier;
-		//Neutralize Z bounce velocity
-		NewVelocity.Z = 0;
-		OtherBounceableInterface->AddBounceForce(NewVelocity);
-	}
+	NewVelocity = (ImpactDirection * OldVelocity.Size() * SelfRestitutionMultiplier
+	* (bShouldConsiderMass ? GetMass() / OtherBounceableInterface->GetMass() : 1)
+	+ (bShouldKeepRemainVelocity ? OtherVelocity * (1 - OtherRestitutionMultiplier) : FVector::Zero())) 
+	* GlobalMultiplier;
+	//Neutralize Z bounce velocity
+	NewVelocity.Z = 0;
+	OtherBounceableInterface->AddBounceForce(NewVelocity);
 
 
 	//Play Bounce Sound
@@ -915,6 +903,7 @@ void AFreeFallCharacter::BounceRoutine(AActor* OtherActor, TScriptInterface<IBou
 	// Call for rumble
 	//UHapticsStatics::CallHapticsCollision(this, Cast<APlayerController>(GetController()));
 	UHapticsStatics::CallHapticsCollision(this, Cast<APlayerController>(this->Controller));
+
 	//Play bounce effect
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BounceEffect.LoadSynchronous(), GetActorLocation());
 	
