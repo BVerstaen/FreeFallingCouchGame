@@ -270,6 +270,10 @@ UMatchParameters* AFreeFallGameMode::GetCurrentParameters()
 
 void AFreeFallGameMode::CallArenaActorOnCharacterDestroyed(AFreeFallCharacter* Character)
 {
+	const UCharactersSettings* SmashCharacterSettings = GetDefault<UCharactersSettings>();
+	if(SmashCharacterSettings->DisablePlayerDeath)
+		return;
+		
 	ArenaActorInstance->OnCharacterDestroyed.Broadcast(Character);
 }
 

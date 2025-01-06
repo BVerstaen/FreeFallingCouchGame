@@ -55,4 +55,12 @@ public:
 	//TSoftObjectPtr<TSubclassOf<UHapticsHandler>> RumbleSystem;
 	TSubclassOf<UHapticsHandler> RumbleSystem;
 	//TSoftObjectPtr<UHapticsHandler> RumbleSystem3;
+
+	//Disable player death by going off camera
+	UPROPERTY(Config, EditAnywhere, Category="DEBUG Market")
+	bool DisableCameraDeath;
+
+	//Disable other players death (weapons, lighning...)
+	UPROPERTY(Config, EditAnywhere, Category="DEBUG Market")
+	bool DisablePlayerDeath;
 };
