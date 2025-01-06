@@ -147,6 +147,10 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 
 void AFreeFallCharacter::DestroyPlayer(ETypeDeath DeathType)
 {
+	const UCharactersSettings* SmashCharacterSettings = GetDefault<UCharactersSettings>();
+	if(SmashCharacterSettings->DisablePlayerDeath)
+		return;
+	
 	ReceiveOnPlayerDestroyed(); //Call Death Function in Blueprint
 	//If was recently bounced -> then send elimination delegate
 	if(bWasRecentlyBounced)
