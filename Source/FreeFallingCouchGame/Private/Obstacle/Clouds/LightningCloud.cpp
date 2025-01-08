@@ -79,7 +79,7 @@ void ALightningCloud::KillPlayerInsideLightning()
 														traceObjectTypes,
 														false,
 														ignoreActors,
-														EDrawDebugTrace::ForOneFrame,
+														EDrawDebugTrace::None,
 														HitResults,
 														true);
 
