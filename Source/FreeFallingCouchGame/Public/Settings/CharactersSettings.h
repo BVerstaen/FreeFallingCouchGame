@@ -57,10 +57,10 @@ public:
 	//TSoftObjectPtr<UHapticsHandler> RumbleSystem3;
 
 	//Disable player death by going off camera
-	UPROPERTY(Config, EditAnywhere, Category="DEBUG Market")
+	UPROPERTY(Config, EditAnywhere, Category="DEBUG Market", BlueprintReadwrite)
 	bool DisableCameraDeath;
 
 	//Disable other players death (weapons, lighning...)
-	UPROPERTY(Config, EditAnywhere, Category="DEBUG Market")
+	UPROPERTY(Config, EditAnywhere, Category="DEBUG Market", BlueprintReadwrite)
 	bool DisablePlayerDeath;
 };

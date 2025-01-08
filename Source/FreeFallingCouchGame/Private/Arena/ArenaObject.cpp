@@ -127,9 +127,8 @@ TArray<TObjectPtr<AFreeFallCharacter>> CharactersToRemove;
 			FVector2D ViewportSizeMin;
 			FVector2D ViewportSizeMax;
 			GetViewportBounds(ViewportSizeMin, ViewportSizeMax);
-
-			const UCharactersSettings* SmashCharacterSettings = GetDefault<UCharactersSettings>();
-			if (IsOutOfBounds(ScreenPosition, ViewportSizeMin, ViewportSizeMax) && !SmashCharacterSettings->DisableCameraDeath)
+			
+			if (IsOutOfBounds(ScreenPosition, ViewportSizeMin, ViewportSizeMax) && !bDisableOutOfScreenDeath)
 			{
 				//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, Character->GetName() + "is out");
 
