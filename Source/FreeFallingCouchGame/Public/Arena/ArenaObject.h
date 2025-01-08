@@ -12,8 +12,6 @@
 class UCharacterIndicatorWidget;
 class AFreeFallGameMode;
 
-//TODO Transform Arena Actor to tickable Object
-
 UCLASS()
 class FREEFALLINGCOUCHGAME_API UArenaObject : public UObject, public FTickableGameObject
 {
@@ -110,5 +108,12 @@ protected:
 	bool IsOutsideOfViewport(FVector2D ScreenPos, FVector2D ViewportSizeMin, FVector2D ViewportSizeMax);
 
 #pragma endregion
-	
+
+
+#pragma region DEBUG
+
+public:
+	bool bDisableOutOfScreenDeath;
+
+#pragma endregion 
 };
