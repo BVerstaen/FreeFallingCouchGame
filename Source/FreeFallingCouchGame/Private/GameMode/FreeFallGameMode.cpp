@@ -30,6 +30,8 @@ void AFreeFallGameMode::Init()
 {
 	CreateAndInitsPlayers();
 	ArenaActorInstance = NewObject<UArenaObject>(GetWorld());
+	ArenaActorInstance->bDisableOutOfScreenDeath = bDisableCameraDeath; //Apply Default debug feature
+	
 	TrackerActorInstance = GetWorld()->SpawnActor<ATrackerActor>();
 	GameDataSubsystem = GetGameInstance()->GetSubsystem<UGameDataInstanceSubsystem>();
 	
@@ -270,10 +272,13 @@ UMatchParameters* AFreeFallGameMode::GetCurrentParameters()
 
 void AFreeFallGameMode::CallArenaActorOnCharacterDestroyed(AFreeFallCharacter* Character)
 {
-	const UCharactersSettings* SmashCharacterSettings = GetDefault<UCharactersSettings>();
-	if(SmashCharacterSettings->DisablePlayerDeath)
-		return;
-		
+	AFreeFallGameMode* FreeFallGameMode = Cast<AFreeFallGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if(FreeFallGameMode != nullptr)
+	{
+		if(FreeFallGameMode->bDisablePlayerDeath)
+			return;
+	}
+	
 	ArenaActorInstance->OnCharacterDestroyed.Broadcast(Character);
 }
 
@@ -809,4 +814,19 @@ void AFreeFallGameMode::RoundTimer()
 		false
 		);
 }
+#pragma endregion
+
+#pragma region DEBUG
+
+void AFreeFallGameMode::ToggleDisableCameraDeath()
+{
+	ArenaActorInstance->bDisableOutOfScreenDeath = !ArenaActorInstance->bDisableOutOfScreenDeath;
+}
+
+void AFreeFallGameMode::ToggleDisablePlayerDeath()
+{
+	bDisablePlayerDeath = !bDisablePlayerDeath;
+}
+
+
 #pragma endregion

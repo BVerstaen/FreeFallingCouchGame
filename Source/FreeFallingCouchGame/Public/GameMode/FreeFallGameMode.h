@@ -213,5 +213,17 @@ public:
 	void PlayParachuteFallingAnimation();
 
 	bool IsTrackerInit = false;
-#pragma endregion 
+#pragma endregion
+
+#pragma region Debug
+
+public:
+	bool bDisableCameraDeath = false;
+	bool bDisablePlayerDeath = false;
+
+	UFUNCTION(BlueprintCallable)
+	void ToggleDisableCameraDeath();
+	UFUNCTION(BlueprintCallable)
+	void ToggleDisablePlayerDeath();
+#pragma endregion
 };

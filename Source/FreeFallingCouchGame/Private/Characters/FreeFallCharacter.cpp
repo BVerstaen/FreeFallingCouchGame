@@ -14,6 +14,7 @@
 #include "Characters/FreeFallCharacterStateMachine.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameMode/FreeFallGameMode.h"
 #include "Haptic/HapticsStatics.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -147,9 +148,12 @@ void AFreeFallCharacter::Tick(float DeltaTime)
 
 void AFreeFallCharacter::DestroyPlayer(ETypeDeath DeathType)
 {
-	const UCharactersSettings* SmashCharacterSettings = GetDefault<UCharactersSettings>();
-	if(SmashCharacterSettings->DisablePlayerDeath)
-		return;
+    AFreeFallGameMode* FreeFallGameMode = Cast<AFreeFallGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if(FreeFallGameMode != nullptr)
+	{
+		if(FreeFallGameMode->bDisablePlayerDeath)
+			return;
+	}
 	
 	ReceiveOnPlayerDestroyed(); //Call Death Function in Blueprint
 	//If was recently bounced -> then send elimination delegate
