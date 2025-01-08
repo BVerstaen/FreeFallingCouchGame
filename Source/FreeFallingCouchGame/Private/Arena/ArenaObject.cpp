@@ -128,7 +128,7 @@ TArray<TObjectPtr<AFreeFallCharacter>> CharactersToRemove;
 			FVector2D ViewportSizeMax;
 			GetViewportBounds(ViewportSizeMin, ViewportSizeMax);
 			
-			if (IsOutOfBounds(ScreenPosition, ViewportSizeMin, ViewportSizeMax))
+			if (IsOutOfBounds(ScreenPosition, ViewportSizeMin, ViewportSizeMax) && !bDisableOutOfScreenDeath)
 			{
 				//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, Character->GetName() + "is out");
 

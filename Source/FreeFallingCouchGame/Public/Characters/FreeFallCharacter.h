@@ -583,4 +583,9 @@ public:
 	bool bBlockNewAnimation = false;
 	
 #pragma endregion
+
+
+#pragma region Debug
+
+#pragma endregion 
 };
